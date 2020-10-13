@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    Html CRUD with Pure JavaScript
+  </title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div>
+    <div>Navigation bar is here : Home | About | </div>
+
+
+
+    <div>
+      <label>Title of the quiz*</label><br>
+      <label class="validation-error hide" id="answerValidationError">This field is required.</label>
+      <input type="text" name="title" id="title" />
+    </div>
+
+    <div>
+
+      <label>Maximum points* </label><br>
+      <label class="validation-error hide" id="answerValidationError">This field is required.</label>
+      <input type="text" name="points" id="points" />
+
+      <label>Quiz Instructions ( optional ) </label><br>
+      <textarea name="instructions" id="instructions"></textarea>
+    </div>
+
+    <div>
+      <table>
+        <td>
+          <!--first column-->
+          <tr>
+            <form onsubmit="event.preventDefault();onFormSubmit();" autocomplete="off">
+
+              <div>
+                <label>Question*</label><br>
+                <label class="validation-error hide" id="questionValidationError">This field is
+                  required.</label>
+                <textarea name="question" id="question"></textarea>
+
+                <!--<textarea placeholder="type text here"></textarea>-->
+
+
+              </div>
+
+              <div>
+                <label>Answer*</label><br>
+                <label class="validation-error hide" id="answerValidationError">This field is required.</label>
+                <input type="text" name="answer" id="answer" />
+                <!--<textarea name="answer" id="answer"></textarea>-->
+              </div>
+
+              <div class="form-action-buttons">
+                <input type="submit" id="qa-submit" value="Add Row" />
+              </div>
+
+            </form>
+          </tr>
+
+          <!--second column-->
+
+          <tr>
+            <div id="mydiv">
+              <table class="list" id="quizList">
+
+                <thead>
+                  <tr>
+                    <th>Sr.Number</th>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th>Options</th>
+                  </tr>
+                </thead>
+
+                <div id="entiretable">
+                  <tbody></tbody> <!-- body will be populated with ques and ans -->
+                </div>
+
+              </table>
+            </div>
+          </tr>
+        </td>
+      </table>
+
+      <div>
+        <input type="submit" value="Create Quiz" />
+        <input type="submit" value="Student View" />
+        <input type="submit" value="Submit to Students" />
+      </div>
+    </div>
+
+
+
+
+  </div>
+
+  <!--
+  <div class="split right">
+    <label> Crossword will be created here</label>
+  </div> -->
+
+
+
+  <script src="script.js"></script>
+
+
+</body>
+
+</html>
