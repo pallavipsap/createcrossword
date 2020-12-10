@@ -1,0 +1,9 @@
+<!-- employees -->
+  <ul class="employees">
+  <% for(var i=0; i<employees.length; i++) {%>
+    <li class="employees">
+      <span><%= " Nome: " +employees[i].name+"."%></span>
+      <span><%=" Address: " + employees[i].address%></span>
+    </li>
+  <% } %>
+</ul>
