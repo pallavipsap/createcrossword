@@ -135,12 +135,126 @@ app.post('/get-home-data/post-create-groups', function (req, res) {
  
  });
 
+
+ app.post('/get-home-data/postcourses', function(req,res) {
+     console.log('came from ajax call',req.body);
+    //  res.send('success');
+
+     MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+           if (err) throw err;
+     
+           
+           var db = client.db('test');
+    
+           // ask*** , need any more field in find query
+           db.collection('teacherdata').find({"user-id": req.body["user_id"]}).count()
+           .then(
+            function(count) {
+              console.log("count of data found", count);
+    
+              if(count == 1){ // collection found
+    
+                // check if courses exists
+    
+                db.collection('teacherdata').find({"user-id": req.body["user_id"]}).toArray()
+                .then(function(teacherdata_doc){
+    
+                  var teacherdata_doc_obj = teacherdata_doc[0] // gets object
+                  console.log("my current courses in teacherdata",teacherdata_doc_obj.courses); // array of courses
+    
+                  // if course already exists : show error
+                
+                  console.log("my new insert value",req.body.course_no );
+    
+    
+                 // how to do this using $in ask***
+                  var update = true
+                  for (i=0; i < teacherdata_doc_obj.courses.length; i++) {
+                      console.log(teacherdata_doc_obj.courses[i].course_no);
+    
+                    if (teacherdata_doc_obj.courses[i].course_no == req.body.course_no && teacherdata_doc_obj.courses[i].course_name == req.body.course_name ){
+                        console.log("return this :  course already exists");
+                        // res.send('404');
+                        // res.send("error log", 404);
+                        // res.status('course exists').send(req.body)
+                        res.send('course_error');
+                        
+                        update = false
+                        break
+                  }
+    
+                }
+    
+                  // else update courses
+                  console.log("update value", update)
+                  if (update){
+                    teacherdata_doc_obj.courses.push({
+                      "course_no" : req.body.course_no,
+                      "course_name" : req.body.course_name
+                   }) // push in courses array of object
+     
+                   console.log("my added courses",teacherdata_doc_obj.courses); // gives array of
+                   console.log("updated object?",teacherdata_doc);
+                   
+                   // how can this be avoided??, I want to update in above promise , ask***
+                   db.collection('teacherdata').updateOne({
+                         "user-id": req.body["user_id"]},
+                         {$set: {"courses" : teacherdata_doc_obj.courses}}
+                     )
+                     .then(function(check){
+                       console.log("my teacherdata successful?",check);
+                       console.log("good response create <input>",check);
+                     })
+                    res.send('success');
+                    // res.status(status).send(body)
+                  } // end of if
+                  
+                  
+                })
+              }
+              
+              else { // create collection
+                db.collection('teacherdata').insertOne({
+                        "user-id": req.body["user_id"],
+                        "courses" : [
+                          { "course_no" : req.body.course_no,
+                            "course_name" : req.body.course_name
+                          }
+                        ]
+                       
+                    })
+                    .then(function(userdata){
+                      console.log("my teacherdata in else",userdata);
+                      console.log("good response create <input>",check);
+                    })
+                    .catch((e) => {
+                        console.log("some error in inserting new data");
+                        console.log(e);
+                    });
+                    res.send('success');
+              }
+            })
+           .catch((e) => {
+                  console.log("error in getting count");
+                  console.log(e);
+          }); 
+
+          
+          //res.send('test data received:\n' + JSON.stringify(req.body));
+        });
+     
+
+ });
+
+ 
 // click on "+" button
 // TODO : insert a new document in teacher collection, if the document does not exist
+// TODO : update document if it exists
 
 // test route
 
-app.post('/test', function (req, res) {
+// this was post earlier with form
+app.get('/test', function (req, res) {
 
     console.log("this is my current test object", req.body);
  //    console.log("this is my current registration", res.body);
@@ -148,139 +262,114 @@ app.post('/test', function (req, res) {
     var dummy = JSON.parse(req.body.userdata);
     console.log(dummy);
     req.body.userdata = dummy;
+    console.log("printing in test route", req.body);
 
+    res.send(true);
 
-    // test data received: {"group_no":"testno","group_name":"testname","userdata":{"_id":"5fcdb756153cbf35ace9bee1","username":"sapalep","password":"sapalep"}}
+    // test data received: {"course_no":"testno","course_name":"testname","userdata":{"_id":"5fcdb756153cbf35ace9bee1","username":"sapalep","password":"sapalep"}}
     // db.teacherdata.find({"user-id":"test"},{"courses":1}).pretty()
 
     // res.send('test data received:\n' + JSON.stringify(req.body));
 
+    /** commented from here */
 
-     MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
-       if (err) throw err;
+    //  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+    //    if (err) throw err;
  
        
-       var db = client.db('test');
-       db.collection('teacherdata').find({"user-id": req.body.userdata["_id"]}).count()
-       .then(
-        function(count) {
-          console.log("count of data found", count);
+    //    var db = client.db('test');
 
-          if(count == 1){
+    //    // ask*** , need any more field in find query
+    //    db.collection('teacherdata').find({"user-id": req.body.userdata["_id"]}).count()
+    //    .then(
+    //     function(count) {
+    //       console.log("count of data found", count);
 
-            db.collection('teacherdata').find({"user-id": req.body.userdata["_id"]},{"courses": 1}).toArray()
-            .then(function(teacherdata_doc){
+    //       if(count == 1){ // collection found
 
-              var teacherdata_doc_obj = teacherdata_doc[0] // gets object
-              console.log("my current courses in teacherdata",teacherdata_doc_obj.courses);
+    //         // check if courses exists
 
-              teacherdata_doc_obj.courses.push({
-                 "course_no" : req.body.group_no,
-                "course_name" : req.body.group_name
-              }) // push in courses array of object
+    //         db.collection('teacherdata').find({"user-id": req.body.userdata["_id"]}).toArray()
+    //         .then(function(teacherdata_doc){
 
-              console.log("my added courses",teacherdata_doc_obj.courses); // gives array of
-              console.log("updated object?",teacherdata_doc);
+    //           var teacherdata_doc_obj = teacherdata_doc[0] // gets object
+    //           console.log("my current courses in teacherdata",teacherdata_doc_obj.courses); // array of courses
 
-              // how can this be avoided??, I want to insert in above promise
-              db.collection('teacherdata').insertOne({
-                "user-id": req.body.userdata["_id"],
-                "courses" : teacherdata_doc_obj.courses
-            })
-            .then(function(check){
-              console.log("my teacherdata successful?",check);
-            })
-            })
-          }
+    //           // if course already exists : show error
+            
+    //           console.log("my new insert value",req.body.course_no );
+
+
+    //          // how to do this using $in ask***
+    //           var update = true
+    //           for (i=0; i < teacherdata_doc_obj.courses.length; i++) {
+    //               console.log(teacherdata_doc_obj.courses[i].course_no);
+
+    //             if (teacherdata_doc_obj.courses[i].course_no == req.body.course_no && teacherdata_doc_obj.courses[i].course_name == req.body.course_name ){
+    //                 console.log("return this :  course already exists");
+    //                 update = false
+    //                 break
+    //           }
+
+    //         }
+
+    //           // else update courses
+    //           console.log("update value", update)
+    //           if (update){
+    //             teacherdata_doc_obj.courses.push({
+    //               "course_no" : req.body.course_no,
+    //               "course_name" : req.body.course_name
+    //            }) // push in courses array of object
+ 
+    //            console.log("my added courses",teacherdata_doc_obj.courses); // gives array of
+    //            console.log("updated object?",teacherdata_doc);
+               
+    //            // how can this be avoided??, I want to update in above promise , ask***
+    //            db.collection('teacherdata').updateOne({
+    //                  "user-id": req.body.userdata["_id"]},
+    //                  {$set: {"courses" : teacherdata_doc_obj.courses}}
+    //              )
+    //              .then(function(check){
+    //                console.log("my teacherdata successful?",check);
+    //                console.log("good response create <input>",check);
+    //              })
+
+    //           } // end of if
+              
+    //         })
+    //       }
           
-          else {
-            db.collection('teacherdata').insertOne({
-                    "user-id": req.body.userdata["_id"],
-                    "courses" : [
-                      { "course_no" : req.body.group_no,
-                        "course_name" : req.body.group_name
-                      }
-                    ]
+    //       else { // create collection
+    //         db.collection('teacherdata').insertOne({
+    //                 "user-id": req.body.userdata["_id"],
+    //                 "courses" : [
+    //                   { "course_no" : req.body.course_no,
+    //                     "course_name" : req.body.course_name
+    //                   }
+    //                 ]
                    
-                })
-                .then(function(userdata){
-                  console.log("my teacherdata in else",userdata);
-                })
-                .catch((e) => {
-                    console.log("some error in inserting new data");
-                    console.log(e);
-                });
-          }
-        })
-       .catch((e) => {
-              console.log("error in getting count");
-              console.log(e);
-      }); 
+    //             })
+    //             .then(function(userdata){
+    //               console.log("my teacherdata in else",userdata);
+    //               console.log("good response create <input>",check);
+    //             })
+    //             .catch((e) => {
+    //                 console.log("some error in inserting new data");
+    //                 console.log(e);
+    //             });
+    //       }
+    //     })
+    //    .catch((e) => {
+    //           console.log("error in getting count");
+    //           console.log(e);
+    //   }); 
       
-      res.send('test data received:\n' + JSON.stringify(req.body));
-      });
+    //   res.send('test data received:\n' + JSON.stringify(req.body));
+    // });
+    /***commented until here***/
 });
   
-      //  if (x==0) {
-
-      //   db.collection('teacherdata').insertOne({
-      //       "user-id": req.body.userdata["_id"],
-      //       "group_no" : req.body.group_no,
-      //       "group-name" : req.body.group_name
-      //   })
-      //   .then(function(userdata){
-
-      //     console.log("my teacherdata in else",userdata);
-      //   })
-      //   .catch((e) => {
-      //       console.log("some error in inserting new data");
-      //       console.log(e);
-      //   });
-
-      //  }
-
-      //  else {
-
-      //   db.collection('teacherdata').find({"user-id": req.body.userdata["_id"]}).toArray()
-      //   .then(function(userdata){
-
-      //     console.log("my teacherdata in else",userdata);
-      //   })
-      //   .catch((e) => {
-      //       console.log("some error in finding existing data");
-      //       console.log(e);
-      //   });
-      // }
-       
-
-       
-
-
-
-      //  db.collection('users').insertOne(req.body, function (findErr, result) {
-      //   if (findErr) throw findErr;
-
-      //   console.log("request",req.body);
-      //   console.log('I am printing on line 101');
-      //   res.send(true);
-      // });
-
-
-
-    //    .then(function(userdata) {
-    //      console.log("userdata", userdata[0].courses[0]) // gives courses
-         
-         
-    //  })
-    //  .catch((e) => {
-    //                console.log("go back to login page, details not found");
-    //                console.log(e);
-    //            });
-    // console.log("check", x);
- 
- 
-
-
+      
 
 
 app.listen(process.env.PORT || 8000, process.env.IP || '0.0.0.0' );
