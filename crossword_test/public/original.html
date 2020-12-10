@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Welcome to crossword</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+
+    <!-- below is for local machine -->
+    <!-- ./css/style.css OR css/style.css OR /css/style.css -- Looks in public
+    ..css/style.css -- Looks in folder in which public is present ie. CROSSWORD -->
+    
+  </head>
+
+<form id = "submitQuiz" method="POST" action="/post-submitQuiz"></form>
+<!-- method="POST" action="/post-saveForm"  -->
+
+  <body>
+    <header id="header">
+      <span id="title"> OSU </span>
+    </header>
+  
+    <div class="container">
+      <button class="btn" id="btnCreate">Create</button>
+      <button class="btn" id="btnPlay">Play</button>
+
+      <br /><br />
+
+      <div class="center crossword" id="crossword"></div>
+      <br />
+
+      <div class="center"> 
+        <div class="line"><span id="error-message-1"></span>
+          <input class="word" type="text" value="Tucan" />
+          <input class="clue" value="A tropical bird with a large beak" />
+        </div>
+
+        <div class="line"><span id="error-message-2"></span>
+          <input class="word" type="text" value="Dingo" />
+          <input
+            class="clue"
+            value="This free-ranging dog is at home in the outback."
+          />
+        </div>
+
+        <div class="line"><span id="error-message-3"></span>
+          <input class="word" type="text" value="Dolphin" />
+          <input class="clue" value="A friendly finned non-fish" />
+        </div>
+
+        <div class="line"><span id="error-message-4"></span>
+          <input class="word" type="text" value="Pig" />
+          <input class="clue" value="Bosses of the farm in Orwell's world" />
+        </div>
+
+        <div class="line">
+          <input class="word" type="text" value="Kangaroo" />
+          <input class="clue" value="Boxing champions of the outback" />
+        </div>
+
+        <!-- <div class="line">
+          <input class="word" type="text" value="Octopus" />
+          <input class="clue" value="Eight legged sea creature" />
+        </div>
+
+        <div class="line">
+          <input class="word" type="text" value="Hamster" />
+          <input
+            class="clue"
+            value="Furry rodent whose teeth never stop growing"
+          />
+        </div> -->
+
+        <!-- <div class="line">
+          <input class="word" type="text" value="Alligator" />
+          <input
+            class="clue"
+            value="Dating back further than the T-rex, this reptile is a modern day dinosaur"
+          />
+        </div>
+
+        <div class="line">
+          <input class="word" type="text" value="Ostrich" />
+          <input
+            class="clue"
+            value="Flightless bird not know for its people skills"
+          />
+        </div> -->
+
+        <!-- <div class="line">
+          <input class="word" type="text" value="Koala" />
+          <input
+            class="clue"
+            value="Friendly version of the infamous Australian tourist terrorizing tree-dwellers"
+          />
+        </div>
+
+        <div class="line">
+          <input class="word" type="text" value="Mouse" />
+          <input
+            class="clue"
+            value="This poor animal is often the victim of feline aggression and human experimentation"
+          />
+        </div>
+
+        <div class="line">
+          <input class="word" type="text" value="Antelope" />
+          <input
+            class="clue"
+            value="The victim of every lion documentary clip you've ever seen."
+          />     -->
+         
+
+       
+        </div>
+      </div>
+      
+    </div>
+    
+    
+    
+    <!-- <script type="text/javascript" src="javascript/js.js"></script> -->
+    <script type="text/javascript" src="js.js"></script>
+    <input type="submit" value="Submit Quiz" form = "submitQuiz" />
+  </body>
+</html>
