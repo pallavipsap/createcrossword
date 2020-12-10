@@ -1,1 +1,2 @@
-
+- crossword_test folder was just created to test if mapped values from Across and Down appear on the crossword
+- integrate this file with student_pages folder and then delete this
