@@ -39,10 +39,12 @@ TODO : if collection exists, pull all previous groups and show on create groups 
     <!-- <button id = "action-button" onclick="Create()"> Click to create group</button> -->
 
     <!-- without create() function -->
-    <button id = "action-button"> Click to create group</button>
+    <button id = "action-button"> Click to create group</button><br>
+    
 
   </div>
 
+    <span id = "course_exists_dialog" style = "display: none;">Sorry, this course already exists. Please change course number or course name</span>
     <div class = "allgroups" id = "allgroups"></div>
 
     
@@ -86,26 +88,18 @@ TODO : if collection exists, pull all previous groups and show on create groups 
                     course.course_no = $('#course_no').val();
                     course.course_name = $('#course_name').val();
 
-                    //$(this).val
-                    
-
-                    // var course_no = $('#course_no').val()
-                    // var course_name =  $('#course_name').val()
-                    // var data = 'course_no=' + course_no + '&course_name=' + course_name;
-
                     $.ajax({
                         //url: 'http://localhost:8000/get-home-data/post-create-groups',
                         //url: './postcourses',
                         url : './postcourses',
-                        // data : data,
                         data: course,
                         type: 'POST',
                         // dataType: 'jsonp',
                         error: function(data) { // failure : group exists errot in this function
                             // $('#info').html('<p>An error has occurred</p>');
                             // console.log("this course already exists", data) // if i send 404
-
-                      
+                            console.log("there is some error with connecting mongodb and jquery", data);
+                        
 
                             // clear data in text boxes
                             // show error message on the screen
@@ -117,13 +111,44 @@ TODO : if collection exists, pull all previous groups and show on create groups 
                             console.log("this has succeded", data)
                            
                             if(data == 'success'){
-                                var span = document.createElement('span')
-                                span.innerHTML = 'this is success';
-                                document.getElementById("allgroups").appendChild(span);
-                                alert("this is success, generate a button");
+                                alert("group is created");
+
+                                // hide input boxes
+                                document.getElementById("creategroup_dialog").style.display = "none";
+
+                                if(document.getElementById("course_exists_dialog").style.display == "block"){
+                                    document.getElementById("course_exists_dialog").style.display = "none"
+                                }
+
+                                // var span = document.createElement('span')
+                                // span.innerHTML = 'this is success';
+                                // document.getElementById("allgroups").appendChild(span);
+
+                                var input = document.createElement("input");
+                                input.type = "submit";
+
+                                input.value = document.getElementById("course_no").value + "-" + document.getElementById("course_name").value;
+                                console.log(document.getElementById("allgroups"));
+                                document.getElementById("allgroups").appendChild(input);
+
+                             
                             }
                             else if(data == 'course_error'){
-                                alert("course exists already")
+                                
+
+                                if(document.getElementById("course_exists_dialog").style.display == "none"){
+                                //     $(document).ready( function() {
+                                //         $('#course_exists_dialog').show();
+                                // });
+                                    //document.getElementById("allgroups").appendChild(span);
+                                    document.getElementById("course_exists_dialog").style.display = "block"
+                                }
+
+
+                                // document.getElementById("allgroups").appendChild(span);
+
+                                 
+                                //alert("this is success, generate a button");
                             }
 
 
