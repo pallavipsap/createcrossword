@@ -1,0 +1,24 @@
+<html>
+<head>
+<title> Registration Details </title>
+	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
+
+<!-- <form id = "postUserData" method="POST" action="/post-user-data"></form> -->
+<form id = "postUserData" method="POST" action="/"></form>
+
+<body>
+
+	<!-- <textarea name = "courselist" id = "courselist_json"><%= JSON.stringify(data) %> </textarea> -->
+	<div class = "register">
+        <h1>Register here</h1>
+        <form>
+
+            <input type="text" name = "username" placeholder="Enter username here" form = "postUserData"><br>
+            <input type = "text" name = "password" placeholder="Enter password here" form = "postUserData"><br>
+            <input type="submit" value = "Register" form = "postUserData">
+
+        </form>   
+    </div>
+</body>
+</head>
+</html>

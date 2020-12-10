@@ -1,0 +1,91 @@
+<html>
+<head>
+<title> Create Group Page </title>
+</head>
+
+
+<!--
+TODO : by default : If a collection does not exist, just show create button
+TODO : if collection exists, pull all previous groups and show on create groups page using loginID or teacher ID?
+-->
+
+<!-- <form id = "postCheckGroups" method="POST" action="/post-check-groups"></form> -->
+<!-- <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form> -->
+<form id = "test" method="POST" action="/test"></form>
+
+<body>
+    
+    <!-- <textarea name = "groupdata" id = "groupdata_json"><%= JSON.stringify(data)%></textarea> -->
+    <p id = "welcomemessage"></p>
+<div>
+    <input type="submit" value="+ new group" onclick="showCreateGroup()"/>
+    <!-- <input type="submit" value="Play Crossword" form = "postPlayGroups"/> -->
+</div>
+<!-- style="display: none;" -->
+   <div id="creategroup_dialog" style="display: none;">
+    <input type="text" name = "group_no" id="group_no" placeholder="Enter group number here" form = "test"></input>
+    <input type="text" name = "group_name" id="group_name" placeholder="Enter group name here" form = "test"></input>
+    <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea>
+    <input type="submit" value="Click to Create group" onclick="Create()" form = "test"/>
+  </div>
+
+  <section>
+    <div class = "allgroups" id = "allgroups"></div>
+  </section>
+    
+
+
+<script>
+
+        var textarea_json_object = document.getElementById("userdata_json");
+        var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
+        console.log("This is the JSON object to work with", json_object);
+
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " please go ahead and create groups or click on groups to create quizzes";
+
+
+        // create buttons for all the groups present in the teacher collection for the given teacherObjectID
+       
+        function showCreateGroup(){
+            
+            // alert asking for no. and name
+            document.getElementById("group_no").value = "";
+            document.getElementById("group_name").value = "";
+
+            if ( document.getElementById("creategroup_dialog").style.display == "block") {
+                document.getElementById("creategroup_dialog").style.display = "none";
+                
+               
+                
+            }
+            else  {
+                // document.getElementById("group_no").value = "";
+                // document.getElementById("group_name").value = "";
+                document.getElementById("creategroup_dialog").style.display = "block";
+            }
+            
+        }
+
+        function Create() {
+
+                // verify if group no and name combination is already existing for this teacher, in teacherdata: courses
+                // if name exists, say : already exists
+
+                // get object from db here
+
+                // else allow creation and create a button for the same
+                document.getElementById("creategroup_dialog").style.display = "none";
+                var input = document.createElement("input");
+                input.type = "submit";
+                input.value = document.getElementById("group_no").value + "-" + document.getElementById("group_name").value;
+                console.log(document.getElementById("allgroups"));
+                document.getElementById("allgroups").appendChild(input);
+        }     
+        
+</script>
+
+
+</body>
+
+
+</html>

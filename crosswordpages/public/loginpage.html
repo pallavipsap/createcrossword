@@ -1,0 +1,53 @@
+<html>
+<head>
+<title> Login Page </title>
+	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
+
+<!-- homepage route -->
+<form id = "homePage" method="POST" action = "/post-home-data"></form>
+
+<!-- registration route -->
+<!-- <form id = "registerPage" method="POST" action = "/post-register-data"></form> -->
+
+<body>
+	<div class = "userdetails">
+	<!-- <img src = "login.png" class = "login"> -->
+		<h1> Give your credentials</h1>
+		<form>
+			<!-- <p>Username</p> -->
+            <input type="text" id = "username" name = "username" placeholder="Enter username here" form = "homePage"><br>
+            <!-- form = "canvaspage"><br> -->
+			<!-- <p>Password</p> -->
+            <input type = "text" id = "password" name = "password" placeholder="Enter password here" form = "homePage" >
+            <!-- form = "canvaspage"><br> -->
+			<!-- <div id="radiobutton"> -->
+			<!-- <p>Who am I at OSU ?</p>
+
+			<input type="radio" id="student_id" name="status" value="student" form = "canvaspage">
+			<label for="student">Student</label>
+
+			<input type="radio" id="teacher_id" name="status" value="teacher" form = "canvaspage">
+			<label for="teacher">Teacher</label><br> -->
+
+			
+		</form>
+            <input type="submit" form = "homePage"/>
+            <!--  name="login" value = "Login" -->
+            <!-- form = "canvaspage"> -->
+            
+
+
+			<p>Not Registered?<a href="register-data" method = "GET" action = "/register-data">Register here</a></p>
+			<!-- <input type="submit" name="register" value = "Register now" form = "registerpage"> -->
+			
+			<!-- Dont have an account ? Create yours now -->
+		
+		<!-- <script type="text/javascript" src="js.js"></script> -->
+		
+	</div>
+</body>
+	
+	
+</head>
+</html>
+

@@ -1,0 +1,32 @@
+<html>
+<head>
+<title> Home Page </title>
+</head>
+<body>
+
+    <form id = "postCreateGroups" method="POST" action="/get-home-data/post-create-groups"></form>
+    <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form>
+
+    <textarea name = "userdata" id = "userdata_json" form = "postCreateGroups"><%= JSON.stringify(data) %></textarea>
+    <p id = "welcomemessage"></p>
+
+    <div>
+        <input type="submit" value="Create Crossword" form = "postCreateGroups"/>
+        <input type="submit" value="Play Crossword" form = "postPlayGroups"/>
+
+    </div>
+
+
+    <script>
+
+            var textarea_json_object = document.getElementById("userdata_json");
+            var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
+            console.log("This is the JSON object to work with", json_object);
+
+            document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " what do you want to choose today?";
+    </script>
+
+</body>
+
+
+</html>
