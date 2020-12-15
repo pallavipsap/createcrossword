@@ -33,7 +33,7 @@ JSON.stringify(data)  =
 
 <body>
     
-    <textarea name = "groupdata" id = "groupdata_json"><%= JSON.stringify(data)%></textarea>
+    <textarea name = "groupdata" id = "groupdata_json" form = "postDisplayQuizzes"><%= JSON.stringify(data)%></textarea>
     <p id = "welcomemessage"></p>
 <div>
     <input type="submit" value="+ new group" onclick="showCreateGroup()"/>
@@ -95,9 +95,14 @@ JSON.stringify(data)  =
 
                     var input = document.createElement("input");
                     input.type = "submit";
-                    document.getElementById("allgroups").appendChild(input);
-
+                    input.name = "course_id";
+                    input.id = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+                    var x = 
                     input.value = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+                    // input.form = "postDisplayQuizzes";
+                    // input.setAttribute("onclick", "appendForm(x)");
+                    input.setAttribute("form", "postDisplayQuizzes");
+                    document.getElementById("allgroups").appendChild(input);
                     console.log(document.getElementById("allgroups"));
 
                 }
@@ -109,6 +114,15 @@ JSON.stringify(data)  =
                 DisplayPrevGroups(json_object["courses"])
             else console.log("no past courses");
             
+
+        function appendForm(value){
+            console.log(value)
+
+            var course_id = "course_id";
+            json_object[course_id] = value;
+            console.log("updated json object", json_object);
+        
+        }
        
         // show text boxes to create groups
         function showCreateGroup(){
