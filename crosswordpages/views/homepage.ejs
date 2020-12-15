@@ -4,7 +4,9 @@
 </head>
 <body>
 
-    <form id = "postCreateGroups" method="POST" action="/get-home-data/post-create-groups"></form>
+    <!-- teacher route -->
+    <form id = "postCreateGroups" method="POST" action="/get-home-data/post-create-groups"></form> 
+    <!-- student route -->
     <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form>
 
     <textarea name = "userdata" id = "userdata_json" form = "postCreateGroups"><%= JSON.stringify(data) %></textarea>
