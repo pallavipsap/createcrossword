@@ -5,6 +5,7 @@ var mongodb = require('mongodb');
 var port = 8000
 var MongoClient = mongodb.MongoClient;
 var ejs = require('ejs');
+const { resetWarningCache } = require('prop-types');
 var ObjectID = require('mongodb').ObjectID;
 
 var app = express();
@@ -38,14 +39,14 @@ app.post('/',  function(req, res) {
         console.log('I am printing on line 101');
         res.send(true);
         // res.render("loginpage.html") - does not work
-
-        //res.send('Login data received:\n' + JSON.stringify(req.body));
-
-        // res.sendFile('loginpage.html', {
-        //     root: path.join(__dirname, './public/') // creates path to access the login.html file
-        // });
-
+        // res.send('Login data received:\n' + JSON.stringify(req.body));
         // res.sendFile(path.join(__dirname + '/public/loginpage.html'));
+
+        // if this is done, we go back to login page, but after every refresh data is inserted in DB
+
+        res.sendFile('loginpage.html', {
+            root: path.join(__dirname, './public/') // creates path to access the login.html file
+        });
 
         client.close();
       }); 
@@ -104,16 +105,73 @@ app.post('/post-home-data', function (req, res) { // why does this need to be po
 
 // page 4
 // homepage to create groups
-// TODO : by default : If a collection does not exist, just show create button
+// TODO : by default : If a collection does not exist, just show create button on create groups page
 // TODO : if collection exists, pull all previous groups and show on create groups page
 // request body will contain : login object [{"_id":"5fcdb756153cbf35ace9bee1","username":"sapalep","password":"sapalep"}]
 
 
 app.post('/get-home-data/post-create-groups', function (req, res) {
 
-  
-    console.log('user Data received:\n' , req.body.userdata);
-    res.render('creategroups',{data : JSON.parse(req.body.userdata)});
+    console.log(JSON.parse(req.body.userdata));
+    var user_course_data = JSON.parse(req.body.userdata);
+
+    // after console log
+    // user_course_data = {
+    //             _id: '5fd2acd78dba975988352fea',
+    //             username: 'sapalep1',
+    //             password: 'sapalep1'
+    // }
+
+    console.log('user Data received from home page :\n' , user_course_data);
+    console.log('user Data received from home page :\n' , user_course_data.username);
+   
+
+    
+    // fetch for teacherdata in mongo here, if it exists, pass courses, else pass only the object
+    MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        if (err) throw err;
+
+        var db = client.db('test');    
+        db.collection('teacherdata').find({"user-id": user_course_data._id}).count()
+            .then(
+                function(count) {
+                console.log("count of data found", count);
+                console.log(user_course_data._id);
+
+                if(count == 1){ // collection found
+
+                    db.collection('teacherdata').find({"user-id": user_course_data._id }).toArray()
+                    .then(function(teacherdata_doc){
+
+                        var teacherdata_doc_obj = teacherdata_doc[0] // gets object
+                        console.log("existing courses  in teacherdata to be passed",teacherdata_doc_obj.courses); // array of courses
+                        // append the course object to request body
+                        var courses = "courses"
+                        user_course_data[courses] = teacherdata_doc_obj.courses
+
+                        console.log("updated request with courses",user_course_data);
+                        res.render('creategroups',{data : user_course_data});
+                        //res.render('creategroups',{data : JSON.parse(req.body.userdata)});
+                    })
+                    .catch((e) => {
+                        console.log("error in finding course");
+                        console.log(e);
+                    }); 
+        
+                }
+
+            // course not found ( probably can put this in catch TODO** later)
+            else  res.render('creategroups',{data : user_course_data});
+                
+            })
+            .catch((e) => {
+                console.log("error in getting count");
+                console.log(e);
+            }); 
+
+    });
+
+
  //    console.log("this is my current registration", res.body);
  
  //    res.send('user Data received:\n' + JSON.stringify(req.body));
@@ -133,12 +191,21 @@ app.post('/get-home-data/post-create-groups', function (req, res) {
 //                });
 //  });
  
- });
+});
 
-
+// For page 4 :
+// processes data and diplays on the same page, not a new page
+// AJAX call to check if course exists in teacher data
  app.post('/get-home-data/postcourses', function(req,res) {
      console.log('came from ajax call',req.body);
     //  res.send('success');
+
+    // if( req.body.course_name == "" || req.body.course_no == "" ) {
+    //     console.log("field blank");
+    //     res.send("blank"); // may insert "blank" in response packet
+    //     res.send("update")
+    // }
+    // else {
 
      MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
            if (err) throw err;
@@ -242,17 +309,39 @@ app.post('/get-home-data/post-create-groups', function (req, res) {
           
           //res.send('test data received:\n' + JSON.stringify(req.body));
         });
-     
+
+    // } 
 
  });
 
+
+
+
+ // page 5
+// create groups to display quizzes
+
+// TODO : by default : If a quiz does not exist, just show create quiz button
+// TODO : if quiz exists, pull all previous quizzes and show three buttons ( q1, try, grade )
+// TODO : for now only q1 and grade buttons
+
+// request body will contain : 
+// login object
+// {"_id":"5fcdb756153cbf35ace9bee1","username":"sapalep","password":"sapalep", courseid : }
+// so that for a specific user, with a specific course in quizdata, all quizzes can be pulled
+// courseid : "course_no" + "-" + "course_name"
+// TODO : generate these courses using autogenerated id
+// pass courseid as params
+
+app.get('/post-display-quizzes/:courseid')
+
+
  
+
+// start for testing ---------------------------------------------------------------------
 // click on "+" button
 // TODO : insert a new document in teacher collection, if the document does not exist
 // TODO : update document if it exists
-
 // test route
-
 // this was post earlier with form
 app.get('/test', function (req, res) {
 
@@ -368,6 +457,8 @@ app.get('/test', function (req, res) {
     // });
     /***commented until here***/
 });
+
+// end : for testing--------------------------------------------
   
       
 
