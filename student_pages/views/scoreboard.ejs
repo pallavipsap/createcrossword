@@ -17,10 +17,9 @@
 <body>
     
     <textarea name = "student_score_table" id = "score_data"><%= JSON.stringify(data) %> </textarea>
-    <div class = "question-answer" id = "question-answer"> Hello $username, here are your answers with scores </div>
-    <p> I will display &#10004;</p>
-
-
+    <div class = "question-answer" id = "question-answer"></div>
+    <!-- <p> I will display &#10004;</p> -->
+    <!-- Hello <%= JSON.stringify(data.username) %> here are your answers with scores  -->
 
 </body>
 
@@ -30,6 +29,7 @@
         var textarea_json_object = document.getElementById("score_data");
         var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
         console.log("This is the JSON object to work with", json_object);
+        document.getElementById("question-answer").innerHTML = "Hello " + json_object.username + " here are your answers with scores";
 
         /*
         1. Bird
