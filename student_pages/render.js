@@ -5,6 +5,7 @@ var mongodb = require('mongodb');
 var port = 4000
 var MongoClient = mongodb.MongoClient
 var ejs = require('ejs')
+var ObjectId = require('mongodb').ObjectID;
 // var domtoimage = require('dom-to-image')
 
 //var router = express.Router();
@@ -40,6 +41,13 @@ app.get('/', (req, res) => {
     });
 });
 
+// page 8
+// click on a link to render crossword
+
+// app.get('/:quiz_id',function(req, res){
+//     console.log('hit this route');
+//     res.send(req.params)
+// });
 
 // page 8
 // click on a link to render crossword
@@ -47,27 +55,36 @@ app.get('/', (req, res) => {
 // force to go to login page once clicked on login button
 // take data for a specific quiz id
 
-app.get('/student-view-quizdata',  function(req, res) {
+//app.get('/student-view-quizdata',  function(req, res) {
 
-    console.log("pass from link to crossword render page", req.body)
+app.get('/:quizid',function(req, res){
+
+    console.log("pass from link to crossword render page", req.params["quizid"])
+ 
+    //console.log(typeof(req.params.quizid))
+    x = req.params.quizid
+   
     MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
       if (err) throw err;
   
       var db = client.db('test');
-
+      
+      // "5fdc289204cad9535c6c2670"
       // find data for a specific quiz id // pass quiz_id as parameter ??
-      db.collection('quizdata').find({}).toArray().then(function(quizdata) {
+      db.collection('quizdata').find(ObjectId(x)).toArray()
+      .then(function(quizdata) {
         //console.log("req body", req.body);
         // var x = res.json(quizdata).length;
         // console.log(x);
         //console.log("quizdata", res.status(200).json(quizdata[quizdata.length - 1]));
      
-        //res.json(quizdata[quizdata.length - 1]);
   
-        var quizdata_1 = quizdata[quizdata.length - 1];
-        console.log("reponse from db", quizdata_1);
+        // var quizdata_1 = quizdata[quizdata.length - 1];
+        // console.log("reponse from db", quizdata_1._id);
+        // res.render('render_next',{data : quizdata_1});
+        console.log(quizdata)
+        res.render('render_next',{data : quizdata[0]});
         
-        res.render('render_next',{data : quizdata_1});
         //res.status(200).json(quizdata[quizdata.length - 1])
         
       })
