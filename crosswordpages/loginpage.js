@@ -10,6 +10,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 var app = express();
 
+app.use(express.static(path.resolve(__dirname, 'public')));
 app.set('views',path.join(__dirname,'views'))
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -318,7 +319,7 @@ app.post('/get-home-data/post-create-groups', function (req, res) {
 
 
  // page 5
-// create groups to display quizzes
+// create quiz and display previous quizzes fro specific group
 
 // TODO : by default : If a quiz does not exist, just show create quiz button
 // TODO : if quiz exists, pull all previous quizzes and show three buttons ( q1, try, grade )
@@ -344,9 +345,8 @@ app.post('/get-home-data/post-create-groups', function (req, res) {
 
 app.post('/post-display-quizzes', function(req,res){
 
-    console.log("at the backend done", req.body);
+    console.log("displaying quizzes", req.body);
 
-    // body is received in string format
     req.body.groupdata = JSON.parse(req.body.groupdata); // removes 'id' -- id
 
     console.log("to be checked", req.body);
@@ -359,13 +359,13 @@ app.post('/post-display-quizzes', function(req,res){
     // pass this data to next page to render in textarea
 
     var data = {
-        user_id: req.body.groupdata['_id'],
+        owner_id: req.body.groupdata['_id'],
         username : req.body.groupdata['username'],
-        password : req.body.groupdata['password'],
+       // password : req.body.groupdata['password'],
         course_id : req.body['course_id']
     }
 
-    console.log("use this data for further process", data);
+    console.log("use this data to search all quizzes in quizdata collection", data);
 
 
     MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
@@ -379,7 +379,11 @@ app.post('/post-display-quizzes', function(req,res){
         //    .then(function(count){
 
             //db.collection('quizdata').find({"user_id": data.user_id},{"course_id": data.course_id}).toArray()
-            db.collection('quizdata').find({$and : [{ "user_id":  data.user_id},{"course_id":data.course_id}]}).toArray()
+            // TODO : in the future do not fetch for user id, only course id is okay
+            // TODO : change user_id to owner_id
+
+            // this query executes, if not found, just appends empty quizdata
+            db.collection('quizdata').find({$and : [{ "owner_id":  data.owner_id},{"course_id":data.course_id}]}).toArray()
             .then(function(quizdata){
                 console.log("this is my data from db", quizdata); // this is an array of quiz objects
                 console.log("length",quizdata.length);
@@ -397,11 +401,12 @@ app.post('/post-display-quizzes', function(req,res){
             }
                 data["quiz_ids"] = quiz_ids;
                 console.log("final data", data);
-                res.send(req.body);
+                res.render('displayquizzes',{data : data});
+                //res.send(req.body);
 
            })
            .catch((e) => {
-            console.log("error in getting quizdata");
+            console.log("probably no past quizzes");
             //console.log("error in getting count");
             console.log(e);
     });
@@ -410,8 +415,125 @@ app.post('/post-display-quizzes', function(req,res){
 
 });
 
+// page 6
+// display quizzes to create quizzes
+// send data to page 6 from page 5
+// username, password, user_id, course_id, course_name
+// TODO :  pass coursename along with course id
+// TODO : probably I do not need to send quiz id here
+// TODO : change user id to owner id
+app.post('/post-create-quiz', function(req,res){
 
+    // body is received in string format
+    req.body.group_cw_data =  JSON.parse(req.body.group_cw_data); //// removes 'id' -- id
+
+    console.log("request body to page 6 ", req.body)
+    // do  not send quiz id
+    var data = {
+        owner_id: req.body.group_cw_data['owner_id'], // this is the owner id
+        username : req.body.group_cw_data['username'],
+        course_id : req.body.group_cw_data['course_id']
+    }
+    console.log("use this to create quiz", data);
+    res.render('createquiz',{data : data});
+})
  
+
+// page 6
+// save quiz data in DB and go back to page 5
+app.post('/post-saveForm', function (req, res) {
+
+    console.log(req.body)
+    req.body["course_data"] = JSON.parse(req.body["course_data"]);
+    req.body["ques_ans_data"] = JSON.parse(req.body["ques_ans_data"]);
+  //   res.send('Quiz Data received:\n' + JSON.stringify(req.body));
+
+  //   console.log("text", text);
+  //   console.log(typeof(text));
+  //   var parsed_text = JSON.parse(text);
+  //   console.log("parsed_text", parsed_text);
+  //   console.log(typeof(parsed_text));
+
+  data = {
+      owner_id : req.body.course_data["owner_id"],
+      course_id :  req.body.course_data["course_id"],
+      title : req.body["title"],
+      points : req.body["points"],
+      quizdata : req.body["ques_ans_data"]
+  };
+
+  console.log("This data to be put in DB",data)
+
+
+    // query to insert data
+    MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+    
+      if (err) throw err;
+      var db = client.db('test');
+      db.collection('quizdata').insertOne(data, function (findErr, result) {
+        if (findErr) throw findErr;
+        console.log('I am printing on line 72');
+        // res.redirect('/post-display-quizzes')
+       
+        // res.send('Quiz Data received:\n' + JSON.stringify(data));
+        // client.close();
+      });
+    
+    }); 
+
+
+    // query to send data to page 5 ( to display all quizzes)
+    MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        if (err) throw err;
+  
+        var db = client.db('test');
+ 
+        // ask*** , need any more field in find query
+     //    db.collection('quizdata').find({"login-id": data.user_id}).count()
+     //    .then(function(count){
+
+         //db.collection('quizdata').find({"user_id": data.user_id},{"course_id": data.course_id}).toArray()
+         // TODO : in the future do not fetch for user id, only course id is okay
+         // TODO : change user_id to owner_id
+
+         // this query executes, if not found, just appends empty quizdata
+         db.collection('quizdata').find({$and : [{ "owner_id":  data.owner_id},{"course_id":data.course_id}]}).toArray()
+         .then(function(quizdata){
+             console.log("this is my data from db", quizdata); // this is an array of quiz objects
+             console.log("length",quizdata.length);
+        
+             passed_data = {
+                owner_id : req.body.course_data["owner_id"],
+                username : req.body.course_data["username"],
+                course_id :  req.body.course_data["course_id"],
+             }
+
+        // all quiz ids to be rendered on displayquiz page
+         var quiz_ids = []
+         for(i=0 ; i<=quizdata.length-1;i++){
+             var quiz_id = {
+                 quiz_id : quizdata[i]._id,
+                 quiz_name : quizdata[i].title // this is the name that appears on the display quiz page
+             }
+
+             quiz_ids.push(quiz_id);
+             console.log("this is my array", quiz_ids);
+         }
+             passed_data["quiz_ids"] = quiz_ids;
+             console.log("final data from page 5 to page 6", passed_data);
+             res.render('displayquizzes',{data : passed_data});
+             //res.send(req.body);
+
+        })
+        .catch((e) => {
+         console.log("probably no past quizzes");
+         //console.log("error in getting count");
+         console.log(e);
+        });
+
+    });
+
+});
 
 // start for testing ---------------------------------------------------------------------
 // click on "+" button
