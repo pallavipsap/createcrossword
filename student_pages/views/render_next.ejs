@@ -1,7 +1,5 @@
 <!doctype html>
 <html lang="en">
-    
-    <!-- type="text/css" -->
 <head>
 
     <title>Welcome to crossword</title>
@@ -16,8 +14,6 @@
     
     <!-- <h1>The quiz is below <%= JSON.stringify(data) %></h1> -->
 
-   
-
     <script src ="/dom-to-image.min.js"></script>
     
 </head>
@@ -26,12 +22,10 @@
 <form id = "viewScore" method="POST" action="/sudent-score-page" ></form>
 
 <body>
-    
-    
-    <textarea name = "quiz_data_json" id = "quiz_data_json"><%= JSON.stringify(data) %> </textarea>
+    <textarea name = "quiz_data_json" id = "quiz_data_json" form = "viewScore"><%= JSON.stringify(data) %> </textarea>
     <textarea name = "student_data_json" id = "student_data_json" form = "viewScore"></textarea><br>
     <label>Enter your correct username here</label>
-    <input type = "text" name = "student-username">
+    <input type = "text" name = "player_username" form = "viewScore" required>
 
     <div class="center crossword" id="crossword"></div>
 
@@ -668,8 +662,8 @@
         function GetWordsFromInput(json_object) {
     
             wordArr = [];
-            for ( var i = 0, val; i < json_object.ques_ans_data.length; i++){ //w = json_object.ques_ans_data;
-                val = json_object.ques_ans_data[i].answer.toUpperCase();
+            for ( var i = 0, val; i < json_object.quizdata.length; i++){ //w = json_object.ques_ans_data;
+                val = json_object.quizdata[i].answer.toUpperCase();
     
                 if (val !== null && val.length > 1) {
                     // push only non null and more than one lettered words
@@ -745,8 +739,6 @@
             //console.log("inside populate board newWordBank", newWordBank);
             console.log("inside populate board wordActive", wordsActive);
 
-            
-
             // when I return isOk = true , it means all words can be added
             return isOk; // returns isOk to Create func 
             }
@@ -763,7 +755,7 @@
                 // to convert every word to character array ?
                 wordBank.push(new WordObj(wordArr[i])); // WordObj creates key value pairs
                 wordBank[i].ques_ans_id = i+1
-                wordBank[i].question = json_object.ques_ans_data[i].question;
+                wordBank[i].question = json_object.quizdata[i].question;
                 console.log()
                 //newWordBank.push(new newWordObj(wordArr[i]));
                 //console.log(wordBank);
