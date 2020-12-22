@@ -1,0 +1,39 @@
+<html>
+<head>
+<title> Home Page </title>
+<!-- <script src="ejs.js"></script> -->
+</head>
+<body>
+
+    <!-- teacher route : query string-->
+    <form id = "postCreateGroups" method="POST" action="/get-home-data/post-create-groups"></form> 
+    <!-- student route : query string-->
+	<form id = "postPlayGroups" method="POST" action="/post-play-groups"></form>
+	<form id = "logout" method = 'GET' action = '/logout'>
+	
+	<!-- logout route : query string-->
+	<!-- <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form> -->
+
+    <textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
+	<p id = "welcomemessage"></p>
+	<!-- <% var ejs_variable = JSON.stringify(data); %> -->
+
+    <div>
+        <input type="submit" value="Create Crossword" form = "postCreateGroups"/>
+		<input type="submit" value="Play Crossword" form = "postPlayGroups"/>
+
+		<!-- go to logout route -->
+		<button type="submit" form = "logout">Logout</button>
+    </div>
+
+
+    <script>
+		var json_object = <%- JSON.stringify(data) %>;
+		console.log(json_object)
+		document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " what do you want to choose today?";
+    </script>
+
+</body>
+
+
+</html>
