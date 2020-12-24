@@ -553,7 +553,7 @@ app.post('/home/ajaxpostcourses',  redirectLogin, function(req,res) {
 // TODO : if quiz exists, pull all previous quizzes and show three buttons ( q1, try, grade )
 // TODO : for now only q1 and grade buttons
 
-app.get('/create/groups/:course', function(req,res){
+app.get('/create/groups/:course', function(req,res){ // course_id as query parameter
   console.log("came from displaygroups.ejs to go to displayquizzes", req.body);
   var checkparams = req.params;
   var checkquery = req.query;
@@ -634,22 +634,19 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
 app.get('/createquiz/:course', function(req,res){
 
   console.log("came from displayquizzes to create quizzes", req.body);
+
+  const{userId} = req.session;
+  const{username} = req.session;
   var checkparams = req.params;
   var checkquery = req.query;
 
   console.log(checkparams);
   console.log(checkquery);
   console.log("request body to page 6 ", req.body)
-  // do  not send quiz id
-  // var course_data = {
-  //     owner_id: req.body.group_cw_data['owner_id'], // this is the owner id
-  //     username : req.body.group_cw_data['username'],
-  //     course_id : req.body.group_cw_data['course_id']
-  // }
 
   // just userid, username, course_id and course_name
-  const{userId} = req.session;
-  const{username} = req.session;
+   // do  not send quiz id
+
   var course_data = {
     userId: userId,
     username : username,
@@ -660,6 +657,65 @@ app.get('/createquiz/:course', function(req,res){
   console.log("use this to create quiz", course_data);
   res.render('createquiz',{data : course_data});
 })
+
+
+// page 6
+// save quiz data in DB and go back to page 5
+//TODO: check if quiz name is already present in DB
+
+app.post('/submitquiz/:course', function (req, res) { // course_id in query strings
+
+  const{userId} = req.session;
+  const{username} = req.session;
+  var course_id = req.query.course_id; 
+  var course = req.params.course;
+
+  console.log(req.body)
+  console.log("querystrings", req.query) // { course_id: 'b115c339-8d3b-46e0-ac38-0cf9d1416688' }
+  console.log("params", req.params) // { course: 'check1-check1' }
+  req.body["ques_ans_data"] = JSON.parse(req.body["ques_ans_data"]);
+  //res.send('Quiz Data received:\n' + JSON.stringify(req.body));
+  console.log(req.body) // correct format
+
+//   console.log("text", text);
+//   console.log(typeof(text));
+//   var parsed_text = JSON.parse(text);
+//   console.log("parsed_text", parsed_text);
+//   console.log(typeof(parsed_text));
+
+// commented from here
+
+data = {
+    owner_id : userId,
+    course_id :  req.query.course_id,
+    title : req.body["title"],
+    points : req.body["points"],
+    quizdata : req.body["ques_ans_data"]
+};
+
+console.log("This data to be put in DB",data)
+
+
+  // query to insert data
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  
+    if (err) throw err;
+    var db = client.db('test');
+    db.collection('quizdata').insertOne(data, function (findErr, result) {
+      if (findErr) throw findErr;
+      console.log('I am printing on line 72');
+      // display all quizzes for that course
+      var link = '/create/groups/' + course + "?course_id=" + course_id;
+      res.redirect(link);
+    
+    });
+  
+  });
+
+});
+
+
+
 
 // logout on every page
 app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticated
