@@ -372,8 +372,8 @@ console.log("this is my create group page, check userId", userId);
                         user_data[courses] = teacherdata_doc_obj.courses
 
                         console.log("updated request with courses",user_data);
-                        res.render('creategroups',{data : user_data});
-                        //res.render('creategroups',{data : JSON.parse(req.body.userdata)});
+                        res.render('displaygroups',{data : user_data});
+                        //res.render('displaygroups',{data : JSON.parse(req.body.userdata)});
                     })
                     .catch((e) => {
                         console.log("error in finding course");
@@ -383,7 +383,10 @@ console.log("this is my create group page, check userId", userId);
                 }
 
             // course not found ( probably can put this in catch TODO** later)
-            else  res.render('creategroups',{data : user_data});
+            else  {
+              console.log("no user found, just send userid and username", user_data);
+              res.render('displaygroups',{data : user_data});
+            }
                 
             })
             .catch((e) => {
@@ -413,7 +416,7 @@ console.log("this is my create group page, check userId", userId);
 // create new teacher collection if it does not exist, else update courses in the correct teacher collection
 // gets course data from the form
 
-app.post('/ajaxpostcourses', function(req,res) {
+app.post('/home/ajaxpostcourses',  redirectLogin, function(req,res) {
   console.log('came from ajax call',req.body);
  //  res.send('success');
 
@@ -447,7 +450,7 @@ app.post('/ajaxpostcourses', function(req,res) {
  
            if(count == 1){ // teacher collection found
  
-             // check if courses exists
+             // check if courses exists, send course_error
  
              db.collection('teacherdata').find({"user-id": userId}).toArray()
              .then(function(teacherdata_doc){
@@ -461,6 +464,7 @@ app.post('/ajaxpostcourses', function(req,res) {
                console.log("check request body here", req.body);
  
               // how to do this using $in ask***
+              // check if course_no and course_name already exists in DB for this user_id
                var update = true
                for (i=0; i < teacherdata_doc_obj.courses.length; i++) {
                    console.log(teacherdata_doc_obj.courses[i].course_no);
@@ -478,10 +482,11 @@ app.post('/ajaxpostcourses', function(req,res) {
  
              }
  
-               // else update courses
+               // else update courses field with new course
                console.log("update value", update)
                if (update){
                  teacherdata_doc_obj.courses.push({
+                   "course_id": uuidv4(),
                    "course_no" : req.body.course_no,
                    "course_name" : req.body.course_name
                 }) // push in courses array of object
@@ -509,7 +514,8 @@ app.post('/ajaxpostcourses', function(req,res) {
              db.collection('teacherdata').insertOne({
                      "user-id": userId,
                      "courses" : [
-                       { "course_no" : req.body.course_no,
+                       { "course_id" : uuidv4(),
+                         "course_no" : req.body.course_no,
                          "course_name" : req.body.course_name
                        }
                      ]
@@ -534,10 +540,126 @@ app.post('/ajaxpostcourses', function(req,res) {
        
        //res.send('test data received:\n' + JSON.stringify(req.body));
      });
-
  // } 
+});
+
+
+
+// page 5
+// create quiz and display previous quizzes for specific group
+
+
+// TODO : by default : If a quiz does not exist, just show create quiz button
+// TODO : if quiz exists, pull all previous quizzes and show three buttons ( q1, try, grade )
+// TODO : for now only q1 and grade buttons
+
+app.get('/create/groups/:course', function(req,res){
+  console.log("came from displaygroups.ejs to go to displayquizzes", req.body);
+  var checkparams = req.params;
+  var checkquery = req.query;
+  console.log(checkparams) // { course: 'check1-check1' }
+  console.log(checkquery) // { course_id: 'b115c339-8d3b-46e0-ac38-0cf9d1416688' }
+  // res.send('true');
+
+  const{userId} = req.session;
+  const{username} = req.session;
+  var course_data = {
+    userId: userId,
+    username : username,
+    // password : req.body.groupdata['password'],
+    course_id : req.query.course_id,
+    course : req.params.course
+}
+
+console.log("use this data to search all quizzes in quizdata collection", course_data);
+
+MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  if (err) throw err;
+  var db = client.db('test');
+
+  // ask*** , need any more field in find query
+  // db.collection('quizdata').find({"login-id": data.user_id}).count()
+  // .then(function(count){
+
+   //db.collection('quizdata').find({"user_id": data.user_id},{"course_id": data.course_id}).toArray()
+   // TODO : in the future do not fetch for user id, only course id is okay - Done?
+   // TODO : change user_id to owner_id - Done?
+
+   // this query executes, if not found, just appends empty quizdata
+
+   // Now we do not need $and query, since course_ids are unique
+   // db.collection('quizdata').find({$and : [{ "owner_id":  userId},{"course_id":course_data.course_id}]}).toArray()
+   db.collection('quizdata').find({"course_id":course_data.course_id}).toArray()
+   .then(function(quizdata){
+       console.log("this is my data from db", quizdata); // this is an array of quiz objects
+       console.log("length",quizdata.length);
+
+
+        // quiz name and title
+        var quizzes = []
+        for(i=0 ; i<=quizdata.length-1;i++){
+            var quiz = {
+                quiz_id : quizdata[i]._id,
+                quiz_title : quizdata[i].title // this is the name that appears on the display quiz page
+            }
+
+            quizzes.push(quiz);
+            console.log("this is my array", quizzes);
+        }
+            course_data["quizzes"] = quizzes;
+            console.log("final data to be sent to render in displayquizzes", course_data);
+            res.render('displayquizzes',{data : course_data});
+            //res.send('true');
+
+        })
+        .catch((e) => {
+        console.log("probably no past quizzes");
+        //console.log("error in getting count");
+        console.log(e);
+      });
 
 });
+
+});
+
+
+// page 6
+// display quizzes to create quizzes
+// send data to page 6 from page 5
+// username, password, user_id, course_id, course_name
+// TODO :  pass coursename along with course id
+// TODO : probably I do not need to send quiz id here
+// TODO : change user id to owner id
+
+app.get('/createquiz/:course', function(req,res){
+
+  console.log("came from displayquizzes to create quizzes", req.body);
+  var checkparams = req.params;
+  var checkquery = req.query;
+
+  console.log(checkparams);
+  console.log(checkquery);
+  console.log("request body to page 6 ", req.body)
+  // do  not send quiz id
+  // var course_data = {
+  //     owner_id: req.body.group_cw_data['owner_id'], // this is the owner id
+  //     username : req.body.group_cw_data['username'],
+  //     course_id : req.body.group_cw_data['course_id']
+  // }
+
+  // just userid, username, course_id and course_name
+  const{userId} = req.session;
+  const{username} = req.session;
+  var course_data = {
+    userId: userId,
+    username : username,
+    course_id : req.query.course_id,
+    course : req.params.course
+}
+
+  console.log("use this to create quiz", course_data);
+  res.render('createquiz',{data : course_data});
+})
 
 // logout on every page
 app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticated
