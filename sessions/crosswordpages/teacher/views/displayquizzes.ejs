@@ -35,6 +35,7 @@ passed json object : userid, username, password, quiz id and title for that cour
  
 </div>
 
+    <p id="past_quiz_details">Past crosswords will be displayed below</p>
     <div class = "allquizzes" id = "allquizzes"></div>
 
 
@@ -60,7 +61,7 @@ passed json object : userid, username, password, quiz id and title for that cour
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
 
-        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " please go ahead and create groups or click on groups to create quizzes";
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " please go ahead create crosswords or view past crosswords";
         // var textarea_json_object = document.getElementById("group_cw_data_json");
         // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object // converts all objects from /"/" -- to notmal JSON form , but keys are strings here
         // console.log("This is the JSON object to work with", json_object);
@@ -76,6 +77,7 @@ passed json object : userid, username, password, quiz id and title for that cour
         anchor.action = "/createquiz/" + json_object["course"] + "?course_id="+ json_object["course_id"];
         console.log(anchor);
         document.getElementById("create_crossword").appendChild(anchor);
+        
 
 
          // TODO ** : create these quizzes using ejs syntax
@@ -85,17 +87,55 @@ passed json object : userid, username, password, quiz id and title for that cour
 
                 for(var i = 0 ; i<=quizzes.length - 1; i++) {
 
-                    var input = document.createElement("input");
-                    input.type = "submit";
-                    input.name = "quiz_name";
-                    input.id = quizzes[i]["quiz_id"]
+
+                    // keep this for buttons
+
+                    // var input = document.createElement("input");
+                    // input.type = "submit";
+                    // input.name = "quiz_name";
+                    // input.id = quizzes[i]["quiz_id"]
             
-                    input.value = quizzes[i]["quiz_name"];
+                    // input.value = quizzes[i]["quiz_name"];
                     // input.form = "postDisplayQuizzes";
-                    // input.setAttribute("onclick", "appendForm(x)"s);
-                    //input.setAttribute("form", "postDisplayQuizzes");
-                    document.getElementById("allquizzes").appendChild(input);
+                    // // input.setAttribute("onclick", "appendForm(x)"s);
+                    // input.setAttribute("form", "postDisplayQuizzes");
+                    // document.getElementById("allquizzes").appendChild(input);
+                    // console.log(document.getElementById("allquizzes"));
+
+                    var anchor_view = document.createElement("a");
+                    var link = document.createTextNode(quizzes[i]["quiz_title"])
+                    anchor_view.appendChild(link);
+                    anchor_view.title = quizzes[i]["quiz_title"];
+                    // passing course_name as parameter and quiz_id as query
+                    anchor_view.href = "/create/groups/" + anchor_view.title + "?quiz_id="+ quizzes[i]["quiz_id"];
+                    anchor_view.action = "/create/groups/" + anchor_view.title + "?quiz_id="+quizzes[i]["quiz_id"];
+                    document.getElementById("allquizzes").appendChild(anchor_view);
+
+
+                    var anchor_grades = document.createElement("a");
+                    var link = document.createTextNode("See grades")
+                    anchor_grades.appendChild(link);
+                    anchor_grades.title = "See grades";
+                    // passing course_name as parameter and quiz_id as query
+                    anchor_grades.href = "/create/groups/" + anchor.title + "?quiz_id="+ quizzes[i]["quiz_id"];
+                    // anchor.action = "/create/groups/" + anchor.title + "?quiz_id="+quizzes[i]["quiz_id"];
+                    document.getElementById("allquizzes").appendChild(anchor_grades);
+
+                    var anchor_try = document.createElement("a");
+                    var link = document.createTextNode("Try quiz")
+                    anchor_try.appendChild(link);
+                    anchor_try.title = "Try quiz";
+                    // passing course_name as parameter and quiz_id as query
+
+                    anchor_try.href = "http://localhost:2000/" +  quizzes[i]["quiz_id"];
+                    // anchor.action = "/create/groups/" + anchor.title + "?quiz_id="+quizzes[i]["quiz_id"];
+                    document.getElementById("allquizzes").appendChild(anchor_try);
+
+                    
+                    var line_break = document.createElement("br")
+                    anchor_try.append(line_break);
                     console.log(document.getElementById("allquizzes"));
+
                 }
                 console.log(document.getElementById("allquizzes"));
             }
