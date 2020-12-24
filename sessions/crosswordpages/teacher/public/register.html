@@ -5,7 +5,7 @@
 	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
 
 <!-- <form id = "postUserData" method="POST" action="/post-user-data"></form> -->
-<form id = "postUserData" method="POST" action="/postregister"></form>
+<form id = "postUserData" method="POST" action="/register"></form>
 
 <body>
 
@@ -16,7 +16,11 @@
             <input type="text" name = "username" placeholder="Enter username here" form = "postUserData"><br>
             <input type = "text" name = "password" placeholder="Enter password here" form = "postUserData"><br>
             <span id = "user_exists_dialog" style = "display: none;">Sorry, this user already exists. Try a different username or password</span>
-            <button id = "action-register" form = "postUserData">Register</button> 
+            <input type="submit" id = "action-register" value="Register" form = "postUserData"> 
+            
+            <!-- use this later -->
+            <!-- <span><%- JSON.stringify(data) %>;</span>  -->
+            
             <!-- type="submit" form = "postUserData" -->
             <!-- form = "postUserData"> -->
         </form> 
@@ -60,8 +64,8 @@
                     
                 }
         });
-}); -->
+});
             
-</script>
+</script> -->
 </head>
 </html>
