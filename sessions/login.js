@@ -3,11 +3,12 @@ const session = require('express-session');
 var path = require('path');
 var bodyParser = require('body-parser');
 var mongodb = require('mongodb');
-var port = 2000
+var port = 2000;
 var MongoClient = mongodb.MongoClient;
 var ejs = require('ejs');
 var ObjectID = require('mongodb').ObjectID;
-//var dbConn = mongodb.MongoClient.connect('mongodb://localhost:27017/test', { useNewUrlParser: true, useUnifiedTopology: true });
+const MongoStore = require('connect-mongo')(session);
+const { v4: uuidv4 } = require('uuid');
 
 const TWO_HOURS = 1000 * 60 * 60 * 2 // in milliseconds
 
@@ -24,11 +25,11 @@ const IN_PROD = NODE_ENV === 'production' // true in production, false in develo
 
 
 // use DB here
-const users = [ // hash passords
-      { id:'1', username : 'sapalep1', password:'sapalep1'},
-      { id:'2', username : 'sapalep2', password:'sapalep2'},
-      { id:'3', username : 'sapalep3', password:'sapalep3'}
-]
+// const users = [ // hash passords
+//       { id:'1', username : 'sapalep1', password:'sapalep1'},
+//       { id:'2', username : 'sapalep2', password:'sapalep2'},
+//       { id:'3', username : 'sapalep3', password:'sapalep3'}
+// ]
 
 var app = express();
 
@@ -39,6 +40,11 @@ app.use(session({
   resave : false, // forces the session to be saved back to the store, by default is true, false: now we are not storing 
   saveUninitialized : false, // Forces a session that is "uninitialized" to be saved to the store, false is useful for implementing login sessions, reducing server storage usage, or complying with laws that require permission before setting a cookie
   secret : SESS_SECRET, // secret used to sign the session ID cookie. signature will be based on content of cookie, if content of cookie is modified they will no longer match the signature of the cookie
+  store: new MongoStore({
+    client : MongoClient,
+    url : 'mongodb://localhost:27017/',
+    ttl : SESS_LIFETIME
+  }),
   cookie : { // by default http only
     maxAge: SESS_LIFETIME, // after which the cookie expires , to use when calculating the Expires Set-Cookie attribute
     sameSite: true, // true will set the SameSite attribute to Strict for strict same site enforcement
@@ -48,10 +54,11 @@ app.use(session({
 }
 ))
 
+// REDIRECT METHODS
+
 const redirectLogin = (req,res, next) =>{
   // if we do not have a userid, means its still uninitialised
   if(!req.session.userId){
-    
     res.redirect('/login'); // if not authenticated
   }
   else{
@@ -73,17 +80,20 @@ const redirectHome = (req,res, next) =>{
   }
 }
 
+// ROUTES
+
+app.use(express.static(path.resolve(__dirname, 'public')));
 app.set('views',path.join(__dirname,'views'))
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true })); // changed to true
 
 // app.use(express.static(path.resolve(__dirname, 'public')));
 
-// login route
+// which route to display on localhost: 2000/ , based on user is logged in or not
 app.get('/', (req, res) => {
  const {userId} = req.session
- console.log(req.session);
- console.log(userId) // if we do this without starting a session, says underfined, because a session has not started for any user
+ console.log("my current session",req.session);
+ console.log("my userid",userId) // if we do this without starting a session, says undefined, because a session has not started for any user
   //  Session {
   //   cookie: {
   //     path: '/',
@@ -95,89 +105,92 @@ app.get('/', (req, res) => {
   //   }
   // }
 
-  // decide which links to show based on the session
-  res.send(`
-  <h1>welcome page</h1>
-  ${userId ? `
-  <a href = '/home'>Home</a>
-  <form method = 'POST' action = '/logout'>
-    <button>Logout</button>
-  <form>`
-  :` 
-  <a href = '/login'>Login</a>
-  <a href = '/register'>Register</a>
-    `}
-  `)
+  // id userid : show home page, logout button
+  // else show login page 
 
-   // res.sendFile('login.html', {
-  //     root: path.join(__dirname, './public/') // creates path to access the login.html file
-  // });
-
+  if (userId){ // is already logged in
+    res.redirect('/home');
+  }
+  else {
+    res.redirect('/login'); // if not logged in go to get method
+  }
 });
 
 // executes before any routes, this can be used for multiple routes
-app.use((req,res,next)=>{
- const {userId} = req.session
 
- // if valid session, grab id from session
- if(userId){
-  // shared among all routes
-  res.locals.user = users.find(
-    user => user.id === userId
-    )
- }
- next()
+// app.use((req,res,next)=>{
+//  const {userId} = req.session
+//  console.log("In app.use this is my session", req.session)
+//  // if valid session, grab id from session
+//  if(userId){
+//   // shared among all routes
+//   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+//     var db = client.db('test');
+//     db.collection('users').find(ObjectID(userId)).toArray()
+//       .then(function(user_data){
+//         // assign current object to res.locals
+//         res.locals.user = {
+//           userId : userId,
+//           username : user_data[0].username
+//         }
 
-})
+//         console.log("my locals");
+//         //res.redirect('/home'); // redirect to home if authenticated
+//         console.log('after /home in app.use')
+//     })// end of outer if
+//     .catch((e) => {
+//       console.log("problem in app.use route to get res.locals");
+//       console.log(e);
+//     });
+    
+//   });
+//  }
 
-// For page 3 in crossword app: this is going to be for "play" and "create" button page 
+//    console.log("in else part");
+//    next()
+ 
+// })
+
+// For page 3 : home page
+// this is going to be for "play" and "create" button page 
+// go to homepage, pass only username
+
 app.get('/home', redirectLogin, (req,res)=>{ // so this is a protection against home route
 
   // const user = users.find(user => user.id === req.session.userId) // this has to be done in every route hence we create app.use
-  const {user} = res.locals;
-  res.send(`
-    <h1>Home page</h1>
-    <a href = '/'>Main page - welcome page</a>
-    <ul>
-      <li>username: ${user.username} </li>
-      <li>password: ${user.password} </li>
-    </ul>
-  `)
-
+  console.log('in /home route')
+  const{userId} = req.session;
+  const{username} = req.session;
+ 
+  var user_data = {
+                userId : userId,
+                username : username
+              }
+  // console.log("this is my users", user)
+  console.log("this is my home page ", userId);
+  res.render('home',{data : user_data});
+  //res.redirect('/logout');
+  //res.redirect('/logout');
 
 })
 
+
+// page 1 : 
 // if user is already logged in they will be redirected to home page, so showing login page is not needed
 app.get('/login',redirectHome, (req,res) =>{
-
-  res.send(`
-    <h1>Login</h1>
-    <form method = 'POST' action = '/login'>
-      <input type = 'text' name = 'username' placeholder = 'Enter username' required/>
-      <input type = 'text' name = 'password' placeholder = 'Enter password' required/>
-      <input type = 'submit'/>
-    </form>
-    <a href = '/register'>Register here</a>
-  `)
-
-
+    res.sendFile('login.html', {
+      root: path.join(__dirname, './public/') // creates path to access the login.html file
+  });
 });
 
 
+// page 2 : 
 // register route
 app.get('/register', redirectHome, (req, res) => {
-  res.send(`
-    <h1>Register</h1>
-    <form method = 'POST' action = '/register'>
-      <input type = 'text' name = 'username' placeholder = 'Enter username' required/>
-      <input type = 'text' name = 'password' placeholder = 'Enter password' required/>
-      <input type = 'submit'/>
-    </form>
-    <a href = '/login'>You can login now</a>
-  `)
-  // res.sendFile('register.ejs', {
-  //     root: path.join(__dirname, './views/')
-  // });
+  // res.send('register.html')
+  res.sendFile('register.html', {
+    root: path.join(__dirname, './public/') // creates path to access the login.html file
+});
 
 });
 
@@ -185,87 +198,368 @@ app.get('/register', redirectHome, (req, res) => {
 app.post('/login', redirectHome,(req,res) =>{
 
   // starting a new session ?? 
-  const { username, password } = req.body
+  console.log("in post / login route", req.body); // contains username and password
+  // in login post { username: 'sapalep1', password: 'sapalep1' }
 
-  if(username && password){
-    // find user which matches the username and password from the store
-    const user = users.find(
-      user => user.username === username && user.password === password 
-    )
+  const { username, password } = req.body // grab username and password from req.body in same variable names
 
-    if(user){
-      // assign userId to session object, userid  is present in users array
-      req.session.userId = user.id
-      return res.redirect('/home'); // redirect to home if authenticated
-    }
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  // check is username password exist in DB
+  var db = client.db('test');
+  db.collection('users').find({$and : [{ "username":  username},{"password":password}]}).toArray()
+    .then(function(existing_user){
 
-    // if login fails
-    res.redirect('/login');
-  } // end of outer if
+      console.log(existing_user);
+      if(existing_user){
+        // assign userId to session object, userid  is present in users array
+        req.session.userId = existing_user[0]._id
+        req.session.username = existing_user[0].username
+        return res.redirect('/home'); // redirect to home if authenticated
+      }
+
+    // if login fails - AJAX call here
+    res.redirect('/login'); // redirects to get method of login by default????
+    })
+    .catch((e) => {
+      console.log("problem in post /login route");
+      console.log(e);
+     });
+
+  }); // end of outer if
 });
 
+
+// page 2 : register route ( POST )
 // makes sense to add new user only when not aunthenticated
+// TODO : AJAX call when username password already exists
+
+// app.post('/ajax-register', redirectHome,(req,res) =>{
+
+//   console.log("request body in AJAX call")
+//   console.log(req.body)
+//   const { username, password } = req.body // request body has username and passowrd
+
+//   // if user does not exist, add to DB and redirect to home page
+//   // else redirect to register ( think of Ajax call here )
+
+//   console.log("my request body to be inserted in users", req.body)
+//   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+//     if (err) throw err;
+
+//     var db = client.db('test');
+
+//     db.collection('users').find({"username": username}).count()
+//     .then(function(count){
+
+//       console.log("count for ajax call", count)
+//       if(count == 0){
+//         console.log("in if for ajax call")
+//         res.redirect('/postregister');
+       
+//       }
+//       else{
+//         res.send('existing')
+        
+//       }
+
+//     });
+
+
+// });
+
+
+// page 2 :  register route
 app.post('/register', redirectHome,(req,res) =>{
-  const { username, password } = req.body
 
-  // do proper validation
-  if(username && password){
-    // verify if we can verify a matching object
-    const exists = users.some(
-      user => user.username === username && user.password === password 
-    )
+  console.log("request body normal")
+  const { username, password } = req.body // request body has username and passowrd
 
-    // if user does not exist, create new user, with a userId
-    if(!exists){
-      const user = {
-        id : users.length + 1,
-        username,
-        password
-      }
-      users.push(user);
-      req.session.userId = user.id;
-      return res.redirect('/home');
-    } 
-    }
+  // if user does not exist, add to DB and redirect to home page
+  // else redirect to register ( think of Ajax call here )
 
-    // if anything fails, show error message : query string errors - error.auth.userExists
-    res.redirect('/register');
+  console.log("my request body to be inserted in users", req.body)
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+    if (err) throw err;
+
+    var db = client.db('test');
+
+    db.collection('users').find({"username": username}).count() // commented
+    .then(function(count){
+
+      console.log("count found in DB in user", count)
+
+      if(count == 0){ // new user : add user to DB and assign userID as ObjectID in DB  // commented
+
+        db.collection('users').insertOne(req.body, function (findErr, result) {
+          if (findErr) throw findErr;
+
+          console.log("new user : request body in register",req.body); // this contains _id
+          console.log('my new userid', req.body._id);
+          req.session.userId = req.body._id; // for now userid is username
+          req.session.username = req.body.username;
+          console.log("my updated session data after registration",req.session)
+          res.redirect('/home');
+
+        });
+       
+      } // commented
+      else {
+        // some user already exists ( double registration )
+        // AJAX call here
+        // if anything fails, show error message : query string errors - error.auth.userExists
+
+        // console.log("already exists");
+        // res.send('existing');
+        //console.log('after sending response back to register.html');
+
+        // res.render for existing 
+        res.redirect('/register');
+      } // commented
+      
+      })
+      .catch((e) => {
+        console.log("problem in getting count in post /register route");
+        console.log(e);
+       });
 
   });
+});
 
-// 
-app.post('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticated
+
+// page 3 ( make/play) to page 4 : 
+// decide where to go create or play
+// onclick for create and play
+// this is from a href
+app.get('/home/:todo', redirectLogin, function (req, res) {
+  console.log("came from creategraoups.ejs", req.body);
+  var todo = req.params.todo;
+  console.log("parameter passed is", todo)
+  const{userId} = req.session;
+  const{username} = req.session;
+  var user_data = {
+    userId : userId,
+    username : username
+  }
+// console.log("this is my users", user)
+console.log("this is my create group page, check userId", userId);
+
+  if(todo == "create"){
+
+    // send courses along with user_data if collection exists
+
+    // fetch for teacherdata in mongo here, if it exists, pass courses, else pass only the object
+    // TODO : check "user-id" format here
+    // this is form data
+    MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        if (err) throw err;
+
+        var db = client.db('test');    
+        db.collection('teacherdata').find({"user-id": userId}).count()
+            .then(
+                function(count) {
+                console.log("count of data found", count);
+                console.log(userId);
+
+                if(count == 1){ // collection found
+
+                    db.collection('teacherdata').find({"user-id": userId}).toArray()
+                    .then(function(teacherdata_doc){
+
+                        var teacherdata_doc_obj = teacherdata_doc[0] // gets object
+                        console.log("existing courses  in teacherdata to be passed",teacherdata_doc_obj.courses); // array of courses
+                        // append the course object to user_data
+                        var courses = "courses"
+                        user_data[courses] = teacherdata_doc_obj.courses
+
+                        console.log("updated request with courses",user_data);
+                        res.render('creategroups',{data : user_data});
+                        //res.render('creategroups',{data : JSON.parse(req.body.userdata)});
+                    })
+                    .catch((e) => {
+                        console.log("error in finding course");
+                        console.log(e);
+                    }); 
+        
+                }
+
+            // course not found ( probably can put this in catch TODO** later)
+            else  res.render('creategroups',{data : user_data});
+                
+            })
+            .catch((e) => {
+                console.log("error in getting count");
+                console.log(e);
+            }); 
+
+    });
+  }
+  else if(todo == 'play') {
+    // render playedgroups
+    // res.render('playedgroups',{data : user_data});
+    console.log("playedgroups , render groups groups for which quiz is already played")
+  }
+  else {
+    console.log("here in else for logging out")
+    res.redirect('/logout');
+  }
+
+});
+
+
+// For page 4 :
+// processes data and diplays on the same page, not a new page
+// AJAX call to check if course exists in teacher data
+
+// create new teacher collection if it does not exist, else update courses in the correct teacher collection
+// gets course data from the form
+
+app.post('/ajaxpostcourses', function(req,res) {
+  console.log('came from ajax call',req.body);
+ //  res.send('success');
+
+ // if( req.body.course_name == "" || req.body.course_no == "" ) {
+ //     console.log("field blank");
+ //     res.send("blank"); // may insert "blank" in response packet
+ //     res.send("update")
+ // }
+ // else {
+
+ console.log("request body for /ajaxpostcourses route", req.body); // contains course_no and name
+ const{userId} = req.session;
+ const{username} = req.session;
+ var user_data = {
+   userId : userId,
+   username : username
+ }
+
+ console.log("user_data in ajaxpostcourses",user_data)
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        if (err) throw err;
+  
+        var db = client.db('test');
+
+ 
+        // ask*** , need any more field in find query
+        db.collection('teacherdata').find({"user-id": userId}).count()
+        .then(
+         function(count) {
+           console.log("count of data found", count);
+ 
+           if(count == 1){ // teacher collection found
+ 
+             // check if courses exists
+ 
+             db.collection('teacherdata').find({"user-id": userId}).toArray()
+             .then(function(teacherdata_doc){
+ 
+               var teacherdata_doc_obj = teacherdata_doc[0] // gets object
+               console.log("my current courses in teacherdata",teacherdata_doc_obj.courses); // array of courses
+ 
+               // if course already exists : show error
+             
+               // console.log("my new insert value",req.body.course_no );
+               console.log("check request body here", req.body);
+ 
+              // how to do this using $in ask***
+               var update = true
+               for (i=0; i < teacherdata_doc_obj.courses.length; i++) {
+                   console.log(teacherdata_doc_obj.courses[i].course_no);
+ 
+                 if (teacherdata_doc_obj.courses[i].course_no == req.body.course_no && teacherdata_doc_obj.courses[i].course_name == req.body.course_name ){
+                     console.log("return this : course already exists");
+                     // res.send('404');
+                     // res.send("error log", 404);
+                     // res.status('course exists').send(req.body)
+                     res.send('course_error');
+                     
+                     update = false
+                     break
+               }
+ 
+             }
+ 
+               // else update courses
+               console.log("update value", update)
+               if (update){
+                 teacherdata_doc_obj.courses.push({
+                   "course_no" : req.body.course_no,
+                   "course_name" : req.body.course_name
+                }) // push in courses array of object
+  
+                console.log("my added courses",teacherdata_doc_obj.courses); // gives array of
+                console.log("updated object?",teacherdata_doc);
+                
+                // how can this be avoided??, I want to update in above promise , ask***
+                db.collection('teacherdata').updateOne({
+                      "user-id": userId},
+                      {$set: {"courses" : teacherdata_doc_obj.courses}}
+                  )
+                  .then(function(check){
+                    console.log("my teacherdata successful?",check);
+                  })
+                 res.send('success');
+                 // res.status(status).send(body)
+               } // end of if
+               
+               
+             })
+           }
+           
+           else { // create collection
+             db.collection('teacherdata').insertOne({
+                     "user-id": userId,
+                     "courses" : [
+                       { "course_no" : req.body.course_no,
+                         "course_name" : req.body.course_name
+                       }
+                     ]
+                    
+                 })
+                 .then(function(userdata){
+                   console.log("my teacherdata in else",userdata);
+                 
+                 })
+                 .catch((e) => {
+                     console.log("some error in inserting new data");
+                     console.log(e);
+                 });
+                 res.send('success');
+           }
+         })
+        .catch((e) => {
+               console.log("error in getting count");
+               console.log(e);
+       }); 
+
+       
+       //res.send('test data received:\n' + JSON.stringify(req.body));
+     });
+
+ // } 
+
+});
+
+// logout on every page
+app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticated
 
   console.log('before destroy ', req.session);
-  
+
+  // destroys session with data
   req.session.destroy(err =>{
 
     if (err) {
       return res.redirect('/home');
     }
-    
     res.clearCookie(SESS_NAME); // clear cookie when session ends
     console.log('after', req.session);
     res.redirect('/login');
-
   })
   
 })
 
 //********************************************************** */
-app.get('/canvas', (req, res) => {
-  // this redirects to canvaspage
 
-  res.sendFile('teachercanvas.html', {
-      root: path.join(__dirname, './public/')
-  });
-});
 
-app.get('/', (req, res) => {
-  res.sendFile('register.ejs', {
-      root: path.join(__dirname, './views/')
-  });
-});
 
 app.get('/register-data', function (req, res) {
   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
@@ -328,10 +622,6 @@ app.get('/register-data', function (req, res) {
   });
 
 
-// app.set('view engine', 'ejs');
-
-
-
 // app.get('/view-feedbacks',  function(req, res) {
 //   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
 //     if (err) throw err;
@@ -354,14 +644,4 @@ app.get('/register-data', function (req, res) {
 // });
 // });
 
-
-
-     
-
 app.listen(process.env.PORT || 2000, process.env.IP || '0.0.0.0' );
-/*
-app.listen(port, (req,res) => {
-    console.log("Server listening on port " + port);
-});
-
-*/
