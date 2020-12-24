@@ -1,0 +1,274 @@
+<html>
+<head>
+<title> Create Group Page </title>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+
+<!-- <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form> -->
+<!-- <form id = "test" method="POST" action="/test"></form> this works-->
+
+<!-- PAGE 4
+
+TODO : by default : If a collection does not exist, just show create button
+TODO : if collection exists, pull all previous groups and show on create groups page using loginID or teacher ID?
+
+passed json object : 
+
+JSON.stringify(data)  =
+
+ {"_id":"5fd2acd78dba975988352fea",
+        "username":"sapalep1",
+        "password":"sapalep1",
+        "courses":[{"course_no":"check","course_name":"check"},
+                    {"course_no":"test1","course_name":"test1"},
+                    {"course_no":"checl","course_name":"chsjvsl"},
+                    {"course_no":"check1234","course_name":"check"}
+                ]
+ }
+-->
+
+<!-- when clicked on specific group -->
+<!-- <form id = "postDisplayQuizzes" method="POST" action="/post-display-quizzes"></form> -->
+
+<body>
+    
+    <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
+    <p id = "welcomemessage"></p>
+<div>
+    <input type="submit" value="+ new group" onclick="showCreateGroup()"/>
+    <!-- <input type="submit" value="Play Crossword" form = "postPlayGroups"/> -->
+</div>
+<!-- style="display: none;" -->
+<!-- works for current code -->
+   <!-- <div id="creategroup_dialog" style="display: none;">
+    <input type="text" name = "course_no" id="course_no" placeholder="Enter group number here" form = "test"></input>
+    <input type="text" name = "course_name" id="course_name" placeholder="Enter group name here" form = "test"></input>
+    <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea>
+    <input type="submit" value="Click to Create group" onclick="Create()" form = "test"/> -->
+
+    <div id="creategroup_dialog" style="display: none;">
+    <input type="text" name = "course_no" id="course_no" placeholder="Enter group number here" form = "test" required></input>
+    <input type="text" name = "course_name" id="course_name" placeholder="Enter group name here" form = "test" required></input>
+    <!-- <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea> -->
+    <!-- with create() function -->
+    <!-- <button id = "action-button" onclick="Create()"> Click to create group</button> -->
+
+    <!-- without create() function -->
+    <button id = "action-button"> Click to create group</button><br>
+    
+
+  </div>
+
+    <span id = "course_exists_dialog" style = "display: none;">Sorry, this course already exists. Please change course number or course name</span>
+    <span id = "course_blank_dialog" style = "display: none;">Please enter both course number and course name</span>
+    
+    <div class = "allgroups" id = "allgroups"></div>
+
+<script>
+
+       
+        // {"_id":"5fd2acd78dba975988352fea",
+        // "username":"sapalep1",
+        // "password":"sapalep1",
+        // "courses": [{"course_no":"check","course_name":"check"},
+        //             {"course_no":"test1","course_name":"test1"},
+        //             {"course_no":"checl","course_name":"chsjvsl"},
+        //             {"course_no":"check1234","course_name":"check"}
+        //         ]
+        // }
+
+        // var textarea_json_object = document.getElementById("groupdata_json");
+        // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object // converts all objects from /"/" -- to notmal JSON form , but keys are strings here
+        var json_object = <%- JSON.stringify(data)%>
+        console.log("This is the JSON object to work with", json_object);
+
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " please go ahead and create groups or click on groups to create quizzes";
+
+
+        // TODO : create buttons for all the groups present in the teacher collection for the given teacherObjectID
+
+        // TODO ** : create these groups using ejs syntax
+        function DisplayPrevGroups(courses) {
+            console.log(courses)
+
+                for(var i = 0 ; i<=courses.length - 1; i++) {
+
+                    // var input = document.createElement("input");
+                    // input.type = "submit";
+                    // input.name = "course_id";
+                    // input.id = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+            
+                    // input.value = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+                    // // input.form = "postDisplayQuizzes";
+                    // // input.setAttribute("onclick", "appendForm(x)");
+                    // input.setAttribute("form", "postDisplayQuizzes");
+                    // document.getElementById("allgroups").appendChild(input);
+
+                    var anchor = document.createElement("a");
+                    var link = document.createTextNode(courses[i]["course_no"] + "-" + courses[i]["course_name"])
+
+                    anchor.appendChild(link);
+                    anchor.title = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+                    //anchor.href = "/create/groupquizzes/" + courses[i]["course_id"];
+                    anchor.href = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
+                    anchor.action = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
+                   
+                    document.getElementById("allgroups").appendChild(anchor);
+                    console.log(document.getElementById("allgroups"));
+
+                }
+            }
+
+            // "courses" in json_object ? DisplayPrevGroups(json_object["courses"]) : console.log("no past courses") ; // pass array
+            
+            if ("courses" in json_object) // finding key in json object
+                DisplayPrevGroups(json_object["courses"])
+            else console.log("no past courses");
+            
+
+        function appendForm(value){
+            console.log(value)
+
+            var course_id = "course_id";
+            json_object[course_id] = value;
+            console.log("updated json object", json_object);
+        
+        }
+       
+        // show text boxes to create groups
+        function showCreateGroup(){
+            
+            // alert asking for no. and name
+            document.getElementById("course_no").value = "";
+            document.getElementById("course_name").value = "";
+
+            if ( document.getElementById("creategroup_dialog").style.display == "block") {
+                document.getElementById("creategroup_dialog").style.display = "none";
+                
+            }
+            else  {
+                // document.getElementById("course_no").value = "";
+                // document.getElementById("course_name").value = "";
+                document.getElementById("creategroup_dialog").style.display = "block";
+            }
+            
+        }
+
+        //var data = 'course_no='+ document.getElementById("course_no").value + '&course_name=' + document.getElementById("course_name").value;
+        $('#action-button').click(function() {
+            
+            var course = {};
+            course.user_id = json_object["_id"];
+            course.course_no = $('#course_no').val();
+            course.course_name = $('#course_name').val();
+
+
+            // comment if statement for showing 
+            
+            if(course.course_name == "" || course.course_no == "") {
+
+                document.getElementById("course_exists_dialog").style.display = "none";
+
+                console.log("outside")
+                if ( document.getElementById("course_blank_dialog").style.display == "none") {
+                    console.log("inside")
+                    document.getElementById("course_blank_dialog").style.display = "block";
+                }
+                // else{
+                //     document.getElementById("course_blank_dialog").style.display = "block";
+                // }
+            }
+
+
+
+
+            else{ // comment this
+
+            $.ajax({
+                //url: 'http://localhost:8000/get-home-data/post-create-groups',
+                //url: './postcourses',
+                url : './ajaxpostcourses', // this automatically takes /home due to .
+                data: course,
+                type: 'POST',
+                error: function(data) { // failure : group exists errot in this function
+                    // $('#info').html('<p>An error has occurred</p>');
+                    // console.log("this course already exists", data) // if i send 404
+                    console.log("there is some error with connecting mongodb and jquery", data);
+                
+
+                    // clear data in text boxes
+                    // show error message on the screen
+
+                },
+                
+                success: function(data) { // inserted in DB, now create a button in this function
+                    console.log("this has succeded", data)
+                    
+                    if(data == 'success'){
+                        
+
+                        // hide input boxes
+                        document.getElementById("creategroup_dialog").style.display = "none";
+                        document.getElementById("course_blank_dialog").style.display = "none";
+                        document.getElementById("course_exists_dialog").style.display = "none";
+
+                        alert("group is created");
+
+                                // if(document.getElementById("course_exists_dialog").style.display == "block"){
+                                //     document.getElementById("course_exists_dialog").style.display = "none"
+                                // }
+                                
+
+                                // var span = document.createElement('span')
+                                // span.innerHTML = 'this is success';
+                                // document.getElementById("allgroups").appendChild(span);
+
+                                var input = document.createElement("input");
+                                input.type = "submit";
+
+                                input.value = document.getElementById("course_no").value + "-" + document.getElementById("course_name").value;
+                                console.log(document.getElementById("allgroups"));
+                                document.getElementById("allgroups").appendChild(input);
+
+                             
+                            }
+                            else if(data == 'course_error'){
+                                
+                                document.getElementById("course_blank_dialog").style.display = "none";
+                                if(document.getElementById("course_exists_dialog").style.display == "none"){
+                                    document.getElementById("course_exists_dialog").style.display = "block"
+                                }
+                            }
+
+                            // commented from here
+
+                            // else if(data == 'blank'){
+
+                            //     document.getElementById("course_exists_dialog").style.display = "none";
+                            //     console.log("outside")
+                            //     if ( document.getElementById("course_blank_dialog").style.display == "none") {
+                            //         console.log("inside")
+                            //         document.getElementById("course_blank_dialog").style.display = "block";
+                                    
+                            //     }
+
+                            // } // commented until here
+
+                                // document.getElementById("allgroups").appendChild(span);
+                                //alert("this is success, generate a button");
+                            }
+                      
+                    });
+
+                } // end of else // comment this
+                    });
+    
+        
+</script>
+
+
+</body>
+
+
+</html>
