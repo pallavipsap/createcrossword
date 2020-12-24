@@ -6,10 +6,10 @@
 <body>
 
     <!-- teacher route : query string-->
-    <form id = "postCreateGroups" method="POST" action="/get-home-data/post-create-groups"></form> 
+    <!-- <form id = "postCreateGroups" method="GET" action="/get-home-data/post-create-groups/:todo"></form>  -->
     <!-- student route : query string-->
-	<form id = "postPlayGroups" method="POST" action="/post-play-groups"></form>
-	<form id = "logout" method = 'GET' action = '/logout'>
+	<form id = "postPlayGroups" method="GET" action="/post-play-groups"></form>
+	<!-- <form id = "logout" method = 'GET' action = '/logout'> -->
 	
 	<!-- logout route : query string-->
 	<!-- <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form> -->
@@ -19,11 +19,16 @@
 	<!-- <% var ejs_variable = JSON.stringify(data); %> -->
 
     <div>
-        <input type="submit" value="Create Crossword" form = "postCreateGroups"/>
-		<input type="submit" value="Play Crossword" form = "postPlayGroups"/>
+        <!-- <input type="submit" value="Create Crossword" onClick = "window.location.href = './get-home-data/post-create-groups/create'"> -->
+		<!-- <input type="submit" value="Play Crossword" onClick ="window.location= 'http://localhost:2000/home/get-home-data/post-create-groups/create'"> -->
 
+
+		<a href="/home/create" action = "/home/create">Create Crossword</a>
+		<!-- <a href="/play" action = "/play">Create Crossword</a> -->
+		
 		<!-- go to logout route -->
-		<button type="submit" form = "logout">Logout</button>
+		<!-- <button type="submit" form = "logout">Logout</button> -->
+		<a href="/logout" action = "/logout">Logout</a>
     </div>
 
 
