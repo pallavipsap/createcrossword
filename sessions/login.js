@@ -178,19 +178,27 @@ app.get('/home', redirectLogin, (req,res)=>{ // so this is a protection against 
 // page 1 : 
 // if user is already logged in they will be redirected to home page, so showing login page is not needed
 app.get('/login',redirectHome, (req,res) =>{
-    res.sendFile('login.html', {
-      root: path.join(__dirname, './public/') // creates path to access the login.html file
-  });
+
+
+  var blank_data = ''
+  res.render('login',{data:blank_data})
+  //   res.sendFile('login.html', {
+  //     root: path.join(__dirname, './public/') // creates path to access the login.html file
+  // });
 });
 
 
 // page 2 : 
 // register route
 app.get('/register', redirectHome, (req, res) => {
-  // res.send('register.html')
-  res.sendFile('register.html', {
-    root: path.join(__dirname, './public/') // creates path to access the login.html file
-});
+
+  // submit data as blank {}
+  var blank_data = ''
+  res.render('register',{data:blank_data})
+
+//   res.sendFile('register.html', {
+//     root: path.join(__dirname, './public/') // creates path to access the login.html file
+// });
 
 });
 
@@ -205,21 +213,37 @@ app.post('/login', redirectHome,(req,res) =>{
 
   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
   // check is username password exist in DB
-  var db = client.db('test');
-  db.collection('users').find({$and : [{ "username":  username},{"password":password}]}).toArray()
-    .then(function(existing_user){
+      var db = client.db('test');
+      db.collection('users').find({$and : [{ "username":  username},{"password": password}]}).count()
+        .then(function(count){
 
-      console.log(existing_user);
-      if(existing_user){
-        // assign userId to session object, userid  is present in users array
-        req.session.userId = existing_user[0]._id
-        req.session.username = existing_user[0].username
-        return res.redirect('/home'); // redirect to home if authenticated
-      }
+          if(count == 1){
 
-    // if login fails - AJAX call here
-    res.redirect('/login'); // redirects to get method of login by default????
-    })
+            db.collection('users').find({$and : [{ "username":  username},{"password": password}]}).toArray()
+            .then(function(existing_user){
+
+              console.log(existing_user);
+           
+                // assign userId to session object, userid  is present in users array
+                req.session.userId = existing_user[0]._id
+                req.session.username = existing_user[0].username
+                return res.redirect('/home'); // redirect to home if authenticated
+          
+          })
+          .catch((e) => { // catch for inner db query
+            console.log("problem in getting count");
+            console.log(e);
+          });
+        } // end of if
+
+          else{ // no user found
+            // if login fails - AJAX call here
+            var data = 'Worng username or password';
+            res.render('login',{data})
+            // res.redirect('/login'); // redirects to get method of login by default????
+          } // end of else
+
+        })
     .catch((e) => {
       console.log("problem in post /login route");
       console.log(e);
@@ -302,9 +326,9 @@ app.post('/register', redirectHome,(req,res) =>{
 
         });
        
-      } // commented
-      else {
-        // some user already exists ( double registration )
+      } 
+      else {   // some user already exists ( double registration )
+      
         // AJAX call here
         // if anything fails, show error message : query string errors - error.auth.userExists
 
@@ -312,8 +336,10 @@ app.post('/register', redirectHome,(req,res) =>{
         // res.send('existing');
         //console.log('after sending response back to register.html');
 
-        // res.render for existing 
-        res.redirect('/register');
+        // res.render for existing
+        data = 'Oops! Sorry, try a different username or password';
+        res.render('register',{data:data})
+        //res.redirect('/register');
       } // commented
       
       })
@@ -340,7 +366,11 @@ app.get('/home/:todo', redirectLogin, function (req, res) {
     userId : userId,
     username : username
   }
-// console.log("this is my users", user)
+
+  var course_id_list = [] // for play mode
+  var allCourses = [] // for play mode
+  
+  
 console.log("this is my create group page, check userId", userId);
 
   if(todo == "create"){
@@ -397,11 +427,98 @@ console.log("this is my create group page, check userId", userId);
     });
   }
   else if(todo == 'play') {
-    // render playedgroups
-    // res.render('playedgroups',{data : user_data});
-    console.log("playedgroups , render groups groups for which quiz is already played")
-  }
-  else {
+        // TODO : check for userid in the future ??
+        // TODO : add user id in the database when student attempts the quiz ??
+        // check for student username in the the studentdata collection
+
+        //one way : 
+        // take user_id, get all courses from course array
+        // find owner in quizdata
+        // and then user course_id and owner_id to search course_no and course_name in
+    MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+      if (err) throw err;
+
+      var db = client.db('test'); 
+
+        // check if username exists in student data ( possible it will, because student is forced to login )
+        db.collection('studentdata').find({"username": username}).count()
+            .then(function(count) {
+                console.log("count of data found", count);
+                console.log(userId)
+                
+                if(count == 1){ // student collection found
+                  
+                    // query 1 : find courses list in studentdata collection
+                    db.collection('studentdata').find({"username": username}).toArray()
+                    .then(function(studentdata_doc){
+
+                        var studentdata_doc_obj = studentdata_doc[0] // gets object
+                        duplicate_studentdata_doc_obj = studentdata_doc_obj
+                        console.log("existing courses  in studentdata to be passed",studentdata_doc_obj.courses); // array of course_ids
+                        course_id_list = studentdata_doc_obj.courses // global variable : course_id_list
+                        console.log("this is my user data",course_id_list) 
+                      })
+                    .catch((e) => {
+                        console.log("error in finding course");
+                        console.log(e);
+                    });
+                  //} // commented here
+                  
+                  //for(var i = 0; i < studentdata_doc_obj.courses.length; i++ ){ // array of ids
+                  // query 2 : get courses from teacherdata and compare with courselist to get no and name
+                  console.log("just before aggregate query")
+                    db.collection('teacherdata').aggregate([{$unwind:"$courses"}]).toArray()
+                      .then(function(eachObject){
+                          console.log("inside for loop query",eachObject);
+                          // allCourses.push(eachObject);
+                          // console.log("push this to user_data",allCourses);
+                          // return allCourses;
+                          return eachObject;
+                      })
+                      .then(function(allCourses){
+                        var render_courses = []
+                        console.log("inside second then",allCourses) // array of full objects
+                        console.log("course_id_list",course_id_list) // array of ids
+
+                        for(var i = 0; i < course_id_list.length; i++ ){
+                          console.log("current course_id in array", course_id_list[i]);
+                          var id_list_course = JSON.stringify(course_id_list[i])
+
+                          for(j=0; j<allCourses.length; j++){
+                            console.log("current course_id in allCourses", allCourses[j].courses);
+                            var full_course = JSON.stringify(allCourses[j].courses.course_id)
+
+                            if(full_course == id_list_course){
+                              console.log("Pass this courses object", allCourses[j].courses )
+                              render_courses.push(allCourses[j].courses)
+                              break;
+                            }
+                          console.log("I am out")
+                          }
+                        }
+
+                      user_data["courses"] = render_courses
+                      console.log("my user_data",user_data)
+                      console.log("check the passing object", render_courses);
+                      res.render('playedgroups', {data:user_data})
+                    })
+                    .catch((e) => {
+                      console.log("error in finding course_id");
+                      console.log(e);
+                    });  // end of query 
+      
+                  }
+                  else { // no student collection found
+                    res.render('playedgroups', {data:user_data})
+
+                  }
+          }); 
+      })// end of Mongo client
+    
+      console.log("outside")
+    }
+
+  else { // logout path
     console.log("here in else for logging out")
     res.redirect('/logout');
   }
@@ -547,7 +664,6 @@ app.post('/home/ajaxpostcourses',  redirectLogin, function(req,res) {
 
 // page 5
 // create quiz and display previous quizzes for specific group
-
 
 // TODO : by default : If a quiz does not exist, just show create quiz button
 // TODO : if quiz exists, pull all previous quizzes and show three buttons ( q1, try, grade )
@@ -714,8 +830,119 @@ console.log("This data to be put in DB",data)
 
 });
 
+/********************Student routes************************* */
 
 
+// page S4 -  S5 : 
+// for displaying grades, with quiz links( quiz ids ), from studentdata
+// TODO : course_name as parameter course_id as query string, 
+app.get('/play/groups/:course', function(req,res){ 
+  console.log("came from playedgroups.ejs to go to playedquizzes", req.body);
+
+  var course = req.params.course
+  var course_id = req.query.course_id
+
+  console.log("course passed by parameter", course)
+  console.log("course_id passed by parameter", course_id)
+
+ const{userId} = req.session;
+ const{username} = req.session;
+ var user_data = {
+   userId : userId,
+   username : username,
+   course : req.params.course
+ }
+ var quiz_ids = []
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  
+    if (err) throw err;
+    var db = client.db('test');
+
+      // query 1 : 
+      // take course_id
+      // look into grades array for those course_ids and gather quiz ids
+      // get all quiz ids in form of an array
+    db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.course_id": course_id,"username":username}}]).toArray()
+    .then(function(grades_list) {
+      console.log(grades_list) // array of grades object
+      for(var i = 0; i < grades_list.length; i++ ){
+        // quiz_ids.push(ObjectID(grades_list[i].grades.quiz_id))
+        //console.log(ty(grades_list[i].grades.quiz_id))
+        quiz_ids.push(JSON.stringify(grades_list[i].grades.quiz_id))
+      }
+      console.log("quiz_ids",quiz_ids)  
+      
+      //return quiz_ids
+    })
+    //.then(function(quiz_ids_array) {
+
+    // query 2 :
+    // use these quizids to gather title from quizdata
+    // query quiz ids with title name
+    db.collection('quizdata').find({}).toArray()
+    .then(function(quizdata_array){
+
+      console.log("this is my quiz_ids array", quiz_ids)
+      //var quiz_id_object = quizdata_array.find(function(quiz,index){
+      console.log(quizdata_array);
+      console.log(quizdata_array.length)
+
+// commented**********
+
+      // for(var i = 0; i < quizdata_array.length; i++ ){
+        
+      //   var quizdata_array_obj = quizdata_array[i]; // one entire object
+      //   console.log("one object",quizdata_array_obj)
+      //   console.log("id in quizdata_array",quizdata_array_obj._id)
+
+      //   var stringified_quizdata = JSON.stringify(quizdata_array_obj._id)
+
+      //   console.log("stringified",stringified_quizdata , typeof(stringified_quizdata));
+
+      //   // var x = quiz_ids.includes(stringified_quizdata)
+
+      //   // '5fe666a52aaedc40d812bd50'
+      //   //var x = quiz_ids.includes("5fe666a52aaedc40d812bd50")
+      //   var x = quiz_ids.includes(stringified_quizdata)
+
+
+      //   console.log(x)
+
+      // //   if(quiz_ids.includes(stringified_quizdata)){
+
+      // //     console.log("found this", quizdata_array_obj.course_id)
+      // //     console.log("found the right quiz",quizdata_array_obj)
+      // //   }
+      // }
+
+      played_quizzes = []
+      for(var i = 0; i < quiz_ids.length; i++ ){
+
+        console.log("found")
+        console.log(quizdata_array.find(q => JSON.stringify(q._id) == quiz_ids[i]))//quiz_ids[i]))
+
+        var quiz_obj = quizdata_array.find(q => JSON.stringify(q._id) == quiz_ids[i])
+
+        var quiz = {
+          quiz_id : JSON.parse(quiz_ids[i]), // parsed because id in the link appears to be a string http://localhost:4000/"5fe666a52aaedc40d812bd50"  // other option:  quiz_id in playedquizzes.ejs will be parsed on front end
+          quiz_title : quiz_obj.title
+        }
+        played_quizzes.push(quiz)
+
+      }
+
+      user_data["quizzes"] = played_quizzes
+      console.log(user_data);
+      res.render('playedquizzes',{data:user_data});
+    });
+
+  });
+ 
+
+  // pass to playedquizzes.ejs
+  // userDI, username, quiz names and quiz ids
+
+});
 
 // logout on every page
 app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticated
