@@ -1,0 +1,96 @@
+<html>
+<head>
+<title> Registration Details </title>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
+
+<!-- <form id = "postUserData" method="POST" action="/post-user-data"></form> -->
+<form id = "postUserData" method="POST" action="/register"></form>
+
+<body>
+
+    <textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
+	<div class = "register">
+        <h1>Register here</h1>
+        <form>
+            <input type="text" name = "username" placeholder="Enter username here" form = "postUserData"><br>
+            <input type = "text" name = "password" placeholder="Enter password here" form = "postUserData"><br>
+
+            <!-- <span id = "user_exists_dialog" style = "display: block;"><%- JSON.stringify(data) %></span> -->
+            <span id = "user_exists_dialog" style = "display: none;"></span>
+            <input type="submit" id = "action-register" value="Register" form = "postUserData"> 
+    
+        </form> 
+        <a href = '/login' method = "GET" action = "/login">You can login now</a>  
+    </div>
+</body>
+
+
+
+<script>
+
+        var json_object = <%- JSON.stringify(data)%>;
+        console.log(typeof(json_object)) // string
+        if (json_object != ''){
+
+            // post register response
+            // user already exists, display span with message
+            console.log("existing user")
+            document.getElementById("user_exists_dialog").innerHTML = json_object
+            document.getElementById("user_exists_dialog").style.display = "block"
+            
+        }
+        else{
+            // get register response
+            // blank
+            console.log("blank string passed")
+            document.getElementById("user_exists_dialog").innerHTML = json_object
+            
+        }
+
+
+
+</script>
+
+
+
+<!-- <script>
+
+    console.log('here')
+
+    $('#action-register').click(function() {
+
+        var user = {};
+        //course.user_id = json_object["_id"];
+        user.username = $('#username').val();
+        user.password = $('#password').val();
+
+        $.ajax({
+                //url: 'http://localhost:8000/get-home-data/post-create-groups',
+                //url: './postcourses',
+                url : './ajax-register',
+                data: user,
+                type: 'POST',
+                error: function(data) { // failure : group exists errot in this function
+                    // $('#info').html('<p>An error has occurred</p>');
+                    // console.log("this course already exists", data) // if i send 404
+                    console.log("there is some error with connecting mongodb and jquery", data);
+
+                },
+                success: function(data) { 
+
+                    console.log(data);
+
+                    if (data == 'existing'){
+                        alert ('user already exists, choose some other username or password');
+                        document.getElementById("user_exists_dialog").style.display = "block"
+                    }
+                
+                    
+                }
+        });
+});
+            
+</script> -->
+</head>
+</html>
