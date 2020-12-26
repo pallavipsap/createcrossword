@@ -1,0 +1,70 @@
+<html>
+<head>
+<title> Login Page </title>
+	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
+
+<!-- homepage route -->
+<!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
+<form id = "homePage" method="POST" action = "/login"></form>
+
+<!-- registration route -->
+<!-- <form id = "registerPage" method="POST" action = "/post-register-data"></form> -->
+
+<body>
+
+	<textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
+	<div class = "userdetails">
+	<!-- <img src = "login.png" class = "login"> -->
+		<h1> Give your credentials</h1>
+		<form>
+			<!-- <p>Username</p> -->
+            <input type="text" id = "username" name = "username" placeholder="Enter username here" form = "homePage" required><br>
+    
+			<!-- <p>Password</p> -->
+            <input type = "text" id = "password" name = "password" placeholder="Enter password here" form = "homePage" required><br>
+			<span id = "wrong_credentials_dialog" style = "display: none;"></span>
+
+			<input type="submit" value = "Login" form = "homePage">
+		</form>
+
+			
+		   
+			<!-- by default get method -->
+			<p>Not Registered?<a href="register" action = "/register">Register here</a></p>
+
+			<!-- method = "POST"  -->
+
+			<!-- <input type="submit" name="register" value = "Register now" form = "registerpage"> -->
+			<!-- Dont have an account ? Create yours now -->
+		
+		<!-- <script type="text/javascript" src="js.js"></script> -->
+		
+	</div>
+</body>
+	
+
+<script>
+
+	var json_object = <%- JSON.stringify(data)%>;
+	console.log(typeof(json_object)) // string
+	if (json_object != ''){
+
+		// post login response
+		// wrong credentials
+		console.log("existing user")
+		document.getElementById("wrong_credentials_dialog").innerHTML = json_object
+		document.getElementById("wrong_credentials_dialog").style.display = "block"
+		
+	}
+	else{
+		
+		// get login response
+		console.log("blank string passed")
+		document.getElementById("wrong_credentials_dialog").innerHTML = json_object
+		
+	}
+
+</script>
+	
+</head>
+</html>
