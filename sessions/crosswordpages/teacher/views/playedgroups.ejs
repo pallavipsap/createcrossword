@@ -1,0 +1,139 @@
+<html>
+<head>
+<title> Display played Group Page </title>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+
+<!-- <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form> -->
+<!-- <form id = "test" method="POST" action="/test"></form> this works-->
+
+<!-- PAGE Student side S4
+
+TODO : by default : If a collection does not exist, just show create button
+TODO : if collection exists, pull all previous groups and show on create groups page using loginID or teacher ID?
+
+passed json object : 
+
+ {
+  userId: '5fe665a12aaedc40d812bd4e',
+  username: 'student1',
+  courses: [
+    {
+      course_id: '9bbe09cd-f623-4fbc-be78-b034420703a0',
+      course_no: 'hey1',
+      course_name: 'hey1'
+    },
+    {
+      course_id: '4a22ed50-d498-44bb-9188-a164c1a10385',
+      course_no: 'check1',
+      course_name: 'check1'
+    }
+  ]
+} -->
+
+<body>
+    
+    <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
+    <p id = "welcomemessage"></p>
+
+    <span id = "no_past_quizzes_dialog" style = "display: none;"></span>
+    <div class = "allgroups" id = "allgroups"></div>
+
+<!-- style="display: none;" -->
+<!-- works for current code -->
+   <!-- <div id="creategroup_dialog" style="display: none;">
+    <input type="text" name = "course_no" id="course_no" placeholder="Enter group number here" form = "test"></input>
+    <input type="text" name = "course_name" id="course_name" placeholder="Enter group name here" form = "test"></input>
+    <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea>
+    <input type="submit" value="Click to Create group" onclick="Create()" form = "test"/> -->
+
+    <!-- <div id="creategroup_dialog" style="display: none;"> -->
+    <!-- <input type="text" name = "course_no" id="course_no" placeholder="Enter group number here" form = "test" required></input> -->
+    <!-- <input type="text" name = "course_name" id="course_name" placeholder="Enter group name here" form = "test" required></input> -->
+    <!-- <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea> -->
+    <!-- with create() function -->
+    <!-- <button id = "action-button" onclick="Create()"> Click to create group</button> -->
+
+    <!-- without create() function -->
+    <!-- <button id = "action-button"> Click to create group</button><br> -->
+    
+
+  <!-- </div> -->
+
+   
+
+<script>
+
+        var json_object = <%- JSON.stringify(data)%>
+        console.log("This is the JSON object to work with", json_object);
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " please go ahead and click on groups to see your performance";
+
+
+        // TODO : create buttons for all the groups present in the student collection for the given teacherObjectID
+
+        // TODO ** : create these groups using ejs syntax
+        function DisplayPlayedGroups(courses) { // array of objects
+            console.log(courses)
+
+                for(var i = 0 ; i<=courses.length - 1; i++) {
+
+                    // var input = document.createElement("input");
+                    // input.type = "submit";
+                    // input.name = "course_id";
+                    // input.id = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+                    
+                    // commented from here
+
+                    // var anchor = document.createElement("a");
+                    // var link = document.createTextNode(courses[i])
+                    // anchor.appendChild(link);
+                    // anchor.title = courses[i];
+
+                    // // anchor.href = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
+                    // // course_id and course name both in future
+
+                    // anchor.href = "/play/groups/" + anchor.title;
+                    // anchor.action = "/play/groups/" + anchor.title;
+                   
+                    // document.getElementById("allgroups").appendChild(anchor);
+                    // console.log(document.getElementById("allgroups"));
+                    // commented until here**************
+
+                    var anchor = document.createElement("a");
+                    var link = document.createTextNode(courses[i].course_no + "-" + courses[i].course_name)
+                    anchor.appendChild(link);
+                    anchor.title = courses[i].course_no + "-" + courses[i].course_name
+
+                    anchor.href = "/play/groups/" + anchor.title +"?course_id="+courses[i]["course_id"];;
+                    anchor.action = "/play/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];;
+                   
+                    var line_break = document.createElement("br")
+                    anchor.append(line_break);
+                    document.getElementById("allgroups").appendChild(anchor);
+                    console.log(document.getElementById("allgroups"));
+                }
+            }
+
+            // "courses" in json_object ? DisplayPrevGroups(json_object["courses"]) : console.log("no past courses") ; // pass array
+            
+            if ("courses" in json_object) // finding key in json object
+                DisplayPlayedGroups(json_object["courses"])
+            else{
+                // get register response
+                // no courses is passed here
+
+                console.log("blank string passed")
+                document.getElementById("no_past_quizzes_dialog").innerHTML = "No past groups"
+                document.getElementById("no_past_quizzes_dialog").style.display = "block"
+
+            }
+    
+        
+</script>
+
+
+</body>
+
+
+</html>
