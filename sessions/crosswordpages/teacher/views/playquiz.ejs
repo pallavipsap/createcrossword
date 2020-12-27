@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+    <title>Welcome to crossword</title>
+    <!-- <link rel="stylesheet"  href="/css/style.css" type="text/css"/> -->
+    <link rel="stylesheet" href="/css/playquiz.css"/>
+    <!-- accesses the css file in public in render_button.html folder because in render.js app.use(express.static(path.resolve(__dirname, 'public')));-->
+
+
+    <!-- <script src = "./dom-to-image/dist/dom-to-image.min.js"></script> -->
+    <!-- <script src = "./dom-to-image-improved/dist/dom-to-image-improved.min.js"></script> -->
+    <!-- <script src = "../node_modules/dom-to-image-improved/dist/dom-to-image-improved.min.js"></script> -->
+    <!-- <script src = "../node_modules/dom-to-image/src/dom-to-image.js"></script> -->
+    <!-- <h1>The quiz is below <%= JSON.stringify(data) %></h1> -->
+    <script src ="/dom-to-image.min.js"></script>
+    
+</head>
+
+
+<!-- To handle just one attempt, check if correct user -->
+
+
+<form id = "viewScore" method="POST" action="/sudent-score-page" ></form>
+
+<body>
+    <textarea name = "quiz_data_json" id = "quiz_data_json"><%= JSON.stringify(data) %> </textarea>
+    <textarea name = "student_data_json" id = "student_data_json" form = "viewScore"></textarea><br>
+    <p id = "welcomemessage"></p>
+    <label>Enter your correct username here </label>
+    <input type = "text" name = "player_username" form = "viewScore" required>
+
+    <div id = "quiz_details">
+        <!-- <label>Course Name : </label> -->
+        <span type="text" name="course" id="course" form = "saveForm"></span></br><!-- in future pass course name to display -->
+        <!-- <label>Title of the crossword : </label><br> -->
+        <span type="text" name="title" id="title" form = "saveForm" ></span></br>
+        <!-- <label>Maximum points : </label><br> -->
+        <span type="text" name="points" id="points" form = "saveForm" ></span></br>
+        <!-- <label>Crossword Instructions ( optional ) </label><br> -->
+        <span name="instructions" id="instructions" form = "saveForm"></span>
+    </div>
+
+
+    <div class="center crossword" id="crossword"></div>
+    <div class = "center questions" id = "questions"></div>
+
+    <!-- <div class="headRow">
+        <div class="divCell">ACROSS</div>
+        <div  class="divCell">DOWN</div>
+     </div> -->
+
+     <div class="float-container">
+
+        <div class="float-child">
+
+          <div class="across">ACROSS</div>
+
+          <table class="table_list" id="across_list" >
+            <!-- form = "saveForm" -->
+
+            <!-- <thead>
+              <tr>
+                <th>Sr.Number</th>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Options</th>
+              </tr>
+            </thead> -->
+
+            <!-- <div id="acrosstable"> -->
+              <tbody>
+                <!-- row 1 -->
+                <!-- <tr>
+                  <td>1</td>
+                  <td>Bird</td>
+                </tr> -->
+                
+              </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
+            <!-- </div> -->
+          </table>
+        </div> 
+        <!-- across ended -->
+
+        <div class="float-child">
+          <div class="down">DOWN</div>
+
+            <table class="table_list" id="down_list" >
+                <!-- form = "saveForm" -->
+    
+                <!-- dont need for now -->
+                <!-- <div id="downtable"> -->
+                  <tbody>
+                    <!-- row 1 -->
+                    <!-- <tr>
+                      <td>2</td>
+                      <td>Animal</td>
+                    </tr> -->
+                    
+                  </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
+                </div>
+              </table>
+            </div>
+        </div>
+      
+
+    <div>
+       
+        <!-- routes to scoreboard.ejs -->
+        <button class="btn" type="submit" onclick= Submit() form = "viewScore">Submit the quiz</button>
+
+        <!-- just displays same page with correct and wrong ans -->
+        <!-- <button class="btn" type="submit" onclick= Submit() >Submit the quiz</button> -->
+
+    </div>
+
+    <!-- <input  class="save-button" type="submit" value="Create Crossword for ABC" form = "viewCrossword" /> -->
+    <!-- <% var textarea_json_object = JSON.stringify(data); %> -->
+    <!-- <script>
+
+        var textarea_json_object = document.getElementById("quiz_data_json");
+        var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
+
+        var wordArr = [];
+        for ( var i = 0, val; i < json_object.ques_ans_data.length; i++){ //w = json_object.ques_ans_data;
+            val = json_object.ques_ans_data[i].answer.toUpperCase();
+
+            if (val !== null && val.length > 1) {
+                // push only non null and more than one lettered words
+                wordArr.push(val); // get all words
+            }        
+        console.log("My answers",wordArr);
+        } -->
+
+
+    <!-- C:\Users\palla\Desktop\MS_Project\FINAL_FEATURES\version5_render_crossword_student_dev\node_modules\dom-to-image\src -->
+    <!-- <script src="/dist/dom-to-image.min.js">  -->
+    <script>
+        //  ../dom-to-image/dist/dom-to-image.min.js
+        //var domtoimage = require('dom-to-image');
+        var board, wordArr, wordBank, wordsActive, mode; // default mode = 0
+    
+        var Bounds = {
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            
+            // called after updation of every word
+            Update: function (x, y) { // called from AddwordToBoard
+                this.top = Math.min(y, this.top);
+                this.right = Math.max(x, this.right);
+                this.bottom = Math.max(y, this.bottom);
+                this.left = Math.min(x, this.left);
+            },
+    
+            Clean: function () {
+                // called from CleanVars() , possible to set the board ?
+                this.top = 999;
+                this.right = 0;
+                this.bottom = 0;
+                this.left = 999;
+            },
+        };
+
+        var json_object = <%- JSON.stringify(data)%>
+        console.log("This is the JSON object to work with", json_object);
+
+        //console.log("This is the JSON object to work with", json_object);
+        //document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
+
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + ", please fill out the details before starting the quiz";
+        document.getElementById('course').innerHTML = "Course Name : " + json_object.course
+        document.getElementById('title').innerHTML = "Title : " + json_object.title
+        document.getElementById('points').innerHTML = "Maximum points : " + json_object.points
+        //document.getElementById('instructions').innerHTML = json_object.instructions
+        
+        
+      
+        var letterArr = document.getElementsByClassName("letter");
+        wordArr = [];
+        //console.log(json_object.ques_ans_data[0].answer);
+    
+        //---------------------------------//
+        //   MAIN                          //
+        //---------------------------------//
+    
+
+        function Display(){
+
+            console.log( "I AM IN DISPLAY FUNC")
+
+            // Before this.... fill out qa_id through word bank in this, or do it via words active
+            // We need qa_id so that duplicate answers can be differentiated with qa_id
+
+            // ****find mapped value for words
+            // *** split into across and down
+
+            // STEP 1 :  Take all indexes and sort the indexes
+            // keys stores all the indexes ( x and y)
+
+            var keys = []
+            var startIndex = []
+            for ( var w = 0; w < wordsActive.length;w++) {
+            startIndex.push(wordsActive[w].x)
+            startIndex.push(wordsActive[w].y);
+            console.log("an array?",startIndex);
+            keys.push(startIndex);
+            startIndex = [];
+            }
+
+            console.log(keys);
+
+            // sort all the indexes ( keys )
+            // keys are sorted because we need to compare keys to give a mapped value
+            var sorted_keys = keys.sort(function(a, b) {
+                if (a[0] == b[0]) {
+                return a[1] - b[1];
+                }
+                return a[0] - b[0];
+            });
+
+            console.log("Sorted now",sorted_keys);
+            
+
+            // STEP 2: Create keys_dict to create a mapped value
+            // keys as index, values as mapped values
+            // every index has a different mapped value
+
+            var keys_dict = {};
+            var mapped_val = 1
+            for ( var w = 0; w <= sorted_keys.length-1; w++) {
+
+                // create a mapped value for a new index, if index( key) is already present we do not need a new mapped value for it
+                // Hence we do not need an else for this
+                if  (!( sorted_keys[w] in keys_dict)){ // true if key does not exist in dict
+                    
+                    keys_dict[sorted_keys[w]] = mapped_val;
+                    mapped_val++;
+
+                }
+            }
+            console.log("mapped values created in dictionary", keys_dict);
+
+
+            /********************************************************/
+
+            //Added now
+
+             // STEP 2 : print mapped values on the crossword , make crossword editable
+
+            var form_key_to_map = ""
+            for (var i = 0; i < letterArr.length; i++) {
+
+                // create("<div class= 'box stack-top'  style= 'background: red;'></div>");
+                form_key_to_map = letterArr[i].attributes["xind"].value + "," + letterArr[i].attributes["yind"].value;
+                console.log(form_key_to_map, keys_dict[form_key_to_map]);
+
+                if ( form_key_to_map in keys_dict) {
+                    console.log("inside",letterArr[i]);
+                    letterArr[i].innerHTML= 
+                    "<input class='char' type='text' maxlength='1' form = 'submitQuiz' /><div class= 'box stack-top'>"+ keys_dict[form_key_to_map] + "</div>";
+                    // this does not work
+                    /* 
+                    child = document.createElement("div");
+                    letterArr[i].appendChild(child).class = 'box stack-top';
+                    letterArr[i].children[1].innerHTML = keys_dict[form_key_to_map];;
+                    console.log("inside",letterArr[i]); */ 
+                }
+                else {
+                    letterArr[i].innerHTML =
+                "<input class='char' type='text' maxlength='1' form = 'submitQuiz' />";
+
+                }
+                }
+             
+             /*****************************************/
+
+
+
+
+
+            // STEP 3: 
+            // 1. fill this mapped value in wordsActive
+            // 2. split into across and down
+            // 3. form across and down dict to display with questions
+
+            // for across and down
+            var startXInd;
+            var startYInd;
+            var endXInd;
+            var endYInd;
+
+            // fill up the mapped attribute in wordsActive
+            var form_key = ""
+            var across = {} // key as mapped value, value as question
+            var down = {}
+
+            console.log("Going to fix orientation");
+            for ( var w = 0; w <= wordsActive.length - 1 ;w++) {
+
+
+                startXInd = wordsActive[w].x;
+                startYInd = wordsActive[w].y;
+                endXInd = wordsActive[w].endxIndex;
+                endYInd = wordsActive[w].endyIndex;
+                //unique_qa_id = wordsActive[w].qa_id;
+
+                // for every word : check horizontal or vertical
+                if ( startXInd == endXInd) { // x constant, vertical word
+
+                    // vertical  word
+                    console.log(wordsActive[w].string, " is vertical");
+                    wordsActive[w].orientation = "DOWN";
+                }
+
+                else if ( startYInd == endYInd) { // y constant, horizontal word
+
+                    // horizontal word
+                    console.log(wordsActive[w].string, " is horizontal");
+                    wordsActive[w].orientation = "ACROSS";
+
+                } 
+
+                // for every word : fill the mapped attribute
+                form_key = startXInd + "," + startYInd; // form key using x and y index from wordsActive
+                console.log("form key", form_key);
+
+                // check the same formed key in dictionary to get the mapped value
+                wordsActive[w].mapped = keys_dict[form_key];
+
+                // form across and down dictionary to display
+                if(wordsActive[w].orientation == "ACROSS"){
+
+                       // currently value is form_key "1" : "12,13"
+                        across[keys_dict[form_key]] = form_key; // can use qa_id here to populate value as question
+
+                        across[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                        // value is the dict is now question
+                        // recognize question by qa_id
+
+                        // if (qa_id in across) {
+                        //     across[keys_dict[form_key]] = 
+                        // }
+                        //across[keys_dict[form_key]] = json_object.ques_ans_data[wordsActive[w].qa_id - 1].question;
+                }
+                else {
+                    down[keys_dict[form_key]] = form_key;
+                    down[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                    // console.log("down",json_object.ques_ans_data[wordsActive[w].qa_id - 1].question);
+                    //down[keys_dict[form_key]] = json_object.ques_ans_data[wordsActive[w].qa_id - 1].question;
+                }
+                console.log(across);
+                console.log(down);
+                console.log(wordsActive);
+
+            }
+
+
+            // Step 4 : sort the dictionary on basis of keys ( so that we display in order for students )
+            
+
+            // may be not necessary
+            sorted_across = Object.keys(across).sort(function(a, b) {
+                return across[a] - across[b];
+            })
+
+            sorted_down = Object.keys(down).sort(function(a, b) {
+                return down[b] - down[a];
+            })
+
+            console.log("sorted dict across", sorted_across); // consists of only keys
+            console.log("sorted dict down", sorted_down);
+            console.log(wordsActive); // with mapped attribute, orientation : across and down, qa_id
+            
+            // Step 5 : print mapped values on the crossword 
+
+
+            //Step 6 : PRINT here questions with mapped values inside div - ACROSS and DIV
+
+            // let table = document.querySelector("table");
+            let table = document.getElementById("across_list").getElementsByTagName("tbody")[0];
+            let data = ["value","question"];
+
+            // down = {1: "Bird", 2: " animal"};
+            //generateTableHead(table,data);
+            generateTable(table,across);
+
+            //console.log(table);
+            table = document.getElementById("down_list").getElementsByTagName("tbody")[0];
+            generateTable(table,down);
+            //console.log(table);
+
+            // not used yet
+            function generateTableHead(table, data) {
+                let thead = table.createTHead();
+                let row = thead.insertRow();
+                console.log(data)
+                for (var i = 0; i<data.length;i++) {
+                    let th = document.createElement("th");
+                    var str = data[i]
+                    var lastIndex = str.lastIndexOf(" ");
+                    var x = str.split(" ").slice(0, -1).join(" ");
+                    console.log(str.substring(0,lastIndex))
+                    let text = document.createTextNode(str);
+                    th.appendChild(text);
+                    row.appendChild(th);
+                }
+            }
+
+           
+    
+            function generateTable(table, data) {
+                for (let key in data) {
+                    console.log("in generate table");
+                    let row = table.insertRow(); // a row inserted <tr>
+                    
+                    // splitting id and ques in dictionary values
+                    var str = data[key]
+                    var x = str.split(" ") // grab last word to get id
+                    var ques = x.slice(0, -1).join(" "); // join words to grab question
+
+                    console.log(x.length)
+                    row.id = x[x.length - 1];
+                    console.log(data[key]);
+
+                    let cell1 = row.insertCell();
+                    let text1 = document.createTextNode(key);
+                    cell1.appendChild(text1);
+
+                    let cell2 = row.insertCell();
+                    let text2 = document.createTextNode(ques);
+                    cell2.appendChild(text2);
+
+                    //let cell3 = row.insertCell();
+                    //let text3 = document.createTextNode(style="font-size:150%;font-weight:bold;color:green;">&#10004)
+                }
+                }
+
+
+                 // capture image
+
+                //  COMMENTED THIS
+
+            var nodex = document.getElementById('crossword');
+            domtoimage.toPng(nodex)
+                .then(dataURL => {
+                    var image = new Image();
+                    image.src = dataURL;
+                    document.body.appendChild(image);
+                    console.log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+                })
+                .catch(error => console.error('Something went wrong!', error));
+
+
+            // shows the entire html structure for across and down
+            element = document.getElementsByClassName("float-container")
+            console.log(element[0])
+        
+            }
+
+
+
+        // function executes on "Submit" button click
+        function Submit(){
+
+            alert('The quiz is submitted');
+
+            var check = [];
+            console.log("In submit func");
+            console.log(letterArr);
+            //console.log("HERE IS SUBMIT FUNCT", letterArr[0]);
+
+            // div class looks like this
+            // code below prints this : 
+            /*
+            <div class = "square letter">
+                <input class="char" type = "text" maxlength = "1" form = "submitQuiz"></input>
+            </div>
+            */
+
+            // Step 1 : form dictionary with index as keys, student letters as values
+
+            var dict = {};
+            console.log("check answers in form of letters here");
+            for (var i = 0; i < letterArr.length; i++) {
+                // gives value inside text box after answering.
+                check = letterArr[i]; // PRINTS ALL DIVS
+                console.log(check);
+                console.log(letterArr[i].attributes["xind"].value);
+                
+                // put a space for blank entries by student
+                if (letterArr[i].getElementsByTagName('input')[0].value == ""){
+                dict [letterArr[i].attributes["xind"].value + " " + letterArr[i].attributes["yind"].value] = " "
+                }
+                else {
+                dict [letterArr[i].attributes["xind"].value + " " + letterArr[i].attributes["yind"].value] = letterArr[i].getElementsByTagName('input')[0].value;
+                }
+                console.log(dict);
+                //console.log(check.value);
+            } 
+
+
+
+            // Step 2 : Compare answers and give a score
+            // form answers ( words ) using indexes to compare with actual answers
+            // give a score to be inserted in database
+            // create score and student ans atribute in wordsActive
+
+            var startXInd;
+            var startYInd;
+            var endXInd; 
+            var endYInd;
+            // var student_answers = []; think about this when time comes
+            var quiz_score = 0
+
+            // for every word
+            for( w = 0; w < wordsActive.length; w++){
+
+            var word = wordsActive[w].string;
+            var letter_array = wordsActive[w].char; // array of letters
+            // console.log(letter)
+            var l = 0;
+            var ans = "";
+            var make_key = "";
+            var value = 1; // consider answer is correct
+            startXInd = wordsActive[w].x;
+            startYInd = wordsActive[w].y;
+            endXInd = wordsActive[w].endxIndex;
+            endYInd = wordsActive[w].endyIndex;
+            console.log(word, letter_array, startXInd, endYInd);
+
+
+            // for every letter in a word
+            for (var x = startXInd , y = startYInd, word_length = 1 ; word_length <= letter_array.length ; word_length++ ){
+
+                // every letter - new key
+               
+                make_key = x + " " + y;
+                console.log(x);
+                console.log(y);
+                console.log("in if check with this key", make_key);
+                console.log(typeof(make_key)) // string
+
+                console.log(letter_array[l], dict[make_key]);
+                if ( letter_array[l] == dict[make_key].toUpperCase() ){
+                    console.log("matched letter",dict[make_key]); 
+                }
+                else {
+                    console.log("no matched letter",dict[make_key]); 
+                    // flag = false // worng answer
+                    value = 0
+                }
+
+                ans += dict[make_key]; // append every letter to form answer
+                l++; // next letter in word
+                make_key = ""; // new key for the letter
+
+                if (wordsActive[w].orientation == "DOWN") {
+                    y++;
+                }
+                else x++;  
+                
+                }
+
+            // word is formed : update score and student answer in wordsActive
+            console.log(ans);
+            console.log("my value is",value)
+            wordsActive[w].student_ans = ans.toUpperCase();
+            // if (flag == true){
+            if (value == 1){
+                wordsActive[w].score = 1;
+                quiz_score+=1 // quiz score to be show to student and stored in Database
+            }
+            else wordsActive[w].score = 0
+
+            }
+
+            console.log("final quiz score", quiz_score);
+            console.log(wordsActive); // contains score and student ans attribute
+
+
+
+            // Step 3 : Direct to other ejs file , push data in DB to show scoreboard
+
+            var student_data = {
+                qa_data:[],
+                final_score : quiz_score
+            }
+            var QA = {}
+            for( w = 0; w < wordsActive.length; w++){
+
+                QA = {
+                    qa_id : wordsActive[w].ques_ans_id,
+                    ques : wordsActive[w].question,
+                    correct_ans : wordsActive[w].string,
+                    student_ans : wordsActive[w].student_ans,
+                    qa_score : wordsActive[w].score
+                }
+
+            student_data.qa_data.push(QA);
+            }
+
+            console.log(student_data);
+            student_data_json = document.getElementById("student_data_json");
+            student_data_json.innerHTML = JSON.stringify(student_data);
+            console.log("second text area data",  student_data_json.innerHTML);
+
+        }
+
+         // Play button
+         function Play() {
+            console.log("In play mode is", mode);
+
+            // letterArr is the array of boxes which have let   ters in it
+            //var letterArr = document.getElementsByClassName("letter");
+
+            /*****************************************/ // Commented this now
+            // for (var i = 0; i < letterArr.length; i++) {
+            //     letterArr[i].innerHTML =
+            //     "<input class='char' type='text' maxlength='1'></input>";
+            // }
+            /*****************************************/
+
+            console.log("letterArr",letterArr);
+            console.log("in Play func",wordsActive);
+
+            // mode = 0; // make mode 0
+            // ToggleInputBoxes(false); // go to this function and hide answers
+        }
+
+
+        // main create function -- check this for getElementById("crossword")
+        function Create(){
+
+            GetWordsFromInput(json_object);
+    
+            //document.getElementById("crossword").innerHTML = BoardToHtml(" "); 
+            console.log("Check on line 57", document.getElementById("crossword").innerHTML );
+    
+            for (var i = 0, isSuccess = false; i < 10 && !isSuccess; i++) {
+                CleanVars(); // creates 32 * 32 matrix of null values
+                isSuccess = PopulateBoard();
+                console.log("Success", isSuccess);
+                }
+            var n = 1;
+            // check this
+    
+            console.log("Check Success Inside Create function");
+            document.getElementById("crossword").innerHTML = isSuccess
+            ? BoardToHtml(" ")
+            : console.log("error found"); //ErrorToHtml(n);
+
+            Play(); // makes crossword editable
+            console.log("displaying now");
+            Display(); // displays questions to students under the crossword
+    
+        }
+    
+        function CleanVars() {
+
+            console.log("Inside CLEANVARS func");
+
+            Bounds.Clean(); // goes to global function ; // sets up window size ?
+            wordBank = [];
+            wordsActive = [];
+            board = [];
+            checkboard = []
+            checkboard = board;
+
+            // Why 32 ? Creates matrix 32*32
+            for (var i = 0; i < 32; i++) {
+            board.push([]); // create 32 empty arrays
+            // console below shows the board entirely in array form , interesting to see !
+            //console.log(board); //[..........Array(32), Array(32), Array(32), Array(0)]
+            //console.log("outer for",board);
+            for (var j = 0; j < 32; j++) {
+                board[i].push(null); // 32 null values pushed in every array
+                //console.log("checkboard",checkboard);
+                //console.log("inner for",board);
+            }
+            }
+            console.log("This is my BOARD", board);
+
+        }
+        
+        function GetWordsFromInput(json_object) {
+    
+            wordArr = [];
+            for ( var i = 0, val; i < json_object.quizdata.length; i++){ //w = json_object.ques_ans_data;
+                val = json_object.quizdata[i].answer.toUpperCase();
+    
+                if (val !== null && val.length > 1) {
+                    // push only non null and more than one lettered words
+                    wordArr.push(val); // get all words
+                }
+    
+                
+            console.log("My answers",wordArr);
+    
+            }
+            }
+    
+        // returns bool value to isSuccess to Create function --- check this
+        function PopulateBoard() {
+            PrepareBoard();
+    
+            var isOk = true;
+           
+            // this is not needed****************************************************
+            for (var i = 0, len = wordBank.length; i < len; i++) {
+                if (wordBank[i].totalMatches == 0) {
+                isOk = false;
+                console.log("Word not matching for" + wordBank[i].string);
+                //window.onload = Error(wordBank[i].string);
+    
+                
+                document.getElementById("crossword").innerHTML = isOk
+                    ? BoardToHtml(" ")
+                    : Error(wordBank[i].string); //console.log("error found");
+    
+                
+                }
+            }
+            // ***********************************************************************
+    
+             // If all words have matches, crossword can be created possibly**** because cases like MAT BAT CAT still are not tracked until this step
+
+            //for (var i = 0, isOk = true, len = wordBank.length; i < len && isOk; i++) {
+
+            /* here cases like MAT BAT CAT can be tracked
+            try to add all the words to the board 
+            
+            //come back here after you try to add word, and it is ok or not
+            //if(isOK==false)
+            //not a word that can be added */
+
+            console.log("BEFORE adding word to Board",wordBank);
+            for (var i = 0, len = wordBank.length; i < len && isOk; i++) {
+
+                isOk = AddWordToBoard();
+                //console.log(wordBank[0]);
+                // console.log("i is", i,wordBank);
+                // returned_val = AddWordToBoard();
+                // isOk = returned_val[0];
+                //console.log("Word is here",wordBank[i].string);
+                
+
+                // console.log(returned_val);
+                // console.log(typeof(returned_val));
+                // console.log(Object.keys(returned_val).length);
+
+                // if (Object.keys(returned_val).length == 3) {
+                
+                //   console.log("inside", isOk);
+                //   console.log(returned_val);
+                //   wordBank[i].endxIndex = returned_val[1];
+                //   wordBank[i].endyIndex = returned_val[2];
+                //   console.log("Here",wordBank[i]);
+                // }
+                
+            }
+            console.log("AFTER adding word to Board",wordBank);
+            //console.log("inside populate board newWordBank", newWordBank);
+            console.log("inside populate board wordActive", wordsActive);
+
+            // when I return isOk = true , it means all words can be added
+            return isOk; // returns isOk to Create func 
+            }
+
+
+
+        // Called from PopulateBoard ()
+        // just fills wordBank , does not return anything
+        function PrepareBoard() {
+            wordBank = [];
+            //newWordBank = [];
+
+            for (var i = 0, len = wordArr.length; i < len; i++) {
+                // to convert every word to character array ?
+                wordBank.push(new WordObj(wordArr[i])); // WordObj creates key value pairs
+                wordBank[i].ques_ans_id = i+1
+                wordBank[i].question = json_object.quizdata[i].question;
+                console.log()
+                //newWordBank.push(new newWordObj(wordArr[i]));
+                //console.log(wordBank);
+            }
+            console.log("Inside PrepareBoard func")
+            console.log(wordBank); // array of all input words = now in form of objects in wordBank
+            // console.log(newWordBank);
+
+
+            // Find matches
+
+            // array of wordObj in wordBank
+            // wA = wordObj in wordBank
+            // wordBank = [WordObj, WordObj, WordObj....]
+            // wA = wordBank[i] = WordObj {string: "TUCAN", char: Array(5), totalMatches: 0, effectiveMatches: 0, successfulMatches: Array(0)}
+            // cA is every character
+
+            for (i = 0; i < wordBank.length; i++) {
+                // no. of iterations = no. of input words
+                // wordBank = [WordObj, WordObj, WordObj....]
+                //wA = wordBank[i] = WordObj {string: "TUCAN", char: Array(5), totalMatches: 0, effectiveMatches: 0, successfulMatches: Array(0)}
+                for (var j = 0, wA = wordBank[i]; j < wA.char.length; j++) {
+                // no. of iterations = no. of characters in that word
+                // wA.char.length = gives length of every word
+                // console.log(wordBank[i]); // shows what wordObj consists of
+                // console.log(wordBank[i], "I am j", j);
+                for (var k = 0, cA = wA.char[j]; k < wordBank.length; k++) {
+                    // char[j] traverses
+                    //console.log(cA, j, k); //cA prints every character
+                    for (var l = 0, wB = wordBank[k]; k !== i && l < wB.char.length; l++) {
+                    wA.totalMatches += cA === wB.char[l] ? 1 : 0;
+                    }
+                }
+                }
+                console.log("Obj in wordbank",wA, wA.totalMatches); // gives total no. of matches for every word
+            }
+            // documenby ID , span with error message
+
+            // create a shallow copy
+            //let newWordBank = Object.assign({},wordBank);
+
+            // create a deep copy
+            //newWordBank = JSON.parse(JSON.stringify(wordBank));
+            //console.log("My new wordbank",newWordBank);
+        }
+    
+    
+        // TODO: Clean this guy up
+        function AddWordToBoard() {
+
+        console.log("In AddWordToBoard func");
+        var i,
+        len,
+        curIndex,
+        curWord,
+        curChar,
+        curMatch,
+        testWord,
+        testChar,
+        minMatchDiff = 9999,
+        curMatchDiff;
+
+        if (wordsActive.length < 1) {
+        curIndex = 0;
+        for (i = 0, len = wordBank.length; i < len; i++) {
+
+            if (wordBank[i].totalMatches < wordBank[curIndex].totalMatches) {
+            curIndex = i;
+            }
+        }
+        wordBank[curIndex].successfulMatches = [{ x: 12, y: 12, dir: 0 }];
+        console.log("inside if", wordBank[curIndex].string);
+        } else {
+        curIndex = -1;
+
+        for (i = 0, len = wordBank.length; i < len; i++) {
+            
+            curWord = wordBank[i];
+            console.log("inside else", curWord.string);
+            curWord.effectiveMatches = 0;
+            curWord.successfulMatches = [];
+            for (var j = 0, lenJ = curWord.char.length; j < lenJ; j++) {
+            curChar = curWord.char[j];
+            for (var k = 0, lenK = wordsActive.length; k < lenK; k++) {
+                testWord = wordsActive[k];
+                for (var l = 0, lenL = testWord.char.length; l < lenL; l++) {
+                testChar = testWord.char[l];
+                if (curChar === testChar) {
+                    curWord.effectiveMatches++;
+
+                    var curCross = { x: testWord.x, y: testWord.y, dir: 0 };
+                    if (testWord.dir === 0) {
+                    curCross.dir = 1;
+                    curCross.x += l;
+                    curCross.y -= j;
+                    } else {
+                    curCross.dir = 0;
+                    curCross.y += l;
+                    curCross.x -= j;
+                    }
+
+                    var isMatch = true;
+
+                    for (var m = -1, lenM = curWord.char.length + 1; m < lenM; m++) {
+                    var crossVal = [];
+                    if (m !== j) {
+                        if (curCross.dir === 0) {
+                        var xIndex = curCross.x + m;
+
+                        if (xIndex < 0 || xIndex > board.length) {
+                            isMatch = false;
+                            break;
+                        }
+
+                        crossVal.push(board[xIndex][curCross.y]);
+                        crossVal.push(board[xIndex][curCross.y + 1]);
+                        crossVal.push(board[xIndex][curCross.y - 1]);
+                        } else {
+                        var yIndex = curCross.y + m;
+
+                        if (yIndex < 0 || yIndex > board[curCross.x].length) {
+                            isMatch = false;
+                            break;
+                        }
+
+                        crossVal.push(board[curCross.x][yIndex]);
+                        crossVal.push(board[curCross.x + 1][yIndex]);
+                        crossVal.push(board[curCross.x - 1][yIndex]);
+                        }
+
+                        if (m > -1 && m < lenM - 1) {
+                        if (crossVal[0] !== curWord.char[m]) {
+                            if (crossVal[0] !== null) {
+                            isMatch = false;
+                            break;
+                            } else if (crossVal[1] !== null) {
+                            isMatch = false;
+                            break;
+                            } else if (crossVal[2] !== null) {
+                            isMatch = false;
+                            break;
+                            }
+                        }
+                        } else if (crossVal[0] !== null) {
+                        isMatch = false;
+                        break;
+                        }
+                    }
+                    }
+
+                    if (isMatch === true) {
+                    curWord.successfulMatches.push(curCross);
+                    }
+                }
+                }
+            }
+            }
+
+            curMatchDiff = curWord.totalMatches - curWord.effectiveMatches;
+
+            if (curMatchDiff < minMatchDiff && curWord.successfulMatches.length > 0) {
+            curMatchDiff = minMatchDiff;
+            curIndex = i;
+            } else if (curMatchDiff <= 0) {
+            return false;
+            }
+        }
+        //console.log("wordBank inside AddwordtoBoard",curWord,wordBank);
+        }
+
+        if (curIndex === -1) {
+        return false;
+        }
+
+        var spliced = wordBank.splice(curIndex, 1);
+        console.log("spliced word",spliced[0]);
+
+
+
+        wordsActive.push(spliced[0]);
+        wordsActive[wordsActive.length - 1].string;
+        console.log("Check this word in wordsActive",wordsActive[wordsActive.length - 1].string);
+
+
+        var pushIndex = wordsActive.length - 1,
+        rand = Math.random(),
+        matchArr = wordsActive[pushIndex].successfulMatches,
+        matchIndex = Math.floor(rand * matchArr.length),
+        matchData = matchArr[matchIndex];
+
+        wordsActive[pushIndex].x = matchData.x;
+        wordsActive[pushIndex].y = matchData.y;
+        wordsActive[pushIndex].dir = matchData.dir;
+
+
+        for (i = 0, len = wordsActive[pushIndex].char.length; i < len; i++) {
+        var xIndex = matchData.x,
+            yIndex = matchData.y;
+
+        if (matchData.dir === 0) {
+            xIndex += i;
+            board[xIndex][yIndex] = wordsActive[pushIndex].char[i];
+        } else {
+            yIndex += i;
+            board[xIndex][yIndex] = wordsActive[pushIndex].char[i];
+        }
+
+        console.log("wordsActive",wordsActive);
+        Bounds.Update(xIndex, yIndex); // update the bound
+        console.log(xIndex,yIndex); // prints index for every letter of a word
+        //var x = board;
+        //console.log(x);
+        }
+
+        console.log("ending x index", xIndex, "ending", yIndex);
+        wordsActive[wordsActive.length - 1].endxIndex = xIndex;
+        wordsActive[wordsActive.length - 1].endyIndex = yIndex;
+
+        //return [true,xIndex,yIndex];
+        return true;
+        }
+    
+    
+        // create Board
+
+        //create board in HTML format  - add every row
+        function BoardToHtml(blank) {
+
+        console.log("In BoardToHtml func");
+        console.log("Bounds.top",Bounds.top);
+        console.log("Bounds.bottom", Bounds.bottom);
+        for (var i = Bounds.top - 1, str = ""; i <= Bounds.bottom + 1; i++) { //  y index = i
+        // one row ( null + letters)
+        console.log("This is row number", i);
+        str += "<div class='row'>";
+
+        console.log("Bounds.left",Bounds.left);
+        console.log("Bounds.right", Bounds.right);
+        for (var j = Bounds.left - 1; j <= Bounds.right + 1; j++) { // x index = j
+
+            // print left to right matrix[x][y]
+            console.log(board[j][i], j , i); // grabs all letters in every row //PRINT THIS IN REPORT
+            str += BoardCharToElement(board[j][i],j,i); // div for every element
+        }
+        str += "</div>";
+
+
+        // str gives every row of the board in html format
+        // keeps appending more divs
+        console.log("printing row and appending");
+        console.log("str",str); // PRINT THIS IN REPORT
+        }
+        return str; // coverts all letters in div form
+        }
+
+        // makes div for a given character
+        function BoardCharToElement(c,xInd,yInd) {
+        //console.log("In boardChartoElement func", c); //**
+        var arr = c ? ["square", "letter"] : ["square"]; // square letter if char should be placed on the board
+        //console.log(c,arr);
+        return EleStr("div", [{ a: "class", v: arr }], c, xInd, yInd);
+        }
+
+        //---------------------------------//
+        //   HELPER FUNCTIONS              //
+        //---------------------------------//
+
+        // Incase of letter is present
+        // e = div
+        // c = [ { a : "class", v : [ "square", "letter"]}] ( length of v = 2)
+        // h = P ( its the letter )
+
+        // If no letter present
+        // c = [ { a : "class", v : [ "square"] }] ( lenth of v = 1)
+        // h = null
+
+        function EleStr(e, c, h, xInd, yInd) {
+        // console.log("e",e); // div **
+        // console.log("c",c); // **
+        // console.log("h",h); // letter or null **
+
+        h = h ? h : ""; // h can be letter or a blank (null)
+        for (var i = 0, s = "<" + e + " "; i < c.length; i++) { // length = 1
+        // s = < div + ""
+        // c[i].a = "class"
+
+        s += c[i].a + "='" + ArrayToString(c[i].v, " ") + "' ";
+        // console.log("s",s); // **
+        // letter :
+        // <div class = 'square letter'
+
+        // no letter :
+        // < div clas = 'square'
+        }
+
+        s += "xInd=" + xInd + " " + "yInd=" + yInd + ">";
+        return s + h + "</" + e + ">"; // complete making div
+        // letter  div: <div class = "square letter"></div>
+        // no letter div : <div class = "square"></div>
+        }
+
+        // letter : 
+        // a  = c[i].v = c[0].v = ["square", "letter"]  --> a.length = 2
+        // a[0] = "square", a[1] = "letter"
+        // s = " "
+
+        // no letter : 
+        // a  = c[i].v = c[0].v = [square] --> a.length = 1
+        // a[0] = "square",
+        // s = " "
+        function ArrayToString(a, s) {
+        if (a === null || a.length < 1) return "";
+
+
+        // if below is not needed
+        if (s === null) s = ",";
+        //console.log("S inside array to string",s); //** 
+        // console.log("a len",a.length); // **
+        // goes inside for only if letters are found (only if a.length = 2)
+
+        for (var r = a[0], i = 1; i < a.length; i++) { // starts at r = a[0]
+        r += s + a[i]; // square += " + " + "letter";
+        }
+        // console.log("r",r); // returns string : square letter ( if letter ) OR square ( if null)
+        return r;
+        }
+
+        //---------------------------------//
+        //   OBJECT DEFINITIONS            //
+        //---------------------------------//
+    
+        // Called from PrepareBoard ()
+        // Input taken from wordArr and converted to char array
+        function WordObj(stringValue) {
+            this.string = stringValue;
+            this.char = stringValue.split("");
+            //console.log(this.char); // prints a char array : ["T", "U", "C", "A", "N"]
+            this.totalMatches = 0;
+            this.effectiveMatches = 0;
+            this.successfulMatches = [];
+            this.ques_ans_id = 0;
+            this.question = "";
+        }
+    
+    
+        Create();
+        //GetWordsFromInput(json_object);
+    
+        // alert("quiz generated");
+    
+    </script>
+    
+</body>
+</html>
