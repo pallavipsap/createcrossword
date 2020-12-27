@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
 
-<form id = "saveForm" method="POST" action="/post-saveForm" ></form>
+<form id = "saveForm" method="POST" action="/submitquiz"></form>
 
 <body>
     <textarea name = "course_data" id = "course_data_json"><%= JSON.stringify(data)%></textarea>
@@ -20,7 +20,7 @@
           <div>Navigation bar is here : Home | About | </div>
           <div>
             <label>Course Name</label>
-            <p type="text" name="course_name" id="course_name"></p> <!-- in future pass course name to display -->
+            <p type="text" name="course" id="course" form = "saveForm"></p> <!-- in future pass course name to display -->
 
           </div>
           <div>
@@ -75,6 +75,7 @@
                   </form>
                 </tr>
       
+                <!-- need this textbox -->
                 <textarea name="ques_ans_data" id="ques_ans_data" form = "saveForm"></textarea>
                 <!-- style="display:none;" hides the textbox -->
       
@@ -119,12 +120,17 @@
             <!-- </div> -->
          
           </div>
+
+          <!-- view quiz renders on right side -->
+          <!-- this will be create button on prior quiz -->
+          <input type="submit" value="View Quiz" form = "viewForm"/>
+
+
+          <input type="submit" value="Save Quiz" form = "saveForm"/>
       
           <!-- <button onclick="saveQuiz()">Save Quiz</button> just to check if text area is diplayed -->
-          
           <!-- <input  class="save-button" type="submit" onclick="saveQuiz()" value="Save Quiz" form = "saveForm" /> -->
-          <input type="submit" value="Save Quiz" form = "saveForm"/>
-          <!-- form = "saveForm"  -->
+        
           <!-- <a href="/view-feedbacks">View feedbacks</a> -->
       
         </div>
@@ -138,8 +144,6 @@
     
 
 <script>
-
-
         // var textarea_json_object = document.getElementById("course_data_json");
         // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object // converts all objects from /"/" -- to notmal JSON form , but keys are strings here
         // console.log("This is the JSON object to work with", json_object);
@@ -148,9 +152,11 @@
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
         document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
-        document.getElementById("course_name").innerHTML = json_object.course // in future pass course name to display
-
-
+        
+        document.getElementById("course").innerHTML = json_object.course // in future pass course name to display
+        var link = "/submitquiz/" + json_object.course  + "?course_id=" + json_object.course_id;
+        document.getElementById("saveForm").action = link;
+        console.log(document.getElementById("saveForm"))
 
         var selectedRow = null;
         var ques_content = [];
@@ -201,20 +207,6 @@
         console.log('Formdata', formData);
         return formData;
         }
-
-
-        // function getStyle(className) {
-        //   var cssText = "";
-        //   var classes = document.styleSheets.rules|| document.styleSheets[0].cssRules;
-        //   console.log(classes);
-        //   for (var x = 0; x < classes.length; x++) {        
-        //       if (classes[x].selectorText == className) {
-        //           cssText += classes[x].cssText || classes[x].style.cssText;
-        //       }         
-        //   }
-        //   //return cssText;
-        //   return classes;
-        // }
 
 
         // insert record in the table from onSubmit function
@@ -384,9 +376,6 @@
             resetForm();
         }
         }
-
-
-
 
         function validate() {
         isValid = true; // consider value is valid
