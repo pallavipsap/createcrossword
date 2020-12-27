@@ -918,10 +918,10 @@ app.get('/play/groups/:course', function(req,res){
       played_quizzes = []
       for(var i = 0; i < quiz_ids.length; i++ ){
 
+        // if-else is not needed because definitely played quizid will be present in quizdata collection
         console.log("found")
-        console.log(quizdata_array.find(q => JSON.stringify(q._id) == quiz_ids[i]))//quiz_ids[i]))
-
         var quiz_obj = quizdata_array.find(q => JSON.stringify(q._id) == quiz_ids[i])
+        console.log(quizdata_array.find(q => JSON.stringify(q._id) == quiz_ids[i]))//quiz_ids[i]))
 
         var quiz = {
           quiz_id : JSON.parse(quiz_ids[i]), // parsed because id in the link appears to be a string http://localhost:4000/"5fe666a52aaedc40d812bd50"  // other option:  quiz_id in playedquizzes.ejs will be parsed on front end
@@ -931,18 +931,87 @@ app.get('/play/groups/:course', function(req,res){
 
       }
 
+      // pass to playedquizzes.ejs
+      // userDI, username, quiz names and quiz ids
       user_data["quizzes"] = played_quizzes
       console.log(user_data);
       res.render('playedquizzes',{data:user_data});
+    })
+    .catch((e) => {
+      console.log("there is an error in finding past quizzes");
+      console.log(e);
     });
 
   });
- 
+});
 
-  // pass to playedquizzes.ejs
-  // userDI, username, quiz names and quiz ids
+
+
+// page S5 - S6
+// quiz attempt link
+
+app.get('/play/:course/:quizid', redirectLogin, function (req, res) {
+  console.log("came from playedquizzes.ejs for quiz link ", req.body);
+  var quizid = req.params.quizid;
+  var course = req.params.course;
+  console.log("parameter passed is", quizid , course)
+
+  const{userId} = req.session;
+  const{username} = req.session;
+
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  
+    if (err) throw err;
+    var db = client.db('test');
+
+    db.collection('quizdata').find({"_id": ObjectID(quizid)}).toArray()
+    .then(function(quizdata){
+        console.log("this is my data from db", quizdata); // this is an array of quiz objects
+
+        quizdata_obj = quizdata[0]
+        var quiz_data = {
+          userId : userId,
+          username : username,
+          course : course,
+          course_id : quizdata_obj.course_id,
+          quizid : quizdata_obj._id,
+          title : quizdata_obj.title,
+          points : quizdata_obj.points,
+          quizdata : quizdata_obj.quizdata
+        }
+
+        console.log("This is passed to playquiz.ejs",quiz_data);
+        res.render('playquiz.ejs',{data:quiz_data})
+        //res.send(true)
+
+    })
+    .catch((e) => {
+                console.log("there is an error in grabbing quizdata");
+                console.log(e);
+    });
+    
+      //res.send(true)
+  });
+});
+
+
+// page S5 - S6
+// quiz grades link
+
+app.get('/grades/:quizid', redirectLogin, function (req, res) {
+  console.log("came from playedquizzes.ejs for grades link", req.body);
+  var quizid = req.params.quizid;
+  console.log("parameter passed is", quizid)
+
+const{userId} = req.session;
+const{username} = req.session;
+var user_data = {
+  userId : userId,
+  username : username
+}
 
 });
+
 
 // logout on every page
 app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticated
