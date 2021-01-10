@@ -25,7 +25,9 @@ passed json object : userid, username, password, quiz id and title for that cour
 <!-- <form id = "postCreateQuiz" method="POST" action="/post-create-quizzes"></form>  -->
 
 <body>
+  
     <textarea name = "group_cw_data" id = "group_cw_data_json"><%= JSON.stringify(data)%></textarea>
+    <a href="/logout" action = "/logout">Logout</a>
     <p id = "welcomemessage"></p>
 <div id = "create_crossword">
     <!-- leads to a different page to  generate crossword -->
@@ -127,7 +129,8 @@ passed json object : userid, username, password, quiz id and title for that cour
                     anchor_try.title = "Try quiz";
                     // passing course_name as parameter and quiz_id as query
 
-                    anchor_try.href = "http://localhost:2000/" +  quizzes[i]["quiz_id"];
+                    //anchor_try.href = "http://localhost:2000/" +  quizzes[i]["quiz_id"];
+                    anchor_try.href = "/play/" +  json_object["course"]  + "/" + quizzes[i]["quiz_id"];
                     // anchor.action = "/create/groups/" + anchor.title + "?quiz_id="+quizzes[i]["quiz_id"];
                     document.getElementById("allquizzes").appendChild(anchor_try);
 
