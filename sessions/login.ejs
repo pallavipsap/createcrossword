@@ -1,0 +1,79 @@
+<html>
+<head>
+<title> Login Page </title>
+	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
+
+<!-- homepage route -->
+<!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
+<form id = "homePage" method="POST" action = "/login" ></form>
+
+<!-- registration route -->
+<!-- <form id = "registerPage" method="POST" action = "/post-register-data"></form> -->
+
+<body>
+
+	<textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
+	<div class = "userdetails">
+	<!-- <img src = "login.png" class = "login"> -->
+		<h1> Give your credentials</h1>
+		<form>
+			<!-- <p>Username</p> -->
+            <input type="text" id = "username" name = "username" placeholder="Enter username here" form = "homePage" required><br>
+    
+			<!-- <p>Password</p> -->
+            <input type = "text" id = "password" name = "password" placeholder="Enter password here" form = "homePage" required><br>
+			<span id = "wrong_credentials_dialog" style = "display: none;"></span>
+
+			<input type="submit" value = "Login" form = "homePage">
+		</form>
+
+			
+		   
+			<!-- by default get method -->
+			<p>Not Registered?<a id = "newregister" href="register" action = "/register">Register here</a></p>
+
+			<!-- method = "POST"  -->
+
+			<!-- <input type="submit" name="register" value = "Register now" form = "registerpage"> -->
+			<!-- Dont have an account ? Create yours now -->
+		
+		<!-- <script type="text/javascript" src="js.js"></script> -->
+		
+	</div>
+</body>
+	
+
+<script>
+
+	var json_object = <%- JSON.stringify(data)%>;
+	var next_url = json_object.next_url;
+	document.getElementById("homePage").action = "/login/?url=" + next_url;
+	document.getElementById("newregister").action = "/register/?url=" + next_url;
+	document.getElementById("newregister").href = "/register/?url=" + next_url;
+
+
+	console.log(typeof(json_object)) // string
+	console.log("updated with url",document.getElementById("homePage"));
+	console.log("updated with url",document.getElementById("newregister"));
+
+
+	if (json_object.message != ''){
+		// post login response
+		// wrong credentials
+		console.log("user not found")
+		document.getElementById("wrong_credentials_dialog").innerHTML = json_object.message // passes wrong username password
+		document.getElementById("wrong_credentials_dialog").style.display = "block"
+		
+	}
+	else{
+		
+		// get login response
+		console.log("blank message passed")
+		//document.getElementById("wrong_credentials_dialog").innerHTML = json_object.message
+		
+	}
+
+</script>
+	
+</head>
+</html>
