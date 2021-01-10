@@ -5,7 +5,7 @@
 
 <!-- homepage route -->
 <!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
-<form id = "homePage" method="POST" action = "/login"></form>
+<form id = "homePage" method="POST" action = "/login" ></form>
 
 <!-- registration route -->
 <!-- <form id = "registerPage" method="POST" action = "/post-register-data"></form> -->
@@ -30,7 +30,7 @@
 			
 		   
 			<!-- by default get method -->
-			<p>Not Registered?<a href="register" action = "/register">Register here</a></p>
+			<p>Not Registered?<a id = "newregister" href="register" action = "/register">Register here</a></p>
 
 			<!-- method = "POST"  -->
 
@@ -46,21 +46,30 @@
 <script>
 
 	var json_object = <%- JSON.stringify(data)%>;
-	console.log(typeof(json_object)) // string
-	if (json_object != ''){
+	var next_url = json_object.next_url;
+	document.getElementById("homePage").action = "/login/?url=" + next_url;
+	document.getElementById("newregister").action = "/register/?url=" + next_url;
+	document.getElementById("newregister").href = "/register/?url=" + next_url;
 
+
+	console.log(typeof(json_object)) // string
+	console.log("updated with url",document.getElementById("homePage"));
+	console.log("updated with url",document.getElementById("newregister"));
+
+
+	if (json_object.message != ''){
 		// post login response
 		// wrong credentials
-		console.log("existing user")
-		document.getElementById("wrong_credentials_dialog").innerHTML = json_object
+		console.log("user not found")
+		document.getElementById("wrong_credentials_dialog").innerHTML = json_object.message // passes wrong username password
 		document.getElementById("wrong_credentials_dialog").style.display = "block"
 		
 	}
 	else{
 		
 		// get login response
-		console.log("blank string passed")
-		document.getElementById("wrong_credentials_dialog").innerHTML = json_object
+		console.log("blank message passed")
+		//document.getElementById("wrong_credentials_dialog").innerHTML = json_object.message
 		
 	}
 
