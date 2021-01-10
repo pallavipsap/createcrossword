@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+    
+    <!-- type="text/css" -->
+<head>
+
+    <title>Welcome to crossword</title>
+    <link rel="stylesheet"  href="/css/scoreboard.css"/>
+    <!-- accesses the css file in public in render_button.html folder -->
+    
+    <!-- <h1>The quiz is below <%= JSON.stringify(data) %></h1> -->
+</head>
+
+
+<!-- <form id = "viewScore" method="POST" action="/sudent-score-page" ></form> -->
+
+<body>
+    
+    <textarea name = "student_score_table" id = "score_data"><%= JSON.stringify(data) %> </textarea>
+    <a href="/logout" action = "/logout">Logout</a>
+    <div class = "question-answer" id = "question-answer"></div>
+    <!-- <p> I will display &#10004;</p> -->
+    <!-- Hello <%= JSON.stringify(data.username) %> here are your answers with scores  -->
+
+</body>
+
+<script>
+
+        // Need this
+        var json_object = <%- JSON.stringify(data)%>
+        console.log("This is the JSON object to work with", json_object);
+
+
+        // var textarea_json_object = document.getElementById("score_data");
+        // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
+        // console.log("This is the JSON object to work with", json_object);
+        document.getElementById("question-answer").innerHTML = "Hello " + json_object.username + " here are your answers with scores";
+
+        /*
+        1. Bird
+        My ans :
+        Correct Ans : 
+
+        2. Animal
+        My ans:
+        Correct ans :
+        */
+
+    //    var json_object =  {"qa_data":
+    //                             [
+    //                                 {"qa_id":1,
+    //                                 "ques":"Bird",
+    //                                 "correct_ans":"OWL",
+    //                                 "student_ans":"PPP",
+    //                                 "qa_score":0},
+
+    //                                 {"qa_id":2,"ques":"Domestic animal",
+    //                                 "correct_ans":"COW",
+    //                                 "student_ans":"PPP",
+    //                                 "qa_score":0}
+    //                             ],
+    //                 "final_score":0 }
+    //                 // ,"_id":"5fcc7753f032493620319367" }
+
+
+        
+
+        var qa_data = json_object.qa_data;
+        div_length = qa_data.length;
+        console.log(div_length);
+        console.log(qa_data);
+
+        function DisplayScoreDiv(json_object) {
+
+            document.getElementsByClassName("question-answer");
+            var br = document.createElement('br');
+            var tag = document.createElement("p");
+            var span = document.createElement("span");
+            
+
+            for( i = 0; i <= div_length-1; i++) {
+                var outerdiv = document.createElement("div");
+                outerdiv.classList.add("outerdiv"); // adding class to div
+                document.getElementById("question-answer").appendChild(outerdiv);
+                
+          
+                // var div = document.createElement('div');
+                var div = document.createElement("span");
+                console.log(qa_data[i].qa_score)
+                div.innerHTML = "QUESTION " + qa_data[i].qa_id;
+                div.id = "qa_id_div";
+                outerdiv.appendChild(div)
+
+                if (qa_data[i].qa_score != 0) { //ticks 9745, &#10004 ,&#x2713
+                    var span = document.createElement("span");
+                    // span.style = "color:green";
+                    // span.class = "glyphicon glyphicon-remove";
+                    // span.innerHTML = " " + "&#10004;"
+                    span.innerHTML = " " + "&#9989";
+                    
+                }
+                else {
+                    var span = document.createElement("span");
+                    // span.style="color:red"
+                    //span.class = "glyphicon glyphicon-remove";
+                    // span.innerHTML = " " + "&#128502;"
+                    span.innerHTML = " " + "&#10060";
+                    
+                }
+                outerdiv.appendChild(span)
+
+                    
+            //         // div.innerHTML = "I will display &#10004;";
+            //         div.innerHTML = "QUESTION " + qa_data[i].qa_id + " " + "&#10004;";
+            //         
+            // }
+            // else {
+            //     div.innerHTML = "QUESTION " + qa_data[i].qa_id + " " + "&#128502;";
+            // }
+
+
+                // var div = document.createElement('div');
+                var div = document.createElement("p");
+                div.innerText = qa_data[i].ques;
+                div.id = "ques_div";
+                outerdiv.appendChild(div)
+
+                var div = document.createElement('div');
+                div.innerText = "My answer: " + qa_data[i].student_ans;
+                outerdiv.appendChild(div)
+
+                var div = document.createElement('div');
+                //var div = document.createElement("p");
+                div.innerText = "Correct Ans: " + qa_data[i].correct_ans;
+                outerdiv.appendChild(div)
+
+                var  div = document.createElement('div');
+                //var div = document.createElement("p");
+                div.innerText = "Score : " + qa_data[i].qa_score;
+                outerdiv.appendChild(div)
+
+                console.log(outerdiv)
+            }
+
+            var  outerdiv = document.createElement('div');
+            outerdiv.innerText = "Final Score : " + json_object.final_score;
+            outerdiv.classList.add("outerdiv");
+            document.getElementById("question-answer").appendChild(outerdiv);
+
+        }
+
+        DisplayScoreDiv(json_object)
+
+</script>
+
+</html>
