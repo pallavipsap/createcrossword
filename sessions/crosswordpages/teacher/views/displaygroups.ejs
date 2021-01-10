@@ -32,8 +32,8 @@ JSON.stringify(data)  =
 <!-- <form id = "postDisplayQuizzes" method="POST" action="/post-display-quizzes"></form> -->
 
 <body>
-    
     <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
+    <a href="/logout" action = "/logout">Logout</a>
     <p id = "welcomemessage"></p>
 <div>
     <input type="submit" value="+ new group" onclick="showCreateGroup()"/>
