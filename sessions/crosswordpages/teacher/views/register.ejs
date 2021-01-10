@@ -30,21 +30,40 @@
 <script>
 
         var json_object = <%- JSON.stringify(data)%>;
-        console.log(typeof(json_object)) // string
-        if (json_object != ''){
 
+        var next_url = json_object.next_url;
+	    document.getElementById("postUserData").action = "/register/?url=" + next_url;
+        console.log(typeof(json_object)) // string
+        // if (json_object != ''){
+
+        //     // post register response
+        //     // user already exists, display span with message
+        //     console.log("existing user")
+        //     document.getElementById("user_exists_dialog").innerHTML = json_object
+        //     document.getElementById("user_exists_dialog").style.display = "block"
+            
+        // }
+        // else{
+        //     // get register response
+        //     // blank
+        //     console.log("blank string passed")
+        //     document.getElementById("user_exists_dialog").innerHTML = json_object
+            
+        // }
+
+        if (json_object.message != ''){
             // post register response
             // user already exists, display span with message
             console.log("existing user")
-            document.getElementById("user_exists_dialog").innerHTML = json_object
+            document.getElementById("user_exists_dialog").innerHTML = json_object.message
             document.getElementById("user_exists_dialog").style.display = "block"
             
         }
         else{
+            
             // get register response
-            // blank
-            console.log("blank string passed")
-            document.getElementById("user_exists_dialog").innerHTML = json_object
+            console.log("blank message passed")
+            document.getElementById("user_exists_dialog").innerHTML = json_object.message
             
         }
 
