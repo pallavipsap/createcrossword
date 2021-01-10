@@ -26,6 +26,7 @@ passed json object : userid, username, password, quiz id and title for that cour
 
 <body>
     <textarea name = "group_cw_data" id = "group_cw_data_json"><%= JSON.stringify(data)%></textarea>
+    <a href="/logout" action = "/logout">Logout</a>
     <p id = "welcomemessage"></p>
 
     <p id="past_quiz_details">Past crosswords will be displayed below</p>
@@ -114,27 +115,24 @@ passed json object : userid, username, password, quiz id and title for that cour
                     // anchor_grades.href = "http://localhost:2000/" + anchor_grades.title + "?quiz_id="+ quizzes[i]["quiz_id"];
                     // anchor_grades.href = "http://localhost:2000/grades" +  quizzes[i]["quiz_id"] ;
 
-                    anchor_grades.href = "/grades/" +  quizzes[i]["quiz_id"] ;
+                    anchor_grades.href = "/grades/?quiz_id=" +  quizzes[i]["quiz_id"] ;
                     document.getElementById("allquizzes").appendChild(anchor_grades);
 
 
                     // link 2
-                    var anchor_try = document.createElement("a");
-                    var link = document.createTextNode("Try quiz")
-                    anchor_try.appendChild(link);
-                    anchor_try.title = "Try quiz";
-                    // passing course_name as parameter and quiz_id as query
+                    // var anchor_try = document.createElement("a");
+                    // var link = document.createTextNode("Try quiz")
+                    // anchor_try.appendChild(link);
+                    // anchor_try.title = "Try quiz";
+                    // // passing course_name as parameter and quiz_id as query
 
-                    // parsed as quiz_id was a string in json_object
-                    //anchor_try.href = "http://localhost:2000/" +  JSON.parse(quizzes[i]["quiz_id"]);
-                    anchor_try.href = "/play/" +  json_object.course + "/" + quizzes[i]["quiz_id"];
-
-                    // anchor.action = "/create/groups/" + anchor.title + "?quiz_id="+quizzes[i]["quiz_id"];
-                    document.getElementById("allquizzes").appendChild(anchor_try);
+                    // // parsed as quiz_id was a string in json_object
+                    // anchor_try.href = "/play/" +  json_object.course + "/" + quizzes[i]["quiz_id"];
+                    // document.getElementById("allquizzes").appendChild(anchor_try);
 
                     
                     var line_break = document.createElement("br")
-                    anchor_try.append(line_break);
+                    anchor_grades.append(line_break);
                     console.log(document.getElementById("allquizzes"));
 
                 }
