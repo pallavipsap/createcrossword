@@ -21,11 +21,13 @@
 <!-- To handle just one attempt, check if correct user -->
 
 
-<form id = "viewScore" method="POST" action="/sudent-score-page" ></form>
+<form id = "viewScore" method="POST" action="/grades/"></form>
 
 <body>
+    
     <textarea name = "quiz_data_json" id = "quiz_data_json"><%= JSON.stringify(data) %> </textarea>
     <textarea name = "student_data_json" id = "student_data_json" form = "viewScore"></textarea><br>
+    <a href="/logout" action = "/logout">Logout</a>
     <p id = "welcomemessage"></p>
     <label>Enter your correct username here </label>
     <input type = "text" name = "player_username" form = "viewScore" required>
@@ -165,6 +167,7 @@
 
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
+        document.getElementById("viewScore").action = '/grades/?course_id='+ json_object.course_id + '&quiz_id=' + json_object.quizid;
 
         //console.log("This is the JSON object to work with", json_object);
         //document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
