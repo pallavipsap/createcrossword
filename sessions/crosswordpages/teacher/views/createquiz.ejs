@@ -9,28 +9,35 @@
 
     <title> Display Quiz for specific group Page </title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-   
 </head>
 
 <form id = "saveForm" method="POST" action="/submitquiz"></form>
+
+
+<!-- input for New create crossword
+{"userId":"5fe661112aaedc40d812bd47",
+"username":"sapalep1",
+"course_id":"4a22ed50-d498-44bb-9188-a164c1a10385",
+"course":"check1-check1"} -->
 
 <body>
  
     <textarea name = "course_data" id = "course_data_json"><%= JSON.stringify(data)%></textarea>
     <a href="/logout" action = "/logout">Logout</a>
+    <div>Navigation bar is here : Home | About | </div>
     <p id = "welcomemessage"></p>
 
         <div id="checkForm">
-          <div>Navigation bar is here : Home | About | </div>
+          
           <div>
-            <label>Course Name</label>
-            <p type="text" name="course" id="course" form = "saveForm"></p> <!-- in future pass course name to display -->
+            <label>Course Name : </label>
+            <span type="text" name="course" id="course" form = "saveForm" required></span> <!-- in future pass course name to display -->
 
           </div>
           <div>
             <label>Title of the crossword*</label><br>
             <label class="validation-error hide" id="answerValidationError">This field is required.</label>
-            <input type="text" name="title" id="title" form = "saveForm" />
+            <input type="text" name="title" id="title" form = "saveForm" required/>
             <!-- form = "saveForm" -->
           </div>
       
@@ -38,11 +45,11 @@
       
             <label>Maximum points* </label><br>
             <label class="validation-error hide" id="answerValidationError">This field is required.</label>
-            <input type="text" name="points" id="points" form = "saveForm" />
+            <input type="text" name="points" id="points" form = "saveForm" required/>
             <!-- form = "saveForm" -->
       
             <label>Crossword Instructions ( optional ) </label><br>
-            <textarea name="instructions" id="instructions" form = "saveForm"></textarea>
+            <textarea name="instructions" id="instructions" form = "saveForm" required></textarea>
             <!-- <form = "saveForm">-->
           
           </div>
@@ -124,12 +131,11 @@
             <!-- </div> -->
          
           </div>
-
           <!-- view quiz renders on right side -->
           <!-- this will be create button on prior quiz -->
           <!-- <input type="submit" value="View Quiz" form = "viewForm"/> -->
-          <input type="submit" value="View Quiz" onclick="Create()"/>
-          <input type="submit" value="Save Quiz" form = "saveForm"/>
+          <input type="submit" value="Preview" onclick="Create()"/> <!-- control goes to crossword.js -->
+          <input type="submit" value="Save Quiz" form = "saveForm"/><br>
       
           <!-- <button onclick="saveQuiz()">Save Quiz</button> just to check if text area is diplayed -->
           <!-- <input  class="save-button" type="submit" onclick="saveQuiz()" value="Save Quiz" form = "saveForm" /> -->
@@ -140,9 +146,68 @@
       
         
         <!-- <div class="split right"></div> -->
+        <span name = "warning" id = "warning" style = "color:red">Warning : If you click on "Save Quiz" button, you will not be able to change it</span><br>
+        <span name = "disclaimer" id = "warning" style = "color:blue">Disclaimer : The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</span>
+        
         <div class="center crossword" id="crossword">
           <span style="color: white;" > Crossword will be created here</span>
-        </div>
+        </div>    <!-- </crossword> -->
+
+          <!-- this is changed -->
+          <div class="float-container" id = "float-container" style="display: none;">
+         
+            <div class="float-child">
+
+              <div class="across">ACROSS</div>
+    
+              <table class="across_list" id="across_list" >
+                <!-- form = "saveForm" -->
+    
+                <!-- <thead>
+                  <tr>
+                    <th>Sr.Number</th>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th>Options</th>
+                  </tr>
+                </thead> -->
+    
+                <!-- <div id="acrosstable"> -->
+                  <tbody id="at">
+                    <!-- row 1 -->
+                    <!-- <tr>
+                      <td>1</td>
+                      <td>Bird</td>
+                    </tr> -->
+                    
+                  </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
+                <!-- </div> -->
+              </table>
+            </div>     <!-- </across-child> -->
+            <!-- across ended -->
+    
+            <div class="float-child">
+              <div class="down">DOWN</div>
+  
+                <table class="down_list" id="down_list" >
+                    <!-- form = "saveForm" -->
+        
+                    <!-- dont need for now -->
+                    <!-- <div id="downtable"> -->
+                      <tbody id = "dt">
+                        <!-- row 1 -->
+                        <!-- <tr>
+                          <td>2</td>
+                          <td>Animal</td>
+                        </tr> -->
+                        
+                      </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
+                    </table>
+                    </div>  <!-- </down-child> -->
+                 
+                </div>    <!-- </container> -->
+         
+        <!-- </div> probably not needed -->
        
       
         <!-- <script src="script.js"></script> -->
@@ -156,10 +221,31 @@
 
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
-        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
-        
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and " +  json_object.mode +" crossword for course name " + json_object.course;
         document.getElementById("course").innerHTML = json_object.course // in future pass course name to display
-        var link = "/submitquiz/" + json_object.course  + "?course_id=" + json_object.course_id;
+        var link = "/submitquiz/" + json_object.mode + "/" + json_object.course +  "?course_id=" + json_object.course_id;
+        
+        // changes because of mode : 
+
+        if(json_object.mode == "edit" || json_object.mode == "duplicate"){ // same thing for duplicate
+
+          // title
+          document.getElementById("title").value = json_object.title;
+          // maximum points
+          document.getElementById("points").value = json_object.points;
+          // textarea
+          console.log(typeof(json_object.quizdata))
+          document.getElementById("ques_ans_data").innerHTML = JSON.stringify(json_object.quizdata);
+          console.log(typeof(json_object.quizdata))
+        }
+
+        if(json_object.mode == "edit"){
+
+          link+="&quizid="+json_object.quizid;
+        }
+
+
+        
         document.getElementById("saveForm").action = link;
         console.log(document.getElementById("saveForm"))
 
