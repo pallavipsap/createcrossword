@@ -675,11 +675,13 @@ app.post('/home/ajaxpostcourses',  redirectLogin, function(req,res) {
  
              }
  
-               // else update courses field with new course
+               // OR update courses field with new course, 
+               // if teacher already exists, just update courses
                console.log("update value", update)
                if (update){
-                 teacherdata_doc_obj.courses.push({
-                   "course_id": uuidv4(),
+                var uuid =  uuidv4()
+                 teacherdata_doc_obj.courses.push({ // create new course
+                   "course_id": uuid,
                    "course_no" : req.body.course_no,
                    "course_name" : req.body.course_name
                 }) // push in courses array of object
@@ -688,31 +690,34 @@ app.post('/home/ajaxpostcourses',  redirectLogin, function(req,res) {
                 console.log("updated object?",teacherdata_doc);
                 
                 // how can this be avoided??, I want to update in above promise , ask***
-                db.collection('teacherdata').updateOne({
-                      "user-id": userId},
+                // update teacherdata with new course
+                db.collection('teacherdata').updateOne(
+                      {"user-id": userId},
                       {$set: {"courses" : teacherdata_doc_obj.courses}}
                   )
                   .then(function(check){
                     console.log("my teacherdata successful?",check);
                   })
-                 res.send('success');
+                 res.send(uuid); // send uuid back to displaygroups.ejs
+
+                //  res.send('success')
                  // res.status(status).send(body)
                } // end of if
-               
-               
+              
              })
            }
            
-           else { // create collection
+           else { // create document in teacher is creating group for the first time, and insert new document
+             var uuid =  uuidv4()
              db.collection('teacherdata').insertOne({
                      "user-id": userId,
                      "courses" : [
-                       { "course_id" : uuidv4(),
+                       { //"course_id" : uuidv4(),
+                         "course_id" : uuid,
                          "course_no" : req.body.course_no,
                          "course_name" : req.body.course_name
                        }
-                     ]
-                    
+                     ]   
                  })
                  .then(function(userdata){
                    console.log("my teacherdata in else",userdata);
@@ -722,7 +727,7 @@ app.post('/home/ajaxpostcourses',  redirectLogin, function(req,res) {
                      console.log("some error in inserting new data");
                      console.log(e);
                  });
-                 res.send('success');
+                 res.send(uuid); // send uuid back to displaygroups.ejs
            }
          })
         .catch((e) => {
@@ -815,7 +820,125 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
 });
 
 
-// page 6
+// page 5 : 
+// show saved quiz
+
+app.get('/create/save/:course', function(req,res){ // quiz_id as query parameter
+  console.log("came from createquiz.ejs to go to savedquiz.ejs", req.body);
+  var checkparams = req.params; // coursename
+  var checkquery = req.query; // quiz id
+  console.log(checkparams) // { course: 'check1-check1' }
+  console.log(checkquery) // { course_id: 'b115c339-8d3b-46e0-ac38-0cf9d1416688' }
+  // res.send('true');
+
+  const{userId} = req.session;
+  const{username} = req.session;
+  var course_data = {
+    userId: userId,
+    username : username,
+    // password : req.body.groupdata['password'],
+    quizid : req.query.quiz_id,
+    course : req.params.course
+ }
+
+ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  if (err) throw err;
+  var db = client.db('test');
+  db.collection('quizdata').find({"_id": ObjectID(course_data.quizid)}).toArray()
+    .then(function(quizdata){
+        console.log("this is my data from db", quizdata); // this is an array of quiz objects
+
+        quizdata_obj = quizdata[0]
+        var quiz_data = {
+          userId : userId,
+          username : username,
+          course : course_data.course,
+          course_id : quizdata_obj.course_id,
+          quizid : quizdata_obj._id,
+          title : quizdata_obj.title,
+          points : quizdata_obj.points,
+          quizdata : quizdata_obj.quizdata
+        }
+
+        console.log("This is passed to savedquiz.ejs",quiz_data);
+        res.render('savedquiz.ejs',{data:quiz_data})
+        //res.send(true)
+
+    })
+    .catch((e) => {
+                console.log("there is an error in grabbing quizdata");
+                console.log(e);
+    });
+
+})
+
+});
+
+// page 5 :EDIT and DUPLICATE
+
+// go to crossword page to edit it
+// pull data from db and send to crossword page again
+
+app.get('/create/:mode/:course', function(req,res){ // quizid as query
+
+  console.log("came from displayquizzes to ?? ", req.body);
+  const{userId} = req.session;
+  const{username} = req.session;
+  var checkparams = req.params; // course name, mode ( edit / duplicate)
+  var checkquery = req.query; // quizid
+
+  console.log(checkparams);
+  console.log(checkquery);
+  var course_data = {
+    userId: userId,
+    username : username,
+    // password : req.body.groupdata['password'],
+    quizid : req.query.quiz_id,
+    course : req.params.course,
+    mode : req.params.mode // edit or duplicate
+ }
+ console.log("request to edit / duplicate", course_data)
+
+ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  if (err) throw err;
+  var db = client.db('test');
+
+  db.collection('quizdata').find({"_id": ObjectID(course_data.quizid)}).toArray()
+    .then(function(quizdata){
+        console.log("this is my data from db", quizdata); // this is an array of quiz objects
+
+        quizdata_obj = quizdata[0]
+        var quiz_data = {
+          userId : userId,
+          username : username,
+          course : course_data.course,
+          course_id : quizdata_obj.course_id,
+          quizid : quizdata_obj._id,
+          title : quizdata_obj.title,
+          points : quizdata_obj.points,
+          quizdata : quizdata_obj.quizdata,
+          mode :  course_data.mode // "edit" // "duplicate"
+        }
+
+        console.log("This is passed to createquiz.ejs",quiz_data);
+        res.render('createquiz.ejs',{data:quiz_data})
+        //res.send(true)
+
+    })
+    .catch((e) => {
+                console.log("there is an error in grabbing quizdata");
+                console.log(e);
+    });
+
+})
+
+})
+
+
+
+
+
+// page 6 : Main create crossword page
 // display quizzes to create quizzes
 // send data to page 6 from page 5
 // username, password, user_id, course_id, course_name
@@ -843,7 +966,8 @@ app.get('/createquiz/:course', function(req,res){
     userId: userId,
     username : username,
     course_id : req.query.course_id,
-    course : req.params.course
+    course : req.params.course,
+    mode : "create"
 }
 
   console.log("use this to create quiz", course_data);
@@ -851,20 +975,26 @@ app.get('/createquiz/:course', function(req,res){
 })
 
 
-// page 6
+// page 6 to page 5
+// Submit quiz button ( when newly created )
 // save quiz data in DB and go back to page 5
 //TODO: check if quiz name is already present in DB
 
-app.post('/submitquiz/:course', function (req, res) { // course_id in query strings
+// based on the mode update here - edit / duplicate / create
+//  link - submitquiz/:mode/:course
+
+app.post('/submitquiz/:mode/:course', function (req, res) { // course_id and quizid in edit mode, only course_id  in duplicate mode
 
   const{userId} = req.session;
   const{username} = req.session;
-  var course_id = req.query.course_id; 
+  var course_id = req.query.course_id; // course_id , mode = / edit / duplicate / create
   var course = req.params.course;
+  var mode = req.params.mode;
 
   console.log(req.body)
-  console.log("querystrings", req.query) // { course_id: 'b115c339-8d3b-46e0-ac38-0cf9d1416688' }
-  console.log("params", req.params) // { course: 'check1-check1' }
+  console.log("querystrings", req.query) // { course_id: 'b115c339-8d3b-46e0-ac38-0cf9d1416688' (& quiz id for edit mode )}
+  console.log("params", req.params) // { course: 'check1-check1' , mode : '' } // edit / duplicate / create
+  console.log("My mode after submitting quiz")
   req.body["ques_ans_data"] = JSON.parse(req.body["ques_ans_data"]);
   //res.send('Quiz Data received:\n' + JSON.stringify(req.body));
   console.log(req.body) // correct format
@@ -887,22 +1017,60 @@ data = {
 
 console.log("This data to be put in DB",data)
 
-
   // query to insert data
-  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+
+  if(mode === "create" || mode == "duplicate"){
+
+    MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
   
-    if (err) throw err;
-    var db = client.db('test');
-    db.collection('quizdata').insertOne(data, function (findErr, result) {
-      if (findErr) throw findErr;
-      console.log('I am printing on line 72');
-      // display all quizzes for that course
-      var link = '/create/groups/' + course + "?course_id=" + course_id;
-      res.redirect(link);
-    
+      if (err) throw err;
+      var db = client.db('test');
+      db.collection('quizdata').insertOne(data, function (findErr, result) {
+        if (findErr) throw findErr;
+        console.log('I am printing on line 72');
+        // display all quizzes for that course
+        var link = '/create/groups/' + course + "?course_id=" + course_id;
+        res.redirect(link);
+        });  
     });
-  
+
+  }
+
+  else if(mode === "edit") { // update the quiz
+      console.log(mode)
+      console.log("data edited so just update")
+
+      MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        if (err) throw err;
+        var db = client.db('test');
+
+        console.log("quiz_id inside", req.query.quizid, "type is", typeof(req.query.quizid))
+        db.collection('quizdata').updateOne(
+          {"_id": ObjectID(req.query.quizid)},
+          {$set: {"title" : data.title,
+                  "points" : data.points,
+                  "quizdata" : data.quizdata } })
+          .then(function(quizdata) {
+                    
+            console.log('I am printing on line 72');
+            console.log(quizdata)
+            // display all quizzes for that course
+            var link = '/create/groups/' + course + "?course_id=" + course_id;
+            res.redirect(link);
+            })
+            .catch((e) => {
+              console.log("there is an error in grabbing quizdata");
+              console.log(e);
   });
+
+        
+  });
+}
+  // else if (mode === "duplicate"){
+  //   console.log("data duplicated ")
+  //   res.send(true)
+
+  // }
 
 });
 
