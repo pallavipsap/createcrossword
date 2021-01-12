@@ -114,7 +114,12 @@ JSON.stringify(data)  =
                     anchor.href = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
                     anchor.action = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
                    
+
                     document.getElementById("allgroups").appendChild(anchor);
+                    var line_break = document.createElement("br")
+                    anchor.append(line_break);
+
+                   
                     console.log(document.getElementById("allgroups"));
 
                 }
@@ -200,8 +205,8 @@ JSON.stringify(data)  =
                 
                 success: function(data) { // inserted in DB, now create a button in this function
                     console.log("this has succeded", data)
-                    
-                    if(data == 'success'){
+                    // data is the course_id
+                    if(data != 'course_error'){
                         
 
                         // hide input boxes
@@ -220,12 +225,44 @@ JSON.stringify(data)  =
                                 // span.innerHTML = 'this is success';
                                 // document.getElementById("allgroups").appendChild(span);
 
-                                var input = document.createElement("input");
-                                input.type = "submit";
+                                //var input = document.createElement("input");
+                                //input.type = "submit";
 
-                                input.value = document.getElementById("course_no").value + "-" + document.getElementById("course_name").value;
+
+
+                                // var anchor = document.createElement("a");
+                                // var link = document.createTextNode(courses[i]["course_no"] + "-" + courses[i]["course_name"])
+
+                                // anchor.appendChild(link);
+                                // anchor.title = courses[i]["course_no"] + "-" + courses[i]["course_name"];
+                                // //anchor.href = "/create/groupquizzes/" + courses[i]["course_id"];
+                                // anchor.href = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
+                                // anchor.action = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
+
+
+
+                                var new_anchor = document.createElement("a");
+                                var course_no = document.getElementById("course_no").value;
+                                var course_name = document.getElementById("course_name").value
+
+                                var link = document.createTextNode(course_no + "-" + course_name)
+                                new_anchor.appendChild(link)
+                                new_anchor.title = course_no + "-" + course_name;
+                                new_anchor.href = "/create/groups/" + new_anchor.title + "?course_id="+ data;
+                                new_anchor.action = "/create/groups/" + new_anchor.title + "?course_id="+ data;
                                 console.log(document.getElementById("allgroups"));
-                                document.getElementById("allgroups").appendChild(input);
+                                document.getElementById("allgroups").appendChild(new_anchor);
+
+                                var line_break = document.createElement("br")
+                                new_anchor.append(line_break);
+
+
+                                // commented here
+                                // var input = document.createElement("input");
+                                // input.type = "submit";
+                                // input.value = document.getElementById("course_no").value + "-" + document.getElementById("course_name").value;
+                                // console.log(document.getElementById("allgroups"));
+                                // document.getElementById("allgroups").appendChild(input);
 
                              
                             }
