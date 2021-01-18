@@ -18,6 +18,14 @@ passed json object : userid, username, password, quiz id and title for that cour
 - pull all quiz ids for a particular course from quizdata collection - check a specific user, then a specific courseid, then all quiz ids
 - then pull all the quizzes from the student data 
 
+json_object = 
+{"userId":"5fe661112aaedc40d812bd47","
+username":"sapalep1",
+"course_id":"4a22ed50-d498-44bb-9188-a164c1a10385","course":"check1-check1",
+"quizzes":[{"quiz_id":"5fe6619b2aaedc40d812bd49","quiz_title":"algo"},
+            {"quiz_id":"5fe662472aaedc40d812bd4a","quiz_title":"python"},
+            {"quiz_id":"5ffe9d60cc4e3a129c27dc89","quiz_title":"delete this - 1"}]}
+
 -->
 
 <!-- create new quiz route -->
@@ -33,11 +41,10 @@ passed json object : userid, username, password, quiz id and title for that cour
     <!-- leads to a different page to  generate crossword -->
     <!-- not sure if i need form type here -->
     <!-- <input type="submit" value="+ create new crossword" form = "postCreateQuiz"/> -->
-    
- 
 </div>
 
     <p id="past_quiz_details">Past crosswords will be displayed below</p>
+    <span id = "no_display_quizzes_dialog" style = "display: none;"></span>
     <div class = "allquizzes" id = "allquizzes"></div>
 
 
@@ -81,7 +88,6 @@ passed json object : userid, username, password, quiz id and title for that cour
         document.getElementById("create_crossword").appendChild(anchor);
         
 
-
          // TODO ** : create these quizzes using ejs syntax
          // quiz ids is an array of quiz_id and quiz_name
          function DisplayPrevCrosswords(quizzes) { 
@@ -103,10 +109,28 @@ passed json object : userid, username, password, quiz id and title for that cour
 
 
                     // link 1
+                    var span = document.createElement("span");
+                    span.innerHTML = quizzes[i]["quiz_title"];
+                    document.getElementById("allquizzes").appendChild(span);
+
+                    var line_break = document.createElement("br")
+                    span.append(line_break);
+
+
+                    // var anchor_view = document.createElement("a");
+                    // var link = document.createTextNode(quizzes[i]["quiz_title"])
+                    // anchor_view.appendChild(link);
+                    // anchor_view.title = quizzes[i]["quiz_title"];
+                    // // passing course_name as parameter and quiz_id as query
+                    // anchor_view.href = "/create/save/" +  json_object["course"]  + "?quiz_id="+ quizzes[i]["quiz_id"];
+                    // anchor_view.action = "/create/save/" +  json_object["course"]  + "?quiz_id="+quizzes[i]["quiz_id"];
+                    // document.getElementById("allquizzes").appendChild(anchor_view);
+
+                    // link 1
                     var anchor_view = document.createElement("a");
-                    var link = document.createTextNode(quizzes[i]["quiz_title"])
+                    var link = document.createTextNode("View")
                     anchor_view.appendChild(link);
-                    anchor_view.title = quizzes[i]["quiz_title"];
+                    anchor_view.title = "View"
                     // passing course_name as parameter and quiz_id as query
                     anchor_view.href = "/create/save/" +  json_object["course"]  + "?quiz_id="+ quizzes[i]["quiz_id"];
                     anchor_view.action = "/create/save/" +  json_object["course"]  + "?quiz_id="+quizzes[i]["quiz_id"];
@@ -124,9 +148,9 @@ passed json object : userid, username, password, quiz id and title for that cour
 
                      // link 3
                     var anchor_try = document.createElement("a");
-                    var link = document.createTextNode("Try quiz")
+                    var link = document.createTextNode("Try crossword")
                     anchor_try.appendChild(link);
-                    anchor_try.title = "Try quiz";
+                    anchor_try.title = "Try crossword";
                     // passing course_name as parameter and quiz_id as query
                     //anchor_try.href = "http://localhost:2000/" +  quizzes[i]["quiz_id"];
                     anchor_try.href = "/play/" +  json_object["course"]  + "/" + quizzes[i]["quiz_id"];
@@ -164,12 +188,17 @@ passed json object : userid, username, password, quiz id and title for that cour
             // "courses" in json_object ? DisplayPrevGroups(json_object["courses"]) : console.log("no past courses") ; // pass array
             
             // TODO : modify this code to handle quizzes in better way, to not call the function at all
-            if (json_object["quizzes"] != '[]'){ // finding key in json object 
+            console.log(typeof(json_object["quizzes"]), "quiz type")
+            if (JSON.stringify(json_object["quizzes"]) != '[]'){ // finding key in json object 
                 console.log("in if", json_object["quizzes"])
                 DisplayPrevCrosswords(json_object["quizzes"])
             }
-            else 
+            else {
                 console.log("no past crosswords");
+                console.log("blank string passed");
+                document.getElementById("no_display_quizzes_dialog").innerHTML = "No past quizzes"
+                document.getElementById("no_display_quizzes_dialog").style.display = "block"
+            }
 
   
         
