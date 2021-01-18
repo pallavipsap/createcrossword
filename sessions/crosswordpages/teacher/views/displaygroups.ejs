@@ -2,6 +2,7 @@
 <head>
 <title> Create Group Page </title>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<link rel="stylesheet" href="/css/displaygroups.css">
 </head>
 
 
@@ -33,12 +34,18 @@ JSON.stringify(data)  =
 
 <body>
     <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
-    <a href="/logout" action = "/logout">Logout</a>
+    <nav>
+        <span id = "username"></span>
+        <a id="home" href="/home">Home</a>
+        <a id="tutorial" href="">Tutorial</a>
+        <a id="logout" href="/logout" action = "/logout">Logout</a>
+    </nav>
+    <p id = "guidelines"></p>
     <p id = "welcomemessage"></p>
-<div>
-    <input type="submit" value="+ new group" onclick="showCreateGroup()"/>
-    <!-- <input type="submit" value="Play Crossword" form = "postPlayGroups"/> -->
-</div>
+    <div id="new_grp">
+        <input id="new" type="submit" value=" + New group" onclick="showCreateGroup()"/>
+        <!-- <input type="submit" value="Play Crossword" form = "postPlayGroups"/> -->
+    </div>
 <!-- style="display: none;" -->
 <!-- works for current code -->
    <!-- <div id="creategroup_dialog" style="display: none;">
@@ -48,22 +55,23 @@ JSON.stringify(data)  =
     <input type="submit" value="Click to Create group" onclick="Create()" form = "test"/> -->
 
     <div id="creategroup_dialog" style="display: none;">
-    <input type="text" name = "course_no" id="course_no" placeholder="Enter group number here" form = "test" required></input>
-    <input type="text" name = "course_name" id="course_name" placeholder="Enter group name here" form = "test" required></input>
-    <!-- <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea> -->
-    <!-- with create() function -->
-    <!-- <button id = "action-button" onclick="Create()"> Click to create group</button> -->
-
-    <!-- without create() function -->
-    <button id = "action-button"> Click to create group</button><br>
+        <input class="enter" type="text" name = "course_no" id="course_no" placeholder="Group number eg. 1" form = "test" required></input>
+        <input class="enter" type="text" name = "course_name" id="course_name" placeholder="Group name eg. Algorithms" form = "test" required></input>
+        <!-- <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea> -->
+        <!-- with create() function -->
+        <!-- <button id = "action-button" onclick="Create()"> Click to create group</button> -->
     
-
-  </div>
-
-    <span id = "course_exists_dialog" style = "display: none;">Sorry, this course already exists. Please change course number or course name</span>
-    <span id = "course_blank_dialog" style = "display: none;">Please enter both course number and course name</span>
+        <!-- without create() function -->
+        <br>
+        <button id = "action-button">Create</button><br>
+    </div>
     
-    <div class = "allgroups" id = "allgroups"></div>
+        <span id = "course_exists_dialog" style = "display: none;">Sorry, this course already exists. Please change course number or course name</span>
+        <span id = "course_blank_dialog" style = "display: none;">Please enter both group number and group name</span>
+        <span id = "course_create_dialog" style = "display: none;">Group created successfully</span>
+        <p id="exist">Existing Groups</p>
+        <span id = "no_display_groups_dialog" style = "display: none;"></span>
+        <div class = "allgroups" id = "allgroups"></div>
 
 <script>
 
@@ -83,8 +91,10 @@ JSON.stringify(data)  =
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
 
-        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " please go ahead and create groups or click on groups to create quizzes";
-
+        document.getElementById("username").innerHTML = "Cross-Build-Play"
+        document.getElementById("welcomemessage").innerHTML = "Now let us create groups or click on existing groups to create crosswords";
+        var guidelines = document.getElementById("guidelines");
+        guidelines.innerHTML = "Guidelines : You should have an existing group to create crosswords in it. A group means a group of crosswords. This will help you organize multiple crosswords "
 
         // TODO : create buttons for all the groups present in the teacher collection for the given teacherObjectID
 
@@ -129,7 +139,13 @@ JSON.stringify(data)  =
             
             if ("courses" in json_object) // finding key in json object
                 DisplayPrevGroups(json_object["courses"])
-            else console.log("no past courses");
+            else {
+                console.log("no past courses");
+                console.log("no past crosswords");
+                console.log("blank string passed");
+                document.getElementById("no_display_groups_dialog").innerHTML = "No past groups"
+                document.getElementById("no_display_groups_dialog").style.display = "block"
+            }
             
 
         function appendForm(value){
@@ -156,6 +172,8 @@ JSON.stringify(data)  =
                 // document.getElementById("course_no").value = "";
                 // document.getElementById("course_name").value = "";
                 document.getElementById("creategroup_dialog").style.display = "block";
+                document.getElementById("course_create_dialog").style.display = "none";
+
             }
             
         }
@@ -214,7 +232,9 @@ JSON.stringify(data)  =
                         document.getElementById("course_blank_dialog").style.display = "none";
                         document.getElementById("course_exists_dialog").style.display = "none";
 
-                        alert("group is created");
+                        document.getElementById("course_create_dialog").style.display = "block";
+
+                        //alert("group is created");
 
                                 // if(document.getElementById("course_exists_dialog").style.display == "block"){
                                 //     document.getElementById("course_exists_dialog").style.display = "none"
