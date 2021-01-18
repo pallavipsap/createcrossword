@@ -2,7 +2,7 @@
 <head>
 <title> Login Page </title>
 	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
-
+	<link rel="stylesheet" href="/css/login.css">
 <!-- homepage route -->
 <!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
 <form id = "homePage" method="POST" action = "/login" ></form>
@@ -15,22 +15,24 @@
 	<textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
 	<div class = "userdetails">
 	<!-- <img src = "login.png" class = "login"> -->
-		<h1> Give your credentials</h1>
+		<h1>Cross-Build-Play</h1>
 		<form>
+			<span id = "wrong_credentials_dialog" style = "display: none;"></span>
 			<!-- <p>Username</p> -->
-            <input type="text" id = "username" name = "username" placeholder="Enter username here" form = "homePage" required><br>
+            <input type="text" id = "username" name = "username" placeholder=" Username" form = "homePage" required><br>
     
 			<!-- <p>Password</p> -->
-            <input type = "text" id = "password" name = "password" placeholder="Enter password here" form = "homePage" required><br>
-			<span id = "wrong_credentials_dialog" style = "display: none;"></span>
+            <input type = "text" id = "password" name = "password" placeholder=" Password" form = "homePage" required><br>
+			<!-- <span id = "wrong_credentials_dialog" style = "display: none;"></span> -->
 
-			<input type="submit" value = "Login" form = "homePage">
+			<input id="login" type="submit" value = "Log in" form = "homePage">
 		</form>
 
 			
 		   
+				   
 			<!-- by default get method -->
-			<p>Not Registered?<a id = "newregister" href="register" action = "/register">Register here</a></p>
+			<p>Don't have an account? <a id = "newregister" href="register" action = "/register">Sign up</a></p>
 
 			<!-- method = "POST"  -->
 
@@ -38,6 +40,7 @@
 			<!-- Dont have an account ? Create yours now -->
 		
 		<!-- <script type="text/javascript" src="js.js"></script> -->
+		
 		
 	</div>
 </body>
@@ -48,6 +51,7 @@
 	var json_object = <%- JSON.stringify(data)%>;
 	var next_url = json_object.next_url;
 	document.getElementById("homePage").action = "/login/?url=" + next_url;
+	
 	document.getElementById("newregister").action = "/register/?url=" + next_url;
 	document.getElementById("newregister").href = "/register/?url=" + next_url;
 
