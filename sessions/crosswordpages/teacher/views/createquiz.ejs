@@ -32,8 +32,8 @@
           <div>
             <label>Course Name : </label>
             <span type="text" name="course" id="course" form = "saveForm" required></span> <!-- in future pass course name to display -->
-
           </div>
+
           <div>
             <label>Title of the crossword*</label><br>
             <label class="validation-error hide" id="answerValidationError">This field is required.</label>
@@ -42,24 +42,24 @@
           </div>
       
           <div>
-      
-            <label>Maximum points* </label><br>
+            <label>Points* </label><br>
             <label class="validation-error hide" id="answerValidationError">This field is required.</label>
             <input type="text" name="points" id="points" form = "saveForm" required/>
             <!-- form = "saveForm" -->
-      
-            <label>Crossword Instructions ( optional ) </label><br>
-            <textarea name="instructions" id="instructions" form = "saveForm" required></textarea>
-            <!-- <form = "saveForm">-->
-          
+          </div>
+
+          <div>
+            <label>Instructions for the player *</label><br>
+            <label class="validation-error hide" id="answerValidationError">This field is required.</label>
+            <textarea rows = "4" cols = "50" name="instructions" id="instructions" placeholder = "eg. Read the clues and fill in correct answer" form = "saveForm" required></textarea>
+            <!-- <form = "saveForm">-->   
           </div>
       
           <div>
             <table>
               <td>
-                <!--first column-->
+                <!--first row-->
                 <tr>
-      
                   <!-- add row function call -->
                   <form onsubmit="event.preventDefault();onFormSubmit();" autocomplete="off">
       
@@ -68,7 +68,6 @@
                       <label class="validation-error hide" id="questionValidationError">This field is
                         required.</label>
                       <textarea name="question" id="question"></textarea>
-      
                       <!--<textarea placeholder="type text here"></textarea>-->
                     </div>
       
@@ -108,13 +107,26 @@
       
                       <div id="entiretable">
                         <tbody>
-                          <!-- <tr form = "saveForm">
+
+                        <!-- for edit / duplicate options -->
+                        <% if (JSON.stringify(data.quizdata)) {  %>
+                          <%= JSON.stringify(data.quizdata) %>
+                          <% for(var i=0; i< data.quizdata.length; i++) { %>
+                            <tr> 
+                              <td></td>
+                              <td><%-data.quizdata[i].question %></td>
+                              <td><%-data.quizdata[i].answer %></td>
+                              <td><a onClick="onEdit(this)">Edit</a>
+                              <a onClick="onDelete(this)">Delete</a></td>
+                            </tr>
+                          <%}%>
+                        <% } %>
+                        <!-- <tr form = "saveForm">
                             <td>serial num</td>
                             <td>q1</td>
                             <td>a2</td>
                             <td>edit/delete</td>
-                          </tr> -->
-                          
+                        </tr> -->                          
                         </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
                       </div>
       
@@ -123,34 +135,29 @@
                 </tr>
               </td>
             </table>
-      
-            <!-- <div> -->
-              <!-- <input type="submit" value="Create Quiz" /> -->
-              <!-- <input type="submit" value="Student View" /> -->
-              
-            <!-- </div> -->
          
-          </div>
+          </div> <!-- end of table -->
+
           <!-- view quiz renders on right side -->
           <!-- this will be create button on prior quiz -->
           <!-- <input type="submit" value="View Quiz" form = "viewForm"/> -->
-          <input type="submit" value="Preview" onclick="Create()"/> <!-- control goes to crossword.js -->
-          <input type="submit" value="Save Quiz" form = "saveForm"/><br>
+          <input type="submit" id = "preview" value="Preview" style="color: blue" onclick="Create()"/><br>
+          <!-- control goes to crossword.js -->
+         
       
           <!-- <button onclick="saveQuiz()">Save Quiz</button> just to check if text area is diplayed -->
-          <!-- <input  class="save-button" type="submit" onclick="saveQuiz()" value="Save Quiz" form = "saveForm" /> -->
-        
+          <!-- <input  class="save-button" type="submit" onclick="saveQuiz()" value="Save Quiz" form = "saveForm" /> -->     
           <!-- <a href="/view-feedbacks">View feedbacks</a> -->
-      
         </div>
       
         
         <!-- <div class="split right"></div> -->
-        <span name = "warning" id = "warning" style = "color:red">Warning : If you click on "Save Quiz" button, you will not be able to change it</span><br>
-        <span name = "disclaimer" id = "warning" style = "color:blue">Disclaimer : The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</span>
+       
+        <span name = "warning" id = "warning" style = "color:maroon">Warning : Your crossword will be saved only if the crossword can be generated</span><br>
+        <span name = "disclaimer" id = "disclaimer" style = "color:blue">Disclaimer : The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</span>
         
         <div class="center crossword" id="crossword">
-          <span style="color: white;" > Crossword will be created here</span>
+          <span style="color: white;" > You atleast need two matched words to create crossword. Click on preview to view crossword here OR Click on Preview to create crossword here</span>
         </div>    <!-- </crossword> -->
 
           <!-- this is changed -->
@@ -208,8 +215,8 @@
                 </div>    <!-- </container> -->
          
         <!-- </div> probably not needed -->
-       
-      
+        <span name = "error" id = "error" style = "color : red">Click on preview before you save</span>
+        <input type="submit" id = "save_crossword" value="Save Crossword" style="pointer-events: none" form = "saveForm"/><br>
         <!-- <script src="script.js"></script> -->
     
 
@@ -234,14 +241,14 @@
           // maximum points
           document.getElementById("points").value = json_object.points;
           // textarea
+          document.getElementById("instructions").value = json_object.instructions;
           console.log(typeof(json_object.quizdata))
           document.getElementById("ques_ans_data").innerHTML = JSON.stringify(json_object.quizdata);
           console.log(typeof(json_object.quizdata))
         }
 
         if(json_object.mode == "edit"){
-
-          link+="&quizid="+json_object.quizid;
+          link+="&quizid="+json_object.quizid; // send quizid to backend so that this particular quiz is updated in quizdata
         }
 
 
@@ -254,26 +261,36 @@
         var ans_content = [];
         var serialNumber = 0;
 
-        var final_quiz = {
+        if (json_object.mode == "create"){
+          var final_quiz = {
             qa_data : []
         };
 
+        }
 
-        function onFormSubmit() {
+        // "quizdata":[{"qa_id":1,"question":"q1","answer":"a1"},{"qa_id":2,"question":"q2","answer":"a2"}],"mode":"edit"}
+        else{
+          var final_quiz = {
+            qa_data : json_object.quizdata
+          }
+        }
+
+        console.log("My starting final quiz data", final_quiz)
+        
+        function onFormSubmit() { // takes one question and answer
         if (validate()) {
 
-            
             var formData = readFormData(); // if data is valid go ahead and read form data
             // selected row is populated when clicked on Edit button
             if (selectedRow == null) {
-            insertNewRecord(formData);
-            ques_content.push(formData.question);
-            ans_content.push(formData.answer);
+               insertNewRecord(formData);
+            // ques_content.push(formData.question);
+            // ans_content.push(formData.answer);
             }
             
             // insert new record
             else {
-            updateRecord(formData); // edit selectedRow
+               updateRecord(formData); // edit selectedRow
             }
             // console.log(typeof formData.question);
             console.log('Current question',formData.question);
@@ -292,24 +309,24 @@
 
         // Read form data from text boxes
         function readFormData() {
-        var formData = {};
-        formData["question"] = document.getElementById("question").value;
-        formData["answer"] = document.getElementById("answer").value;
-        console.log('Formdata', formData);
-        return formData;
+          var formData = {};
+          formData["question"] = document.getElementById("question").value;
+          formData["answer"] = document.getElementById("answer").value;
+          console.log('Formdata', formData);
+          return formData;
         }
 
 
         // insert record in the table from onSubmit function
         function insertNewRecord(data) {
-        var table = document
-            .getElementById("quizList")
-            .getElementsByTagName("tbody")[0];
+          var table = document
+              .getElementById("quizList")
+              .getElementsByTagName("tbody")[0];
 
-        console.log("Length of table",table.rows.length); //this is the entire tbody element
+          console.log("Length of table",table.rows.length); //this is the entire tbody element
 
-        var newRow = table.insertRow(table.length); // create <tr> </tr> here ( new row)
-        console.log('Newrow',newRow); 
+          var newRow = table.insertRow(table.length); // create <tr> </tr> here ( new row)
+          console.log('Newrow',newRow); 
 
         // var x = document.createElement("input");
         // //x.type = "hidden";
@@ -335,7 +352,6 @@
         // d.appendChild(y);
 
         //alert(getStyle('.table_list')); // not needed
-
         var cell0 = newRow.insertCell(0); // serial number added by css
         console.log("cell0",cell0.innerHTML);
 
@@ -385,10 +401,10 @@
         }
 
         function resetForm() {
-        document.getElementById("question").value = "";
-        document.getElementById("answer").value = "";
+          document.getElementById("question").value = "";
+          document.getElementById("answer").value = "";
 
-        selectedRow = null;
+          selectedRow = null;
         }
 
         // Edit  function : just populates text boxes and selectedRow variable
@@ -396,37 +412,43 @@
         // Delete function : Just deletes the selected Row
 
         // Edit just populates the text boxes with selectedRow content
-        function onEdit(td) {
+        function onEdit(td) { // change button name to update Row
 
-        console.log(td);  // console.log(td.parentElement); <td></td>
-        selectedRow = td.parentElement.parentElement; // <tr></tr>
-        document.getElementById("question").value = selectedRow.cells[1].innerHTML; // text box updated with selected row content
-        document.getElementById("answer").value = selectedRow.cells[2].innerHTML; // text box updated with selected row content
-        console.log("to be edited row",selectedRow.rowIndex);
+          console.log(td);  // console.log(td.parentElement); <td></td>
+          selectedRow = td.parentElement.parentElement; // <tr></tr>
+          document.getElementById("question").value = selectedRow.cells[1].innerHTML; // text box updated with selected row content
+          document.getElementById("answer").value = selectedRow.cells[2].innerHTML; // text box updated with selected row content
+          // Update Row
+          document.getElementById("qa-submit").value = "Update Row"
+          console.log("to be edited row",selectedRow.rowIndex);
 
         }
 
         // When Edit is clicked, text boxes populated with selectedRow content, then the same row is updated by this function
         // Selected row is populated by onEdit function
-        function updateRecord(formData) {
+        function updateRecord(formData) { // click on "Update Row" button to insert in table
 
-        // update in table
-        selectedRow.cells[1].innerHTML = formData.question;
-        selectedRow.cells[2].innerHTML = formData.answer;
+          // update in table
+          selectedRow.cells[1].innerHTML = formData.question;
+          selectedRow.cells[2].innerHTML = formData.answer;
 
-        // edit the final_quiz object
-        final_quiz.qa_data[selectedRow.rowIndex-1].question = formData.question;
-        final_quiz.qa_data[selectedRow.rowIndex-1].answer = formData.answer;
+          // edit the final_quiz object
+          final_quiz.qa_data[selectedRow.rowIndex-1].question = formData.question;
+          final_quiz.qa_data[selectedRow.rowIndex-1].answer = formData.answer;
 
-        // update content in text area with updated final_quiz object
-        var textarea_data = document.getElementById("ques_ans_data");
-        textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
-        console.log("updated textarea_data",textarea_data.innerHTML);
+          // update content in text area with updated final_quiz object
+          var textarea_data = document.getElementById("ques_ans_data");
+          textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
+          console.log("updated textarea_data",textarea_data.innerHTML);
 
-        // update in array
-        ques_content.splice(selectedRow.rowIndex-1,1,formData.question);
-        ans_content.splice(selectedRow.rowIndex-1,1,formData.question);
-        }
+          // update in array
+          ques_content.splice(selectedRow.rowIndex-1,1,formData.question);
+          ans_content.splice(selectedRow.rowIndex-1,1,formData.question);
+
+          document.getElementById("qa-submit").value = "Add Row"
+
+
+          }
 
         function onDelete(td) {
 
@@ -466,6 +488,8 @@
         
             resetForm();
         }
+            // Update Row
+            document.getElementById("qa-submit").value = "Add Row"
         }
 
         function validate() {
