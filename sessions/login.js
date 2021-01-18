@@ -391,7 +391,7 @@ app.post('/register', redirectHome,(req,res) =>{ //?url passed as query string
           if(next_url == "blank")
             return res.redirect('/home'); // redirect to home if authenticated
           else
-            return res.redirect(next_url); 
+            return res.redirect(next_url);  // quiz page
           
           // if(next_url =='')
           //   return res.redirect('/home'); // redirect to home if authenticated
@@ -857,6 +857,7 @@ app.get('/create/save/:course', function(req,res){ // quiz_id as query parameter
           quizid : quizdata_obj._id,
           title : quizdata_obj.title,
           points : quizdata_obj.points,
+          instructions : quizdata_obj.instructions,
           quizdata : quizdata_obj.quizdata
         }
 
@@ -916,6 +917,7 @@ app.get('/create/:mode/:course', function(req,res){ // quizid as query
           quizid : quizdata_obj._id,
           title : quizdata_obj.title,
           points : quizdata_obj.points,
+          instructions : quizdata_obj.instructions,
           quizdata : quizdata_obj.quizdata,
           mode :  course_data.mode // "edit" // "duplicate"
         }
@@ -980,7 +982,7 @@ app.get('/createquiz/:course', function(req,res){
 // save quiz data in DB and go back to page 5
 //TODO: check if quiz name is already present in DB
 
-// based on the mode update here - edit / duplicate / create
+// based on the mode update here - edit / duplicate / create - insert in DB
 //  link - submitquiz/:mode/:course
 
 app.post('/submitquiz/:mode/:course', function (req, res) { // course_id and quizid in edit mode, only course_id  in duplicate mode
@@ -1012,6 +1014,7 @@ data = {
     course_id :  req.query.course_id,
     title : req.body["title"],
     points : req.body["points"],
+    instructions : req.body["instructions"],
     quizdata : req.body["ques_ans_data"]
 };
 
@@ -1049,6 +1052,7 @@ console.log("This data to be put in DB",data)
           {"_id": ObjectID(req.query.quizid)},
           {$set: {"title" : data.title,
                   "points" : data.points,
+                  "instructions" : data.instructions,
                   "quizdata" : data.quizdata } })
           .then(function(quizdata) {
                     
@@ -1223,6 +1227,7 @@ app.get('/play/:course/:quizid', redirectLogin, function (req, res) {
           quizid : quizdata_obj._id,
           title : quizdata_obj.title,
           points : quizdata_obj.points,
+          instructions : quizdata_obj.instructions,
           quizdata : quizdata_obj.quizdata
         }
 
@@ -1591,7 +1596,12 @@ app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticat
     res.clearCookie(SESS_NAME); // clear cookie when session ends
     console.log('after', req.session);
     res.redirect('/login/?url=blank');
-  })
+
+    // url=logout, url = /create/ ===
+    /// url = blank == 
+  }
+  
+  )
   
 })
 
