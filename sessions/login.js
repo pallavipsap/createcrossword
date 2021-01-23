@@ -9,6 +9,7 @@ var ejs = require('ejs');
 var ObjectID = require('mongodb').ObjectID;
 const MongoStore = require('connect-mongo')(session);
 const { v4: uuidv4 } = require('uuid');
+const { title } = require('process');
 
 const TWO_HOURS = 1000 * 60 * 60 * 2 // in milliseconds
 
@@ -254,10 +255,9 @@ app.post('/login',redirectHome,(req,res) =>{ // passed url in query string
 
                 // if url is present go to that route else go to home route
 
-                if(next_url == "blank")
+                if(next_url == "blank" || next_url == "/logout")
                   return res.redirect('/home'); // redirect to home if authenticated
-                else{
-
+                else {
                   var str_array = next_url.split("/");
                   str_array_len = str_array.length;
                   var quiz_id = str_array[str_array_len-1]
@@ -281,7 +281,6 @@ app.post('/login',redirectHome,(req,res) =>{ // passed url in query string
                     console.log("problem in getting count for student");
                     console.log(e);
                   });
-
                 }
 
           
@@ -388,7 +387,7 @@ app.post('/register', redirectHome,(req,res) =>{ //?url passed as query string
            // if url is present go to that route else go to home route
 
           
-          if(next_url == "blank")
+          if(next_url == "blank" || next_url == "/logout")
             return res.redirect('/home'); // redirect to home if authenticated
           else
             return res.redirect(next_url);  // quiz page
@@ -1249,11 +1248,12 @@ app.get('/play/:course/:quizid', redirectLogin, function (req, res) {
 // page S5 - S6
 // quiz grades link
 
-app.post('/grades', function (req, res) { //course_id and quiz_id passed as query strings
+app.post('/grades/:course', function (req, res) { //course_id and quiz_id passed as query strings
   console.log("came from playedquizzes.ejs for grades link", req.body);
   req.body["student_data_json"] = JSON.parse(req.body["student_data_json"]);
  
   var query_params = req.query;
+  var course = req.params.course;
   console.log("parameter passed is", query_params)
   console.log(req.body)
 
@@ -1266,25 +1266,33 @@ app.post('/grades', function (req, res) { //course_id and quiz_id passed as quer
 
   var qa = req.body.student_data_json.qa_data; // gives qa_array
     var ques_ans_data = []
-
+    var total_ques_ans_data = []
     for( var i=0; i<=qa.length-1; i++){
         var one_qa_data = {
             qa_id : qa[i].qa_id,
             myans : qa[i].student_ans,
-            qa_score: qa[i].qa_score
+            qa_score: qa[i].qa_score,
         }
-        ques_ans_data.push(one_qa_data);   
+        ques_ans_data.push(one_qa_data);  
+        one_qa_data.correct_ans = qa[i].correct_ans
+        one_qa_data.orig_qa_score = qa[i].orig_qa_score
+        total_ques_ans_data.push(one_qa_data);
     }
 
   // for general use
   var data = {
-    username : req.body.player_username,
+    username : user_data.username,
     course_id : req.query.course_id, // student data
+    course : req.params.course,
     quiz_id : req.query.quiz_id, // student data
     final_score : req.body.student_data_json.final_score,
-    ques_ans_data : ques_ans_data,
+    orig_final_score : req.body.student_data_json.orig_final_score,
+    ques_ans_data : ques_ans_data, // with only student ans ans student score
+    total_ques_ans_data : total_ques_ans_data, // with orig score and correct ans
+    title : req.body["student_data_json"].title,
+    instructions : req.body["student_data_json"].instructions
 }
-console.log("Deal with this data ",data);
+console.log("Deal with this data for general use ",data);
 
 // to insert in student data
 var grades_obj = {
@@ -1294,80 +1302,24 @@ var grades_obj = {
   ques_ans_data : data.ques_ans_data
 }
 
-console.log("Deal with this grades_obj ",grades_obj);
+console.log("Deal with this grades_obj to insert in studentdata",grades_obj);
 
-  // If teacher is playing, do not allow it to go in DB
-
-  var str = "insert";
-  MongoClient.connect('mongodb://localhost:27017/',{ useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
-    if (err) throw err;
-    var db = client.db('test');
-
-    db.collection('quizdata').find({$and :[{"_id": ObjectID(data.quiz_id)},{ "owner_id": userId}]}).toArray()
-    .then(function(quizdata_doc){
-      
-      console.log("my quizdata from DB",quizdata_doc)    
-      if(quizdata_doc != '[]'){ // do not insert data in DB, as owner is a player
-        var str = "do not insert";
-        console.log("my quizdata to be surpassed", quizdata_doc)
-        quizdata_doc_obj = quizdata_doc[0];
-        console.log(quizdata_doc_obj)
-
-        var passed_data = {
-          username : data.username,
-          final_score : grades_obj.final_score,
-          qa_data : []
-        }
-     
-        for(i=0; i<quizdata_doc_obj.quizdata.length;i++){
-          var one_qa_data = {
-            qa_id : quizdata_doc_obj.quizdata[i].qa_id,
-            ques : quizdata_doc_obj.quizdata[i].question, //
-            correct_ans : quizdata_doc_obj.quizdata[i].answer, //
-            student_ans : grades_obj.ques_ans_data[i].myans,
-            qa_score : grades_obj.ques_ans_data[i].qa_score
-          }
-          passed_data.qa_data.push(one_qa_data);
-        }
-
-        console.log(str)
-        console.log("my data to be passed to see grades surpassing db",passed_data)
-        return res.render('scoreboard',{data:passed_data})
-      }
-    })
-      .catch((e) => {
-        console.log("some error in finding studentdata");
-        console.log(e);
-    });
-});
-
-    // if student collection exists, 
-    // check if course exists in the courses
-    // update grades field
-
-    // else create a new collection with grades ( like groups )
-
-    console.log("check str", str)
-
-  if(str == "insert") { 
-    console.log("data to be inserted in DB",str)
     MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
       if (err) throw err;
       var db = client.db('test');
 
       // check if username exists in student data
 
-      db.collection('studentdata').find({"username": req.body["player_username"]}).count()
+      db.collection('studentdata').find({"username": user_data.username}).count()
       .then(function(playercount) {
           console.log("count of data found", playercount);
 
           if(playercount == 1){ // player collection found in studentdata
 
               // find the specific studentdata
-              db.collection('studentdata').find({"username": req.body["player_username"]}).toArray()
+              db.collection('studentdata').find({"username": user_data.username}).toArray()
               .then(function(studentdata_doc){
 
-                     
                   var studentdata_doc_obj = studentdata_doc[0] // gets object
 
                   // update course if it does not exist, else do not do anything to courses array
@@ -1392,13 +1344,15 @@ console.log("Deal with this grades_obj ",grades_obj);
                       
                       if(stringified_courseid == in_course_array){ // TODO : check if this works
                           console.log("COURSE ALREADY EXISTS")
-                          not_exists = false ;
+                          not_exists = false ; // course exists
                           break;
                       }
                   }     
                   console.log("check not_exists status", not_exists)
                   //if (exists == 'no'){
                   // do this if not_exists is true
+
+                  // course does not exist, so add course to courselist
                   if(not_exists){
                       studentdata_doc_obj.courses.push(data.course_id); // update with new course here
                       console.log("UPDATED course array",studentdata_doc_obj.courses)
@@ -1422,7 +1376,7 @@ console.log("Deal with this grades_obj ",grades_obj);
                   console.log("my added grades",studentdata_doc_obj.grades); // gives array of grades
                   console.log("updated grades object ( collection ) ?",studentdata_doc); // the entire student collection
               
-                  // update grades for this username ( new or old course both)
+                  // update grades and courses list for this username ( new or old course both)
                   db.collection('studentdata').updateOne(
                       {"username": data.username},
                       {$set: {"grades" : studentdata_doc_obj.grades,
@@ -1447,12 +1401,13 @@ console.log("Deal with this grades_obj ",grades_obj);
               });
           } // end of if for player count
 
+          // new student user
           // insert new student document if count == 0
           else{
 
               db.collection('studentdata').insertOne({
                   //"player_id": req.body["user_id"],
-                  "username" : data.username,
+                  "username" : user_data.username,
                   "courses" : [data.course_id],
                   "grades" : [grades_obj]
                   
@@ -1460,9 +1415,13 @@ console.log("Deal with this grades_obj ",grades_obj);
               .then(function(userdata){
                   console.log("my teacherdata in else",userdata);
                   var passed_data = {
+                      username : user_data.username,
+                      course : data.course,
+                      title : data.title,
+                      instructions : data.instructions,
                       qa_data : req.body.student_data_json.qa_data,
                       final_score : data.final_score,
-                      username : data.username
+                      orig_final_score : data.orig_final_score,          
                   }
                   res.render('scoreboard', {data: passed_data});
                   // res.render('scoreboard', {data: req.body.student_data_json});
@@ -1471,17 +1430,14 @@ console.log("Deal with this grades_obj ",grades_obj);
                   console.log("some error in inserting new data");
                   console.log(e);
               });
-
-
           } // end of else
 
        }) 
   })
-} // end of str if
 
 });
 
-
+// Got to S6  : Scoreboard in future after attempt 
 app.get('/grades', function (req, res) { // quiz id as query string
 
   console.log("request body",req.body)
