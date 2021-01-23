@@ -1345,6 +1345,8 @@ console.log("Deal with this grades_obj to insert in studentdata",grades_obj);
                       if(stringified_courseid == in_course_array){ // TODO : check if this works
                           console.log("COURSE ALREADY EXISTS")
                           not_exists = false ; // course exists
+
+                          
                           break;
                       }
                   }     
