@@ -797,7 +797,8 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
 
         // quiz name and title
         var quizzes = []
-        //var only_quiz_ids = []
+        // var only_quiz_ids = []
+        // take edit button status while displaying quizzes
         for(i=0 ; i<=quizdata.length-1;i++){
             var quiz = {
                 quiz_id : quizdata[i]._id,
@@ -815,23 +816,6 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
             res.render('displayquizzes',{data : course_data});
             //res.send('true');
         })
-        // .then(function(quizdata_array){
-
-        //   console.log("quizdata_array",quizdata_array);
-        //   var only_quiz_ids = quizdata_array.only_quiz_ids;
-        //   console.log("quizids to be displayed",only_quiz_ids)
-
-        //   // // check with quizzes in db
-        //   // db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.course_id": course_id,"username":username}}]).toArray()
-        //   // .then(function(grades_list) {
-
-        //   //   quizids_in_studentdata = grades_list
-        //   // })
-
-
-        //   console.log("final data to be sent to render in displayquizzes", course_data);
-        //   res.render('displayquizzes',{data : course_data});
-        // })
         .catch((e) => {
         console.log("probably no past quizzes");
         //console.log("error in getting count");
@@ -1413,8 +1397,9 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                       console.log("student data obj grades",student_grades_data_obj.grades)
                       student_grades_data_obj.grades = grades_obj; 
                     
-                        // update in DB
+                      // update in DB
                     db.collection('studentdata').find({"username":data.username}).toArray()
+                    // get the grades object ready for next then
                     .then(function(grades_list) {
                         console.log("gives the student collection");
                         console.log("gives array of the student grades obj", grades_list[0].grades); //[ {   }, {  }]
@@ -1444,13 +1429,12 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                     .then(function(final_studentdata){
                       console.log("in 2nd then",final_studentdata)
 
+                      // update in student collection
                       db.collection('studentdata').updateOne(
                         {"username": data.username},
                         {$set: {"grades" : final_studentdata}}
                         )
                         .then(function(studentdata_doc){
-                        //   console.log("my teacherdata successful?",check);
-                        // render data 
                         var passed_data = {
                             qa_data : req.body.student_data_json.qa_data,
                             username : data.username,
@@ -1477,7 +1461,7 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
 
                   else{ // document found in studentdata collection
       
-                          // find the specific studentdata
+                      // find the specific studentdata
                       db.collection('studentdata').find({"username": user_data.username}).toArray()
                       .then(function(studentdata_doc){
       
