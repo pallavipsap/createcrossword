@@ -9,8 +9,8 @@ var ejs = require('ejs');
 var ObjectID = require('mongodb').ObjectID;
 const MongoStore = require('connect-mongo')(session);
 const { v4: uuidv4 } = require('uuid');
-const { title } = require('process');
-const { func } = require('prop-types');
+// const { title } = require('process');
+// const { func } = require('prop-types');
 
 const TWO_HOURS = 1000 * 60 * 60 * 2 // in milliseconds
 
@@ -184,6 +184,7 @@ app.get('/home', redirectLogin, (req,res)=>{ // so this is a protection against 
 
 
 // page 1 : 
+// login route
 // if user is already logged in they will be redirected to home page, so showing login page is not needed
 app.get('/login',redirectHome, (req,res) =>{
 
@@ -191,11 +192,9 @@ app.get('/login',redirectHome, (req,res) =>{
   console.log("in get login",req.url) // prints url as /login/?url=/play/check1-check1/5fe6619b2aaedc40d812bd49
   console.log("my url passed to get function",req.query.url)
   var blank_data = {
-      next_url : req.query.url,
+      next_url : req.query.url, // sends the url from which login page is called
       message : ''
   }
-
-
   res.render('login',{data:blank_data})
   //   res.sendFile('login.html', {
   //     root: path.join(__dirname, './public/') // creates path to access the login.html file
@@ -211,9 +210,9 @@ app.get('/register', redirectHome, (req, res) => {
   console.log("in get register",req.url) // prints url as /login/?url=/play/check1-check1/5fe6619b2aaedc40d812bd49
   console.log("my url passed to get register function",req.query)
   var data = {
-    next_url : req.query.url,
+    next_url : req.query.url, // sends the url from which login page is called ( eg. if someone clicks on quiz link and is not registered already, quiz link is the url passed to register page)
     message : ''
-}
+  }
   res.render('register',{data:data})
 
 //   res.sendFile('register.html', {
@@ -234,7 +233,7 @@ app.post('/login',redirectHome,(req,res) =>{ // passed url in query string
   var data = {
     next_url : req.query.url,
     message : ''
-}
+  }
   const { username, password } = req.body // grab username and password from req.body in same variable names
 
   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
@@ -287,8 +286,6 @@ app.post('/login',redirectHome,(req,res) =>{ // passed url in query string
                     console.log(e);
                   });
                 }
-
-          
           })
           .catch((e) => { // catch for inner db query
             console.log("problem in getting count");
@@ -2050,17 +2047,11 @@ app.get('/grades/:course', function (req, res) { // quiz id as query string
         console.log("my data to be passed to see grades",passed_data)
         res.render('scoreboard',{data:passed_data})
         return passed_data;
-       
       })
       // .then(function(passed_data){
-
       //   console("inside 3rd then for course");
       //   console.log("my data to be passed to see grades",passed_data)
-
-
       //   res.render('scoreboard',{data:passed_data})
-
-
       // })
       .catch((e) => {
         console.log("there is an error in grabbing quizdata");
@@ -2071,33 +2062,7 @@ app.get('/grades/:course', function (req, res) { // quiz id as query string
     .catch((e) => {
       console.log("there is an error in grabbing studentdata");
       console.log(e);
-  });
-
-
-
-  // db.collection('quizdata').find({"_id": ObjectID(quizid)}).toArray()
-  //   .then(function(quizdata){
-  //       console.log("this is my data from db", quizdata); // this is an array of quiz objects
-
-  //       quizdata_obj = quizdata[0]
-  //       var quiz_data = {
-  //         userId : userId,
-  //         username : username,
-  //         course : course,
-  //         course_id : quizdata_obj.course_id,
-  //         quizid : quizdata_obj._id,
-  //         title : quizdata_obj.title,
-  //         points : quizdata_obj.points,
-  //         quizdata : quizdata_obj.quizdata
-  //       }
-
-  //       console.log("This is passed to playquiz.ejs",quiz_data);
-  //       res.render('playquiz.ejs',{data:quiz_data})
-  //       //res.send(true)
-
-  //   })
-   
-    
+  });    
 });
 
 });
@@ -2119,11 +2084,9 @@ app.get('/logout',redirectLogin, (req,res) =>{ // make sure you are aunthenticat
 
     // url=logout, url = /create/ ===
     /// url = blank == 
-  }
+});
   
-  )
-  
-})
+});
 
 //********************************************************** */
 
