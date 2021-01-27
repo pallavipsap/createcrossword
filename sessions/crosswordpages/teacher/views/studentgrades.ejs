@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+
+
+<head>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="/css/studentgrades.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src = "https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <title>Welcome to crossword</title>
+    <!-- <link rel="stylesheet"  href="/css/style.css" type="text/css"/> -->
+    <!-- <link rel="stylesheet" href="/css/savedquiz.css"/> -->
+    <!-- accesses the css file in public in render_button.html folder because in render.js app.use(express.static(path.resolve(__dirname, 'public')));-->
+
+    
+
+<body>
+
+    <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
+
+
+    
+        <table id="table_id" class="display" width="80%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Sr.Number</th>
+              <th>Student Username</th>
+              <th>Student Score</th>
+              <!-- <th>Student Answer Details</th> -->
+            </tr>
+          </thead>
+            <tbody>
+              <!-- <%= JSON.stringify(data.student_grades) %> -->
+              <% for(var i=0; i< data.student_grades.length; i++) { %>
+                <tr>
+                  <td id = "question_col"><%-data.student_grades[i].serial_number %></td>
+                  <td id = "answer_col"><%-data.student_grades[i].student_username %></td>
+                  <td><%-data.student_grades[i].student_score%></td>
+                  <!-- <td><a onClick="onEdit(this)">See details</a></td> -->
+                </tr>
+              <%}%>                        
+            </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
+        </table>
+
+    <script>
+        $(document).ready(function () {
+            $('#table_id').DataTable({
+               dom: '<"top"lf>rti<"left"p><"clear">'
+               // dom : 'frtlip' // good
+            //    dom : '<lfr>tip' // length left, search center
+               //"sDom": '<plf>t'
+                //"sDom": '<lf>pt'
+            }
+            );
+            
+        });
+
+    </script>
+
+</body>
+
+</head>
+
+</html>
