@@ -7,7 +7,6 @@
     <title>Welcome to crossword</title>
     <link rel="stylesheet"  href="/css/scoreboard.css"/>
     <!-- accesses the css file in public in render_button.html folder -->
-    
     <!-- <h1>The quiz is below <%= JSON.stringify(data) %></h1> -->
 </head>
 
@@ -18,6 +17,18 @@
     
     <textarea name = "student_score_table" id = "score_data"><%= JSON.stringify(data) %> </textarea>
     <a href="/logout" action = "/logout">Logout</a>
+
+    <div id = "quiz_details">
+        <!-- <label>Course Name : </label> -->
+        <span type="text" name="course" id="course"></span></br><!-- in future pass course name to display -->
+        <!-- <label>Title of the crossword : </label><br> -->
+        <span type="text" name="title" id="title"></span></br>
+        <!-- <label>Maximum points : </label><br> -->
+        <!-- <span type="text" name="points" id="points" form = "saveForm" ></span></br> -->
+        <!-- <label>Crossword Instructions ( optional ) </label><br> -->
+        <span name="instructions" id="instructions"></span>
+    </div>
+
     <div class = "question-answer" id = "question-answer"></div>
     <!-- <p> I will display &#10004;</p> -->
     <!-- Hello <%= JSON.stringify(data.username) %> here are your answers with scores  -->
@@ -29,13 +40,16 @@
         // Need this
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
-
-
         // var textarea_json_object = document.getElementById("score_data");
         // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
         // console.log("This is the JSON object to work with", json_object);
         document.getElementById("question-answer").innerHTML = "Hello " + json_object.username + " here are your answers with scores";
+        document.getElementById('course').innerHTML = "Course Name : " + json_object.course
+        document.getElementById('title').innerHTML = "Title : " + json_object.title
+        document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions
 
+        // document.getElementById('points').innerHTML = "Total points : " + json_object.points
+        
         /*
         1. Bird
         My ans :
@@ -136,14 +150,14 @@
 
                 var  div = document.createElement('div');
                 //var div = document.createElement("p");
-                div.innerText = "Score : " + qa_data[i].qa_score;
+                div.innerText = "Score : " + qa_data[i].qa_score + "/" + qa_data[i].orig_qa_score;
                 outerdiv.appendChild(div)
 
                 console.log(outerdiv)
             }
 
             var  outerdiv = document.createElement('div');
-            outerdiv.innerText = "Final Score : " + json_object.final_score;
+            outerdiv.innerText = "Final Score : " + json_object.final_score + "/" + json_object.orig_final_score;
             outerdiv.classList.add("outerdiv");
             document.getElementById("question-answer").appendChild(outerdiv);
 
