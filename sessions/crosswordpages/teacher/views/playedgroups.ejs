@@ -106,12 +106,23 @@ passed json object :
                     anchor.appendChild(link);
                     anchor.title = courses[i].course_no + "-" + courses[i].course_name
 
-                    anchor.href = "/play/groups/" + anchor.title +"?course_id="+courses[i]["course_id"];;
-                    anchor.action = "/play/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];;
+                    anchor.href = "/play/groups/" + anchor.title +"?course_id="+courses[i]["course_id"];
+                    anchor.action = "/play/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
+                    document.getElementById("allgroups").appendChild(anchor);
+
+                    var span = document.createElement("span");
+                    if (courses[i]["role"] == "group_owner"){
+                      span.innerHTML = "  [Group owner]"
+                    }
+                    else{
+                      span.innerHTML = "  [Group player]"
+                    }
+                    //document.getElementById("allgroups").appendChild(span);
+                    
                    
                     var line_break = document.createElement("br")
-                    anchor.append(line_break);
-                    document.getElementById("allgroups").appendChild(anchor);
+                    span.append(line_break);
+                    document.getElementById("allgroups").appendChild(span);
                     console.log(document.getElementById("allgroups"));
                 }
             }
@@ -122,8 +133,7 @@ passed json object :
                 DisplayPlayedGroups(json_object["courses"])
             else{
                 // get register response
-                // no courses is passed here
-
+                // no courses is passed here, so we just check for the courses field
                 console.log("blank string passed")
                 document.getElementById("no_past_quizzes_dialog").innerHTML = "No past groups"
                 document.getElementById("no_past_quizzes_dialog").style.display = "block"
