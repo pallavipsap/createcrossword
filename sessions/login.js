@@ -545,6 +545,7 @@ console.log("this is my create group page, check userId", userId);
                   //} // commented here
                   
                   //for(var i = 0; i < studentdata_doc_obj.courses.length; i++ ){ // array of ids
+
                   // query 2 : get courses from teacherdata and compare with courselist to get no and name
                   console.log("just before aggregate query")
                     db.collection('teacherdata').aggregate([{$unwind:"$courses"}]).toArray()
@@ -557,21 +558,31 @@ console.log("this is my create group page, check userId", userId);
                       })
                       .then(function(allCourses){
                         var render_courses = []
-                        console.log("inside second then",allCourses) // array of full objects
-                        console.log("course_id_list",course_id_list) // array of ids
+                        console.log("inside second then",allCourses) // this query : array of full objects, userid and courses
+                        console.log("course_id_list",course_id_list) // past query : array of ids
 
-                        for(var i = 0; i < course_id_list.length; i++ ){
+                        for(var i = 0; i < course_id_list.length; i++ ){ // from past query to get ids
                           console.log("current course_id in array", course_id_list[i]);
-                          var id_list_course = JSON.stringify(course_id_list[i])
+                          var id_list_course = JSON.stringify(course_id_list[i]) // course id from past query
 
-                          for(j=0; j<allCourses.length; j++){
+                          for(j=0; j<allCourses.length; j++){  // current query to get all courses
                             console.log("current course_id in allCourses", allCourses[j].courses);
+                            console.log("USERID of the owner for this course",allCourses[j]["user-id"] )
                             var full_course = JSON.stringify(allCourses[j].courses.course_id)
+                            var course_owner_userid = allCourses[j]["user-id"];
 
                             if(full_course == id_list_course){
-                              console.log("Pass this courses object", allCourses[j].courses )
-                              render_courses.push(allCourses[j].courses)
-                              break;
+                              console.log("Pass this courses object", allCourses[j].courses ) // only courses
+                              if (user_data.userId == course_owner_userid ){
+                                console.log("I am the owner for this course, I created the course")
+                                allCourses[j].courses.role = "group_owner"
+                              }
+                              else{
+                                console.log("I am only the player for course")
+                                allCourses[j].courses.role = "group_player"
+                              }
+                              render_courses.push(allCourses[j].courses) // push only matched courses to be rendered finally
+                              break; // breaks out of inner for loop only
                             }
                           console.log("I am out")
                           }
@@ -579,7 +590,7 @@ console.log("this is my create group page, check userId", userId);
 
                       user_data["courses"] = render_courses
                       console.log("my user_data",user_data)
-                      console.log("check the passing object", render_courses);
+                      console.log("check the passing object", render_courses); // consists of course id, course no, course name
                       res.render('playedgroups', {data:user_data})
                     })
                     .catch((e) => {
@@ -588,7 +599,7 @@ console.log("this is my create group page, check userId", userId);
                     });  // end of query 
       
                   }
-                  else { // no student collection found
+                  else { // no student collection found, so no past groups which are played
                     res.render('playedgroups', {data:user_data})
 
                   }
@@ -1087,6 +1098,79 @@ console.log("This data to be put in DB",data)
 
 });
 
+
+
+
+// page 7 to page see student grades
+// pass some quizdata and student grades
+app.get('/quiz/grades/:course', function(req,res){  // quiz_id as query string
+  console.log("came from displayquizzes.ejs", req.body);
+  var course = req.params.course
+  var quiz_id = req.query.quiz_id
+  console.log("type of quiz id", quiz_id)
+  console.log("course passed by parameter", course)
+  console.log("course_id passed by parameter", typeof(quiz_id))
+
+  const{userId} = req.session;
+  const{username} = req.session;
+  var user_data = {
+    userId : userId,
+    username : username,
+  }
+  student_grades = []
+
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+  
+    if (err) throw err;
+    var db = client.db('test');
+
+    // fetch quiz details to display
+    db.collection('quizdata').find({"_id": ObjectID(quiz_id)}).toArray()
+    .then(function(quizdata){
+        console.log("this is my data from db", quizdata); // this is an array of quiz objects
+
+        quizdata_obj = quizdata[0]
+        var quiz_data = {
+          course : course,
+          title : quizdata_obj.title,
+          points : quizdata_obj.points,
+        }
+
+        user_data["quiz_data"] = quiz_data
+        console.log("This will be passed to userdata",user_data);
+    })
+    .catch((e) => {
+                console.log("there is an error in grabbing quizdata");
+                console.log(e);
+    }); // end of quizdata find query
+    
+    // find grades and append to userdata
+    db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id": ObjectID(quiz_id)}}]).toArray()
+    .then(function(student_quiz_grades) { // all grades_list 
+
+      console.log("This is quiz grades grabbed from studentdata",student_quiz_grades) // array of grades object
+
+      for(var i = 0; i < student_quiz_grades.length; i++ ){
+        //quiz_ids.push(ObjectID(grades_list[i].grades.quiz_id))
+        //console.log(ty(grades_list[i].grades.quiz_id))
+        var one_student = {
+          serial_number : i+1,
+          student_username : student_quiz_grades[i].username,
+          student_score : student_quiz_grades[i].grades.final_score
+        }
+        student_grades.push(one_student)
+      }
+
+      user_data["student_grades"] = student_grades
+      res.render('studentgrades',{data:user_data});
+    })
+    .catch((e) => {
+      console.log("there is an error in finding quiz student grades");
+      console.log(e);
+    }); // end of studentdata aggregate query
+}); // end of Mongo Client
+})
+
 /********************Student routes************************* */
 
 
@@ -1102,14 +1186,18 @@ app.get('/play/groups/:course', function(req,res){
   console.log("course passed by parameter", course)
   console.log("course_id passed by parameter", course_id)
 
- const{userId} = req.session;
- const{username} = req.session;
- var user_data = {
-   userId : userId,
-   username : username,
-   course : req.params.course
- }
- var quiz_ids = []
+  const{userId} = req.session;
+  const{username} = req.session;
+  var user_data = {
+    userId : userId,
+    username : username,
+    course : req.params.course
+  }
+  var quiz_ids = []
+  var quiz_final_scores = []
+  // quiz_ids [ '"600d5b0d665a1215b8ea1b03"', '"600d5b51665a1215b8ea1b04"' ]
+  // quiz final scores [ '2', '0' ]
+
   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
   
     if (err) throw err;
@@ -1118,63 +1206,33 @@ app.get('/play/groups/:course', function(req,res){
       // query 1 : 
       // take course_id
       // look into grades array for those course_ids and gather quiz ids
-      // get all quiz ids in form of an array
+      // get all quiz ids in form of an array, for a given course ( everything from this query will be displayed )
     db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.course_id": course_id,"username":username}}]).toArray()
-    .then(function(grades_list) {
-      console.log(grades_list) // array of grades object
+    .then(function(grades_list) { // all grades_list 
+      console.log("This is grades grabbed from studentdata",grades_list) // array of grades object
       for(var i = 0; i < grades_list.length; i++ ){
         // quiz_ids.push(ObjectID(grades_list[i].grades.quiz_id))
         //console.log(ty(grades_list[i].grades.quiz_id))
         quiz_ids.push(JSON.stringify(grades_list[i].grades.quiz_id))
+        quiz_final_scores.push(JSON.stringify(grades_list[i].grades.final_score))
       }
       console.log("quiz_ids",quiz_ids)  
-      
-      //return quiz_ids
+      console.log("quiz final scores", quiz_final_scores)
     })
     //.then(function(quiz_ids_array) {
 
     // query 2 :
     // use these quizids to gather title from quizdata
     // query quiz ids with title name
-    db.collection('quizdata').find({}).toArray()
-    .then(function(quizdata_array){
+    db.collection('quizdata').find({}).toArray() // I have to pull entire quizdata because what will you query quizdata with, or this query can be written in for loop for every quizid
+    .then(function(quizdata_array){ 
 
-      console.log("this is my quiz_ids array", quiz_ids)
+      console.log("this is my quiz_ids array", quiz_ids) // with final_score
       //var quiz_id_object = quizdata_array.find(function(quiz,index){
-      console.log(quizdata_array);
-      console.log(quizdata_array.length) // all quizzes
-
-// commented**********
-
-      // for(var i = 0; i < quizdata_array.length; i++ ){
-        
-      //   var quizdata_array_obj = quizdata_array[i]; // one entire object
-      //   console.log("one object",quizdata_array_obj)
-      //   console.log("id in quizdata_array",quizdata_array_obj._id)
-
-      //   var stringified_quizdata = JSON.stringify(quizdata_array_obj._id)
-
-      //   console.log("stringified",stringified_quizdata , typeof(stringified_quizdata));
-
-      //   // var x = quiz_ids.includes(stringified_quizdata)
-
-      //   // '5fe666a52aaedc40d812bd50'
-      //   //var x = quiz_ids.includes("5fe666a52aaedc40d812bd50")
-      //   var x = quiz_ids.includes(stringified_quizdata)
-
-
-      //   console.log(x)
-
-      // //   if(quiz_ids.includes(stringified_quizdata)){
-
-      // //     console.log("found this", quizdata_array_obj.course_id)
-      // //     console.log("found the right quiz",quizdata_array_obj)
-      // //   }
-      // }
-
+      console.log("the entire quizdata",quizdata_array);
+      console.log(quizdata_array.length) // all quizzes from quizdata array
       played_quizzes = []
       for(var i = 0; i < quiz_ids.length; i++ ){
-
         // if-else is not needed because definitely played quizid will be present in quizdata collection
         console.log("found")
         var quiz_obj = quizdata_array.find(q => JSON.stringify(q._id) == quiz_ids[i])
@@ -1182,14 +1240,16 @@ app.get('/play/groups/:course', function(req,res){
 
         var quiz = {
           quiz_id : JSON.parse(quiz_ids[i]), // parsed because id in the link appears to be a string http://localhost:4000/"5fe666a52aaedc40d812bd50"  // other option:  quiz_id in playedquizzes.ejs will be parsed on front end
-          quiz_title : quiz_obj.title
+          quiz_title : quiz_obj.title,
+          quiz_student_final_score : quiz_final_scores[i], // pulled from global variable quiz_final_scores filled in previous query
+          quiz_orig_final_score : quiz_obj.points
+          // final points can be added here
         }
         played_quizzes.push(quiz)
-
       }
 
       // pass to playedquizzes.ejs
-      // userDI, username, quiz names and quiz ids
+      // userID, username, quiz names and quiz ids
       user_data["quizzes"] = played_quizzes
       console.log(user_data);
       res.render('playedquizzes',{data:user_data});
@@ -1197,7 +1257,7 @@ app.get('/play/groups/:course', function(req,res){
     .catch((e) => {
       console.log("there is an error in finding past quizzes");
       console.log(e);
-    });
+    }); // end of quizdata find query
 
   });
 });
@@ -1255,13 +1315,12 @@ app.get('/try/:course/:quizid', redirectLogin, function (req, res) {
 // student quiz link to page 8 ( CS page ) [ students only / teacher can use it  ]
 // quiz attempt link - pull quizzes
   
-app.get('/play/:course/:quizid', redirectLogin, function (req, res) {
+app.get('/play/:course/:quizid', redirectLogin, function (req, res) { //no query string passed
   console.log("came from playedquizzes.ejs for quiz link ", req.body);
   console.log(req.params)
   var quizid = req.params.quizid;
   var course = req.params.course;
   console.log("parameter passed is", quizid , course)
-
   const{userId} = req.session;
   const{username} = req.session;
 
@@ -1273,7 +1332,6 @@ app.get('/play/:course/:quizid', redirectLogin, function (req, res) {
     db.collection('quizdata').find({"_id": ObjectID(quizid)}).toArray()
     .then(function(quizdata){
         console.log("this is my data from db", quizdata); // this is an array of quiz objects
-
         quizdata_obj = quizdata[0]
         var quiz_data = {
           userId : userId,
@@ -1287,18 +1345,13 @@ app.get('/play/:course/:quizid', redirectLogin, function (req, res) {
           quizdata : quizdata_obj.quizdata,
           role : "player"
         }
-
         console.log("This is passed to playquiz.ejs",quiz_data);
         res.render('playquiz.ejs',{data:quiz_data})
-        //res.send(true)
-
     })
     .catch((e) => {
                 console.log("there is an error in grabbing quizdata");
                 console.log(e);
-    });
-    
-      //res.send(true)
+    }); // end of quizdata find query
   });
 });
 
@@ -1325,18 +1378,18 @@ app.post('/grades/owner-try/:course', function (req, res) { //course_id and quiz
   }
 
   var qa = req.body.student_data_json.qa_data; // gives qa_array
-    var ques_ans_data = []
-    var total_ques_ans_data = []
-    for( var i=0; i<=qa.length-1; i++){
-        var one_qa_data = {
-            qa_id : qa[i].qa_id,
-            myans : qa[i].student_ans,
-            qa_score: qa[i].qa_score,
-        }
-        ques_ans_data.push(one_qa_data);  
-        one_qa_data.correct_ans = qa[i].correct_ans
-        one_qa_data.orig_qa_score = qa[i].orig_qa_score
-        total_ques_ans_data.push(one_qa_data);
+  var ques_ans_data = []
+  var total_ques_ans_data = []
+  for( var i=0; i<=qa.length-1; i++){
+      var one_qa_data = {
+          qa_id : qa[i].qa_id,
+          myans : qa[i].student_ans,
+          qa_score: qa[i].qa_score,
+      }
+      ques_ans_data.push(one_qa_data);  
+      one_qa_data.correct_ans = qa[i].correct_ans
+      one_qa_data.orig_qa_score = qa[i].orig_qa_score
+      total_ques_ans_data.push(one_qa_data);
     }
 
   // for general use
@@ -1380,50 +1433,48 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
             db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id": ObjectID(req.query.quiz_id),"username": user_data.username}}]).toArray()
             .then(function(student_grades_data_doc){
 
-                  console.log("I am here")
-                  // this should return only one array // unique quiz id
-                  student_grades_data_doc = JSON.stringify(student_grades_data_doc)
-                  console.log("Check now if this is empty",student_grades_data_doc)
-                  console.log("typeof",typeof(student_grades_data_doc))
-                  if(student_grades_data_doc != '[]'){
-                      console.log("I am logged in, this is my grades data for 2nd attempt, please update grades for that quiz",student_grades_data_doc);
-                      // UPDATE specific quiz , do not insert
-                      student_grades_data_doc = JSON.parse(student_grades_data_doc)
-                      console.log("type of student data doc",typeof(student_grades_data_doc))
-                      // do not update courses, as quiz is already found
+                console.log("I am here")
+                // this should return only one array // unique quiz id
+                student_grades_data_doc = JSON.stringify(student_grades_data_doc)
+                console.log("Check now if this is empty",student_grades_data_doc)
+                console.log("typeof",typeof(student_grades_data_doc))
 
-                      var student_grades_data_obj = student_grades_data_doc[0]
-                      console.log("student data obj",student_grades_data_obj)
-                      console.log("student data obj grades",student_grades_data_obj.grades)
-                      student_grades_data_obj.grades = grades_obj; 
-                    
-                      // update in DB
-                    db.collection('studentdata').find({"username":data.username}).toArray()
-                    // get the grades object ready for next then
-                    .then(function(grades_list) {
-                        console.log("gives the student collection");
-                        console.log("gives array of the student grades obj", grades_list[0].grades); //[ {   }, {  }]
-                        student_grades_list = grades_list[0].grades;
+                if(student_grades_data_doc != '[]'){
+                  console.log("I am logged in, this is my grades data for 2nd attempt, please update grades for that quiz",student_grades_data_doc);
+                  // UPDATE specific quiz , do not insert
+                  student_grades_data_doc = JSON.parse(student_grades_data_doc)
+                  console.log("type of student data doc",typeof(student_grades_data_doc))
+                  // do not update courses, as quiz is already found
 
-                        //console.log("found",student_grades_list.find(q => JSON.stringify(q._id) == JSON.stringify(grades_obj.quiz_id)))
+                  var student_grades_data_obj = student_grades_data_doc[0]
+                  console.log("student data obj",student_grades_data_obj)
+                  console.log("student data obj grades",student_grades_data_obj.grades)
+                  student_grades_data_obj.grades = grades_obj; 
+                
+                  // update in DB
+                  db.collection('studentdata').find({"username":data.username}).toArray()
+                  // get the grades object ready for next then
+                  .then(function(grades_list) {
+                    console.log("gives the student collection");
+                    console.log("gives array of the student grades obj", grades_list[0].grades); //[ {   }, {  }]
+                    student_grades_list = grades_list[0].grades;
 
-                        for(var i = 0; i < student_grades_list.length; i++ ){
-                            // quiz_ids.push(ObjectID(grades_list[i].grades.quiz_id))
-                            //console.log(ty(grades_list[i].grades.quiz_id))
-                            //quiz_ids.push(JSON.stringify(grades_list[i].grades.quiz_id))
-                            console.log("inside for",student_grades_list[i])
-                            if(JSON.stringify(grades_obj.quiz_id) == JSON.stringify(student_grades_list[i].quiz_id )){
-                              console.log("found",student_grades_list[i])
-                              student_grades_list[i] = grades_obj;
-                              console.log("changed object",student_grades_list[i])
-                              break;
-                            }
-                            //console.log("found",student_grades_list[i].find(q => JSON.stringify(q._id) == JSON.stringify(grades_obj.quiz_id)))
+                    //console.log("found",student_grades_list.find(q => JSON.stringify(q._id) == JSON.stringify(grades_obj.quiz_id)))
 
-                          }
-                        
-                        console.log("pass this to 2nd then",student_grades_list)
-                        return student_grades_list;
+                    for(var i = 0; i < student_grades_list.length; i++ ){
+                        // quiz_ids.push(ObjectID(grades_list[i].grades.quiz_id))
+                        //console.log(ty(grades_list[i].grades.quiz_id))
+                        //quiz_ids.push(JSON.stringify(grades_list[i].grades.quiz_id))
+                        console.log("inside for",student_grades_list[i])
+                        if(JSON.stringify(grades_obj.quiz_id) == JSON.stringify(student_grades_list[i].quiz_id )){
+                          console.log("found",student_grades_list[i])
+                          student_grades_list[i] = grades_obj;
+                          console.log("changed object",student_grades_list[i])
+                          break;
+                        }
+                    } 
+                      console.log("pass this to 2nd then",student_grades_list)
+                      return student_grades_list;
 
                     })
                     .then(function(final_studentdata){
@@ -1446,18 +1497,17 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                         }
                         console.log("updated data , now render",studentdata_doc) // only grades
                         return res.render('scoreboard', {data: passed_data});
-                        }) // end of update query
+                        }) 
                         .catch((e) => {
                           console.log("some error in inserting updated owner data in studentdata");
                           console.log(e);
-                      });
-
-                    })
+                      }); // end of update que
+                    }) // end of then for update query
                     .catch((e) => {
                         console.log("some error in updating teacher");
                         console.log(e);
                     });
-                  }
+                  } // end of 2nd attempt procedure
 
                   else{ // document found in studentdata collection
       
@@ -1514,7 +1564,7 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                                       "courses" : studentdata_doc_obj.courses } }
                               )
                               .then(function(check){
-                              //   console.log("my teacherdata successful?",check);
+                              // console.log("my teacherdata successful?",check);
                               // render data 
                               var passed_data = {
                                   qa_data : req.body.student_data_json.qa_data,
@@ -1540,7 +1590,7 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                                           "courses" : studentdata_doc_obj.courses } }
                               )
                               .then(function(check){
-                                  //   console.log("my teacherdata successful?",check);
+                                  // console.log("my teacherdata successful?",check);
                                   // render data 
                                   console.log("I am updating grades only, course exists")
                                   console.log("updated data",check)
@@ -1564,7 +1614,6 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                       console.log("some error in finding studentdata");
                       console.log(e);
                   });
-                            
           } // end of if for player count = 1
 
           // new student user
@@ -1603,7 +1652,7 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
 
 
 // page 8 CW page - S6 [ show grades after submission - student only for now / teachers can use too]
-// squiz grades link - student / teacher can use it
+// quiz grades link - student / teacher can use it
 
 app.post('/grades/:course', function (req, res) { //course_id and quiz_id passed as query strings
   console.log("came from playedquizzes.ejs for grades link", req.body);
@@ -1690,7 +1739,7 @@ console.log("Deal with this grades_obj to insert in studentdata",grades_obj);
 
           if(playercount == 1){ // player collection found in studentdata
 
-            // this is the second attempt
+            // this is the second attempt - redirect to grades (even if they attempt 2nd time)
             db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id": ObjectID(req.query.quiz_id),"username": user_data.username}}]).toArray()
             .then(function(studentdata_doc){
 
@@ -1700,147 +1749,171 @@ console.log("Deal with this grades_obj to insert in studentdata",grades_obj);
                   //return res.redirect("/grades/?quiz_id="+ req.query.quiz_id)
                   return res.redirect("/grades/" + course + "/?quiz_id="+ req.query.quiz_id)
                 }
-                else{ // document found in studentdata collection
 
-                  // find the specific studentdata
-              db.collection('studentdata').find({"username": user_data.username}).toArray()
-              .then(function(studentdata_doc){
+                else{  // This is the first attempt : find the specific studentdata
 
-                  var studentdata_doc_obj = studentdata_doc[0] // gets object
+                  db.collection('studentdata').find({"username": user_data.username}).toArray()
+                  .then(function(studentdata_doc){
 
-                  // update course if it does not exist, else do not do anything to courses array
-                  console.log("current courses in student data",studentdata_doc_obj.courses);
-                  console.log("current courses in student data typeof",typeof(studentdata_doc_obj.courses))
-                  console.log("to be checked courseid",data.course_id);
+                      var studentdata_doc_obj = studentdata_doc[0] // gets object
 
-                  var stringified_courseid = JSON.stringify(data.course_id)
-                  console.log('stringified_courseid?yes',stringified_courseid)
-                  //var exists = 'no';
-                  var not_exists = true
+                      // update course if it does not exist, else do not do anything to courses array
+                      console.log("current courses in student data",studentdata_doc_obj.courses);
+                      console.log("current courses in student data typeof",typeof(studentdata_doc_obj.courses))
+                      console.log("to be checked courseid",data.course_id);
 
-                  for(var i=0 ; i<studentdata_doc_obj.courses.length ; i++ ){
+                      var stringified_courseid = JSON.stringify(data.course_id)
+                      console.log('stringified_courseid?yes',stringified_courseid)
+                      //var exists = 'no';
+                      var not_exists = true
 
-                      console.log("inside for loop")
-                      console.log("stringified_courseid",stringified_courseid);
-                      console.log("in_course_array",studentdata_doc_obj.courses[i]);
+                      for(var i=0 ; i<studentdata_doc_obj.courses.length ; i++ ){
 
-                      var in_course_array = JSON.stringify(studentdata_doc_obj.courses[i])
-                      console.log("in_course_array stringified",in_course_array);
-                      
-                      if(stringified_courseid == in_course_array){ // TODO : check if this works
-                          console.log("COURSE ALREADY EXISTS")
-                          not_exists = false ; // course exists
-                          //break;
-                      }
-                  }     
-                  console.log("check not_exists status", not_exists)
-                  //if (exists == 'no'){
-                  // do this if not_exists is true
+                          console.log("inside for loop")
+                          console.log("stringified_courseid",stringified_courseid);
+                          console.log("in_course_array",studentdata_doc_obj.courses[i]);
 
-                  // course does not exist, so add course to courselist
-                  if(not_exists){
-                      studentdata_doc_obj.courses.push(data.course_id); // update with new course here
-                      console.log("UPDATED course array",studentdata_doc_obj.courses)
-                      console.log("UPDATED course collection",studentdata_doc);
-                      var x = studentdata_doc_obj.grades;
-                      // update the grades and course ids if necessary
-                      x.push(grades_obj); // push in courses array of object
-                      //console.log("my added grades",studentdata_doc_obj.grades); // gives array of grades
-                      //console.log("updated grades object ( collection ) ?",studentdata_doc); // the entire student collection
+                          var in_course_array = JSON.stringify(studentdata_doc_obj.courses[i])
+                          console.log("in_course_array stringified",in_course_array);
+                          
+                          if(stringified_courseid == in_course_array){ // TODO : check if this works
+                              console.log("COURSE ALREADY EXISTS , I am NOT ON TRY LINK")
+                              not_exists = false ; // course exists
+                              //break;
+                          }
+                      }     
+                      console.log("check not_exists status", not_exists) // true or false
 
-                       // update grades and courses list for this username ( new or old course both)
-                      db.collection('studentdata').updateOne(
-                        {"username": data.username},
-                        {$set: {"grades" : studentdata_doc_obj.grades,
-                                "courses" : studentdata_doc_obj.courses } }
-                      )
-                      .then(function(check){ 
-                        var passed_data = {
-                          qa_data : req.body.student_data_json.qa_data,
-                          username : data.username,
-                          course : data.course,
-                          title : data.title,
-                          instructions : data.instructions,
-                          final_score : data.final_score,
-                          orig_final_score : data.orig_final_score,          
-                        }
-                        console.log("new insert for new course",studentdata_doc_obj.grades) // only grades
-                        return passed_data;
-                      }) 
-                      .then(function(passed_data){
+                      // course does not exist is true, so add course to courselist, AND then update studentdata grades
+                      // Different course
+                      if(not_exists){
+                          studentdata_doc_obj.courses.push(data.course_id); // update with new course here
+                          console.log("UPDATED course array",studentdata_doc_obj.courses) // only courses from student collection
+                          console.log("UPDATED course collection",studentdata_doc); // the entire student collection
+                          var x = studentdata_doc_obj.grades;
+                          // update the grades and course ids if necessary
+                          x.push(grades_obj); // push in courses array of object
+                          //console.log("my added grades",studentdata_doc_obj.grades); // gives array of updated grades
 
-                        db.collection('quizdata').updateOne(
-                          {"_id": grades_obj.quiz_id},
-                          {$set: { "edit_disable" : "yes"}}
+                          // update grades and courses list for this username ( new or old course both)
+                          db.collection('studentdata').updateOne(
+                            {"username": data.username},
+                            {$set: {"grades" : studentdata_doc_obj.grades,
+                                    "courses" : studentdata_doc_obj.courses } }
                           )
-                          .then(function(quizdata_doc){
-        
-                            //var quizdata_doc_obj = quizdata_doc[0]
-                            //quizdata_doc_obj.edit_disable = "yes"
-        
-                            console.log("quizdata edit disabled for same course?", quizdata_doc )
-                            console.log("ready to show scoreboard", passed_data) // only grades
-                            return res.render('scoreboard', {data: passed_data});
-                          })
-                        // db.collection('quizdata').find({"_id": ObjectID(grades_obj.quiz_id)}).toArray()
-                        // .then(function(quizdata_doc){
+                          .then(function(check){ 
+                            var passed_data = {
+                              qa_data : req.body.student_data_json.qa_data,
+                              username : data.username,
+                              course : data.course,
+                              title : data.title,
+                              instructions : data.instructions,
+                              final_score : data.final_score,
+                              orig_final_score : data.orig_final_score,          
+                            }
+                            console.log("new insert for new course",studentdata_doc_obj.grades) // only grades
+                            return passed_data;
+                          }) 
+                          .then(function(passed_data){
 
-                        //   quizdata_doc_obj = quizdata_doc[0]
-                        //   quizdata_doc_obj.edit_disable = "yes"
+                            // Check if player is owner for edit button changes button 
+                            db.collection('quizdata').find({"_id": ObjectID(grades_obj.quiz_id)}).toArray()
+                            .then(function(quizdata_doc){ 
 
-                        //   console.log("quizdata edit disabled ?",quizdata_doc_obj )
-                        //   console.log("ready to show scoreboard",passed_data) // only grades
-                        //   return res.render('scoreboard', {data: passed_data});
-                        // })
-                      })
-                    } // end of not_exists
-                    else{  // update grades and courses list for this username ( new or old course both)
-                        
-                        var x = studentdata_doc_obj.grades;
-                        // update the grades and course ids if necessary
-                        x.push(grades_obj); // push in courses array of object
-                        db.collection('studentdata').updateOne(
-                          {"username": data.username},
-                          {$set: {"grades" : studentdata_doc_obj.grades,
-                                  "courses" : studentdata_doc_obj.courses } }
-                      )
-                      .then(function(check){
-                      //   console.log("my teacherdata successful?",check);
-                      // render data 
-                      console.log("I am updating grades only, course exists")
-                      console.log("updated data",check)
-                        var passed_data = {
-                          qa_data : req.body.student_data_json.qa_data,
-                          username : data.username,
-                          course : data.course,
-                          title : data.title,
-                          instructions : data.instructions,
-                          final_score : data.final_score,
-                          orig_final_score : data.orig_final_score,          
-                      }
-                      console.log(studentdata_doc_obj.grades) // only grades
-                      console.log("insert for same course, going to scoreboard", passed_data)
-                      return passed_data;
-                      // return res.render('scoreboard', {data: passed_data});
-                      })
-                      .then(function(passed_data){
-                        db.collection('quizdata').updateOne(
-                          {"_id": grades_obj.quiz_id},
-                          {$set: { "edit_disable" : "yes"}}
+                              // if owner is not the player, disable edit
+                              if(quizdata_doc[0].owner_id != user_data.userId){ // if player is not the owner - edit disabled
+                                
+                                //var quizdata_doc_obj = quizdata_doc[0]
+                                //quizdata_doc_obj.edit_disable = "yes"
+                                //just updating variable as shown below is not enough, data in DB should be updated
+                                // Hence the query is written to update edit status    
+                                db.collection('quizdata').updateOne(
+                                  {"_id": grades_obj.quiz_id},
+                                  {$set: { "edit_disable" : "yes"}}
+                                  )
+                                  .then(function(quizdata_doc){
+                                    console.log("New course added, I am the NOT the owner, disable, quizdata edit disabled for new course?", quizdata_doc )
+                                    console.log("ready to show scoreboard", passed_data) // only grades
+                                    return res.render('scoreboard', {data: passed_data});
+                                  }) // end of update query
+                              } // end of if
+                              else{
+                                  console.log("New course added, I am the the owner, do not disable, quizdata edit disabled for new course?", quizdata_doc )
+                                  console.log("ready to show scoreboard", passed_data) // only grades
+                                  return res.render('scoreboard', {data: passed_data});
+                              }
+                            })  // end of check player or owner query
+
+                            // start
+                            // db.collection('quizdata').find({"_id": ObjectID(grades_obj.quiz_id)}).toArray()
+                            // .then(function(quizdata_doc){
+
+                            //   quizdata_doc_obj = quizdata_doc[0]
+                            //   quizdata_doc_obj.edit_disable = "yes"
+
+                            //   console.log("quizdata edit disabled ?",quizdata_doc_obj )
+                            //   console.log("ready to show scoreboard",passed_data) // only grades
+                            //   return res.render('scoreboard', {data: passed_data});
+                            // })
+                            // end
+
+                          }) // end of then for check player query
+                        } // end of not_exists
+                        else{  // if course exists already, update grades ( courses list updated just to be safe ) for this username
+                            
+                            var x = studentdata_doc_obj.grades;
+                            // update the grades and course ids if necessary
+                            x.push(grades_obj); // push in courses array of object
+                            db.collection('studentdata').updateOne(
+                              {"username": data.username},
+                              {$set: {"grades" : studentdata_doc_obj.grades,
+                                      "courses" : studentdata_doc_obj.courses } }
                           )
-                          .then(function(quizdata_doc){
-        
-                            //var quizdata_doc_obj = quizdata_doc[0]
-                            //quizdata_doc_obj.edit_disable = "yes"
-        
-                            console.log("quizdata edit disabled when updation for same course ?", quizdata_doc )
-                            console.log("ready to show scoreboard", passed_data) // only grades
-                            return res.render('scoreboard', {data: passed_data});
+                          .then(function(check){
+                          // console.log("my teacherdata successful?",check);
+                          console.log("I am updating grades only, course exists")
+                          console.log("updated data",check)
+                          var passed_data = {
+                            qa_data : req.body.student_data_json.qa_data,
+                            username : data.username,
+                            course : data.course,
+                            title : data.title,
+                            instructions : data.instructions,
+                            final_score : data.final_score,
+                            orig_final_score : data.orig_final_score,          
+                          }
+                          console.log(studentdata_doc_obj.grades) // only grades
+                          console.log("insert for same course, going to scoreboard", passed_data)
+                          return passed_data;
                           })
-                      }) 
-                    }  // end of else
-                }) // end of studentdata query
-              } // end of else for 1st attempt
+                          .then(function(passed_data){
+
+                          // Check if player is owner for edit button changes button 
+                          db.collection('quizdata').find({"_id": ObjectID(grades_obj.quiz_id)}).toArray()
+                          .then(function(quizdata_doc){ 
+
+                            // if owner is not the player, disable edit
+                            if(quizdata_doc[0].owner_id != user_data.userId){ // if player is not the owner - edit disabled
+                              db.collection('quizdata').updateOne(
+                                {"_id": grades_obj.quiz_id},
+                                {$set: { "edit_disable" : "yes"}}
+                                )
+                                .then(function(quizdata_doc){
+                                  console.log("Same course, grades updated, I am the NOT the owner, disable, quizdata edit disabled for same course?", quizdata_doc )
+                                  console.log("ready to show scoreboard", passed_data) // only grades
+                                  return res.render('scoreboard', {data: passed_data});
+                                })
+                            }
+                            else{
+                                console.log("Same course, grades updated, I am the the owner, do not disable, quizdata edit disabled for same course?", quizdata_doc )
+                                console.log("ready to show scoreboard", passed_data) // only grades
+                                return res.render('scoreboard', {data: passed_data});
+                            }
+                          })  // end of check player or owner query
+                          }) // end of then for check player query
+                        }  // end of else for same course
+                    }) // end of studentdata query
+                  } // end of else for 1st attempt
                     
               }) // end of aggregate query
                 .catch((e) => {
@@ -1848,17 +1921,15 @@ console.log("Deal with this grades_obj to insert in studentdata",grades_obj);
                   console.log(e);
               });
                             
-          } // end of if for player count
+          } // end of if for player count = 1
 
-          // new student user
-          // insert new student document if count == 0
+          // if player count = 0
+          // insert new student document ( new student )
           else{
               db.collection('studentdata').insertOne({
-                  //"player_id": req.body["user_id"],
                   "username" : user_data.username,
                   "courses" : [data.course_id],
                   "grades" : [grades_obj]
-                  
               })
               .then(function(userdata){
                   console.log("my teacherdata in else",userdata);
@@ -1873,32 +1944,38 @@ console.log("Deal with this grades_obj to insert in studentdata",grades_obj);
                   }
                   console.log("new insert in studentdata", passed_data)
                   return passed_data
-                  // res.render('scoreboard', {data: req.body.student_data_json});
               })
               .then(function(passed_data){
 
-                db.collection('quizdata').updateOne(
-                  {"_id": grades_obj.quiz_id},
-                  {$set: { "edit_disable" : "yes"}}
-                  )
-                  .then(function(quizdata_doc){
+                db.collection('quizdata').find({"_id": ObjectID(grades_obj.quiz_id)}).toArray()
+                .then(function(quizdata_doc){ 
 
-                    //var quizdata_doc_obj = quizdata_doc[0]
-                    //quizdata_doc_obj.edit_disable = "yes"
-
-                    console.log("quizdata edit disabled ?", quizdata_doc )
-                    console.log("ready to show scoreboard", passed_data) // only grades
-                    return res.render('scoreboard', {data: passed_data});
-                  })
-                }) 
+                  // if owner is not the player, disable edit
+                  if(quizdata_doc[0].owner_id != user_data.userId){
+                    db.collection('quizdata').updateOne(
+                      {"_id": grades_obj.quiz_id},
+                      {$set: { "edit_disable" : "yes"}}
+                      )
+                      .then(function(quizdata_doc){
+                        console.log("I am not the owner, quizdata edit disabled for same course?", quizdata_doc )
+                        console.log("ready to show scoreboard", passed_data) // only grades
+                        return res.render('scoreboard', {data: passed_data});
+                      })
+                  } // end of if
+                  else{
+                      console.log("I am the owner, do not disable", quizdata_doc )
+                      console.log("ready to show scoreboard", passed_data) // only grades
+                      return res.render('scoreboard', {data: passed_data});
+                  }
+                })  // end of check player or owner query
+              }) // end of then for check player query 
               .catch((e) => {
                   console.log("some error in inserting new data");
                   console.log(e);
               });
-          } // end of else
-
-       }) 
-  })
+          } // end of else for new insertion of document
+       }) // end of query to find player count
+  }) // end of Mongo client
 });
 
 // Got to S6  : Scoreboard in future after attempt 
