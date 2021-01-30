@@ -1,4 +1,5 @@
 var express = require('express');
+const router = express.Router()
 const session = require('express-session');
 var path = require('path');
 var bodyParser = require('body-parser');
@@ -9,6 +10,8 @@ var ejs = require('ejs');
 var ObjectID = require('mongodb').ObjectID;
 const MongoStore = require('connect-mongo')(session);
 const { v4: uuidv4 } = require('uuid');
+const { resolve } = require('path');
+const { func } = require('prop-types');
 // const { title } = require('process');
 // const { func } = require('prop-types');
 
@@ -74,6 +77,161 @@ const redirectLogin = (req,res, next) =>{
   }
 }
 
+// localhost:2000/play/A-1/6010f32fa3b9943ef0d4f103
+// req  [ params : course, quizid  ]
+const redirectGradeBook = (req,res,next) =>{
+
+  const{userId} = req.session;
+  const{username} = req.session;
+  console.log("In redirect gradebook")
+  //console.log("In redirect gradebook, my request",req.url) // /play/A-1/60149859a69caa5bc48e3894
+  var quizid = req.params.quizid;
+  var course = req.params.course;
+
+  // var str_array = req.url.split("/");
+  // str_array_len = str_array.length;
+  // var quizid = str_array[str_array_len-1]
+  // var course = str_array[str_array_len-2]
+  // console.log("split array",str_array);
+  console.log("quiz_id",quizid)
+  console.log("course",course)
+  console.log("type of quiz id", typeof(quizid))
+  console.log("parameter passed to redirectGradebook is", quizid , course)
+
+  if(!req.session.userId){ // not logged in
+    // url is play route
+    console.log("Pass this url to login",req.url) // "/play/A-1/6010f32fa3b9943ef0d4f103
+    res.redirect('/login/?url=' + req.url); // if not authenticated 
+  }
+  else{ 
+        MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+        //if (err) throw err;
+        var db = client.db('test');
+      
+        db.collection('quizdata').find({"_id": ObjectID(quizid)}).toArray()
+        .then(function(quizdata_doc){ 
+
+          // if owner is not the player, disable edit
+          if(quizdata_doc[0].owner_id == userId){ // if player is not the owner - edit disabled
+            console.log("I am the owner")
+            //console.log("going to try quiz route", owner)
+            res.redirect('/try/' + course + '/' + quizid);
+          }
+          else{
+              console.log("I am not the owner")
+              db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id": ObjectID(quizid),"username": username}}]).toArray()
+              .then(function(studentdata_doc){
+
+                studentdata_doc = JSON.stringify(studentdata_doc)
+                if(studentdata_doc != '[]'){
+                  console.log("I am logged in, this is my grades data for 2nd attempt",studentdata_doc);
+                  //return res.redirect("/grades/?quiz_id="+ req.query.quiz_id)
+                  return res.redirect("/grades/" + course + "/?quiz_id="+ quizid)
+                }
+                else{
+                  console.log("This is my first attempt")
+                  next()
+                  //console.log("oops, I am here after next")
+                }
+              })
+              .catch((e) => {
+                console.log("some error in checking RepeatAttempt");
+                console.log(e);
+            });
+             
+          } // end of else ( if user is owner)
+        }
+        )
+        .catch((e) => {
+          console.log("some error in checking owner for quiz");
+          console.log(e);
+      }); 
+      });
+  } // end of else
+}
+
+    
+
+  //       var owner = checkOwner(quizid,userId)
+  //       console.log("going to try quiz route", owner)
+  //       var repeat_attempt = checkRepeatAttempt(username)
+  //       if(checkOwner(quizid,userId)){
+  //         // try quiz link
+  //         console.log("going to try quiz route", owner)
+  //         res.redirect('/try/' + course + '/' + quizid);
+  //       }
+  //       else if (!owner && repeat_attempt){ // player and not 1st attempt
+  //         // gradebook
+  //         console.log("I am player and my extra attempt")
+  //         res.redirect('/grades/' + course)
+  //       }
+  //       else { // player and 1st attempt
+  //           next() // go to play route
+  //       }
+  // }
+  // } 
+
+//var owner = function checkOwner(quizid, userId){
+
+  checkOwner = function(quizid, userId){
+  
+  console.log("I am in check owner")
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+    //if (err) throw err;
+    var db = client.db('test');
+   
+    db.collection('quizdata').find({"_id": ObjectID(quizid)}).toArray()
+    .then(function(quizdata_doc){ 
+
+      // if owner is not the player, disable edit
+      if(quizdata_doc[0].owner_id != userId){ // if player is not the owner - edit disabled
+        console.log("I am not the owner, return false")
+        resolve ('false')
+      }
+      else{
+          console.log("I am the owner")
+
+          
+       
+      } // end of else
+    }
+    )
+    .catch((e) => {
+      console.log("some error in checking owner for quiz");
+      console.log(e);
+  }); 
+  });
+
+ 
+}
+
+
+function checkRepeatAttempt(username) {
+
+  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+    if (err) throw err;
+    var db = client.db('test');
+
+    db.collection('studentdata').find({"username": username}).count()
+        .then(function(playercount) {
+          console.log("count of data found", playercount);
+          if(playercount == 1){ // this is second attempt
+            console.log("This is my repeated attempt")
+            return true
+          }
+          else{
+            console.log("This is my first attempt")
+            return false
+          }
+        })
+        .catch((e) => {
+          console.log("some error in checking RepeatAttempt");
+          console.log(e);
+      }); 
+      })
+  
+}
+
 const redirectHome = (req,res, next) =>{
 
   console.log("In redirect home, my url?",req.url)
@@ -95,7 +253,6 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true })); // changed to true
 
 // app.use(express.static(path.resolve(__dirname, 'public')));
-
 // which route to display on localhost: 2000/ , based on user is logged in or not
 app.get('/', (req, res) => {
  const {userId} = req.session
@@ -255,36 +412,43 @@ app.post('/login',redirectHome,(req,res) =>{ // passed url in query string
 
                 // if url is present go to that route else go to home route
 
-                if(next_url == "blank" || next_url == "/logout")
+                if(next_url == "blank" || next_url == "/logout" || next_url == '/home')
                   return res.redirect('/home'); // redirect to home if authenticated
+                // else{
+                //   console.log("I do not know where to go")
+                //   next()
+                // }
                 else {
-                  var str_array = next_url.split("/");
-                  str_array_len = str_array.length;
-                  var quiz_id = str_array[str_array_len-1]
-                  var course = str_array[str_array_len-2]
-                  console.log("split array",str_array);
-                  console.log("quiz_id",quiz_id)
-                  console.log("course",course)
-                  console.log("type of quiz id", typeof(quiz_id))
-                  db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id":ObjectID(quiz_id),"username":username}}]).toArray()
-                  .then(function(studentdata_doc){
 
-                    console.log(studentdata_doc)
-                    console.log(typeof(studentdata_doc))
-                    studentdata_doc = JSON.stringify(studentdata_doc)
-                    console.log("type of studentdata_doc",typeof(studentdata_doc))
+                  //redirectGradeBook(req,res)
+                  // goes to /play/A-2/601498efa69caa5bc48e3896 and then into redirectGradeBook
+                  return res.redirect(next_url); // /play/A-2/601498efa69caa5bc48e3896
 
-                    if(studentdata_doc == '[]'){
-                      return res.redirect(next_url);
-                    }
-                    else{
-                      return res.redirect("/grades/"+ course +"/" + "?quiz_id="+ quiz_id)
-                    }
-                  })
-                  .catch((e) => { // catch for inner db query
-                    console.log("problem in getting count for student");
-                    console.log(e);
-                  });
+                //   var str_array = next_url.split("/");
+                //   str_array_len = str_array.length;
+                //   var quiz_id = str_array[str_array_len-1]
+                //   var course = str_array[str_array_len-2]
+                //   console.log("split array",str_array);
+                //   console.log("quiz_id",quiz_id)
+                //   console.log("course",course)
+                //   console.log("type of quiz id", typeof(quiz_id))
+                //   db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id":ObjectID(quiz_id),"username":username}}]).toArray()
+                //   .then(function(studentdata_doc){
+                //     console.log(studentdata_doc)
+                //     console.log(typeof(studentdata_doc))
+                //     studentdata_doc = JSON.stringify(studentdata_doc)
+                //     console.log("type of studentdata_doc",typeof(studentdata_doc))
+                //     if(studentdata_doc == '[]'){
+                //       return res.redirect(next_url);
+                //     }
+                //     else{
+                //       return res.redirect("/grades/"+ course +"/" + "?quiz_id="+ quiz_id)
+                //     }
+                //   })
+                //   .catch((e) => { // catch for inner db query
+                //     console.log("problem in getting count for student");
+                //     console.log(e);
+                //   });
                 }
           })
           .catch((e) => { // catch for inner db query
@@ -1098,7 +1262,7 @@ console.log("This data to be put in DB",data)
 
 
 
-// page 7 to page see student grades
+// page 7 to page see student grades ( for teacher )
 // pass some quizdata and student grades
 app.get('/quiz/grades/:course', function(req,res){  // quiz_id as query string
   console.log("came from displayquizzes.ejs", req.body);
@@ -1309,15 +1473,34 @@ app.get('/try/:course/:quizid', redirectLogin, function (req, res) {
 
 
 
+// redirectgradebook:
+
+//   if logged in :
+//     if owner :
+//       redirect try quiz attempt
+//     else if not owner and already attempted:
+//         redirect gradebook
+//     redirect play route
+//         //[ no need of else]
+//         next()
+//   else : 
+//     redirect Login ( next url play route)
+
+
+
+
+
+
 // student quiz link to page 8 ( CS page ) [ students only / teacher can use it  ]
 // quiz attempt link - pull quizzes
-  
-app.get('/play/:course/:quizid', redirectLogin, function (req, res) { //no query string passed
-  console.log("came from playedquizzes.ejs for quiz link ", req.body);
+
+// localhost:2000/play/A-1/6010f32fa3b9943ef0d4f103
+app.get('/play/:course/:quizid', redirectGradeBook, function (req, res) { //no query string passed
+  console.log("came from redirectgradebook, playedquizzes.ejs for quiz link ", req.body);
   console.log(req.params)
   var quizid = req.params.quizid;
   var course = req.params.course;
-  console.log("parameter passed is", quizid , course)
+  console.log("The parameter passed to play route is", quizid , course)
   const{userId} = req.session;
   const{username} = req.session;
 
@@ -1326,6 +1509,7 @@ app.get('/play/:course/:quizid', redirectLogin, function (req, res) { //no query
     if (err) throw err;
     var db = client.db('test');
 
+    console.log("I came here from redirectgradebook")
     db.collection('quizdata').find({"_id": ObjectID(quizid)}).toArray()
     .then(function(quizdata){
         console.log("this is my data from db", quizdata); // this is an array of quiz objects
@@ -1540,7 +1724,6 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
                               }
                           }     
                           console.log("check not_exists status", not_exists)
-                          //if (exists == 'no'){
                           // do this if not_exists is true
       
                           // course does not exist, so add course to courselist
@@ -1643,7 +1826,7 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
               });
           } // end of else for player count = 0
        })  // end of player count query
-  }) // endof mongo client
+  }) // end of mongo client
 });
 
 
@@ -1654,7 +1837,6 @@ MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUn
 app.post('/grades/:course', function (req, res) { //course_id and quiz_id passed as query strings
   console.log("came from playedquizzes.ejs for grades link", req.body);
   req.body["student_data_json"] = JSON.parse(req.body["student_data_json"]);
-
   var query_params = req.query;
   var course = req.params.course;
   console.log("parameter passed is", query_params)
