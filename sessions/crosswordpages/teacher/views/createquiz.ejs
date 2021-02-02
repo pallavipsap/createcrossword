@@ -24,7 +24,6 @@
  
     <textarea name = "course_data" id = "course_data_json"><%= JSON.stringify(data)%></textarea>
     <a href="/logout" action = "/logout">Logout</a>
-    <div>Navigation bar is here : Home | About | </div>
     <p id = "welcomemessage"></p>
 
         <div id="checkForm">
@@ -38,13 +37,6 @@
             <label>Title of the crossword*</label><br>
             <label class="validation-error hide" id="answerValidationError">This field is required.</label>
             <input type="text" name="title" id="title" form = "saveForm" required/>
-            <!-- form = "saveForm" -->
-          </div>
-      
-          <div>
-            <label>Points* </label><br>
-            <label class="validation-error hide" id="answerValidationError">This field is required.</label>
-            <input type="text" name="points" id="points" form = "saveForm" required/>
             <!-- form = "saveForm" -->
           </div>
 
@@ -67,14 +59,21 @@
                       <label>Question*</label><br>
                       <label class="validation-error hide" id="questionValidationError">This field is
                         required.</label>
-                      <textarea name="question" id="question"></textarea>
+                      <textarea name="question" id="question" required></textarea>
                       <!--<textarea placeholder="type text here"></textarea>-->
                     </div>
       
                     <div>
-                      <label>Answer*</label><br>
+                      <label>Answer* ( no spaces allowed )</label><br>
                       <label class="validation-error hide" id="answerValidationError">This field is required.</label>
-                      <input type="text" name="answer" id="answer"/>
+                      <input type="text" name="answer" id="answer"required/>
+                      <!--<textarea name="answer" id="answer"></textarea>-->
+                    </div>
+
+                    <div>
+                      <label>Points for this question*</label><br>
+                      <label class="validation-error hide" id="answerValidationError">This field is required.</label>
+                      <input type="text" name="orig_qascore" id="orig_qascore"required/>
                       <!--<textarea name="answer" id="answer"></textarea>-->
                     </div>
       
@@ -101,6 +100,7 @@
                           <th>Sr.Number</th>
                           <th>Question</th>
                           <th>Answer</th>
+                          <th>Points</th>
                           <th>Options</th>
                         </tr>
                       </thead>
@@ -114,8 +114,9 @@
                           <% for(var i=0; i< data.quizdata.length; i++) { %>
                             <tr> 
                               <td></td>
-                              <td><%-data.quizdata[i].question %></td>
-                              <td><%-data.quizdata[i].answer %></td>
+                              <td id = "question_col"><%-data.quizdata[i].question %></td>
+                              <td id = "answer_col"><%-data.quizdata[i].answer %></td>
+                              <td><%-data.quizdata[i].orig_qascore%></td>
                               <td><a onClick="onEdit(this)">Edit</a>
                               <a onClick="onDelete(this)">Delete</a></td>
                             </tr>
@@ -138,26 +139,31 @@
          
           </div> <!-- end of table -->
 
+          <!-- <input type="submit" id = "preview" value="Preview" style="color: blue" onclick="Create()"/><br> -->
+
           <!-- view quiz renders on right side -->
           <!-- this will be create button on prior quiz -->
           <!-- <input type="submit" value="View Quiz" form = "viewForm"/> -->
-          <input type="submit" id = "preview" value="Preview" style="color: blue" onclick="Create()"/><br>
           <!-- control goes to crossword.js -->
          
-      
           <!-- <button onclick="saveQuiz()">Save Quiz</button> just to check if text area is diplayed -->
           <!-- <input  class="save-button" type="submit" onclick="saveQuiz()" value="Save Quiz" form = "saveForm" /> -->     
           <!-- <a href="/view-feedbacks">View feedbacks</a> -->
-        </div>
+        <!-- </div> -->
       
         
         <!-- <div class="split right"></div> -->
        
-        <span name = "warning" id = "warning" style = "color:maroon">Warning : Your crossword will be saved only if the crossword can be generated</span><br>
+        <!-- <span>Total points: </span> -->
+        <div>
+          <label>Total points for crossword*</label><br>
+          <input type="text" name="points" id="points" form = "saveForm" readonly>
+        </div> 
+
         <span name = "disclaimer" id = "disclaimer" style = "color:blue">Disclaimer : The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</span>
         
         <div class="center crossword" id="crossword">
-          <span style="color: white;" > You atleast need two matched words to create crossword. Click on preview to view crossword here OR Click on Preview to create crossword here</span>
+          <span style="color: white;" > Crossword will be diplayed here. You atleast need two matched words to create crossword.</span>
         </div>    <!-- </crossword> -->
 
           <!-- this is changed -->
@@ -213,10 +219,18 @@
                     </div>  <!-- </down-child> -->
                  
                 </div>    <!-- </container> -->
-         
+        
+        <!-- <div>
+          <label>Points* </label><br>
+          <label class="validation-error hide" id="answerValidationError">This field is required.</label>
+          <input type="text" name="points" id="points" form = "saveForm" required/>
+        </div> -->
+             
+
         <!-- </div> probably not needed -->
-        <span name = "error" id = "error" style = "color : red">Click on preview before you save</span>
-        <input type="submit" id = "save_crossword" value="Save Crossword" style="pointer-events: none" form = "saveForm"/><br>
+        <span name = "warning" id = "warning" style = "color:maroon">Warning : Your crossword will be saved only if the crossword can be generated</span><br>
+        <input type="submit" id = "save_crossword" value="Save Crossword"  form = "saveForm" disabled/><br>
+        <!-- style="pointer-events: none" -->
         <!-- <script src="script.js"></script> -->
     
 
@@ -228,7 +242,8 @@
 
         var json_object = <%- JSON.stringify(data)%>
         console.log("This is the JSON object to work with", json_object);
-        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and " +  json_object.mode +" crossword for course name " + json_object.course;
+        document.getElementById("welcomemessage").innerHTML = "Let's " +  json_object.mode + " crossword for course " + json_object.course;
+        // document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and " +  json_object.mode +" crossword for course name " + json_object.course;
         document.getElementById("course").innerHTML = json_object.course // in future pass course name to display
         var link = "/submitquiz/" + json_object.mode + "/" + json_object.course +  "?course_id=" + json_object.course_id;
         
@@ -245,6 +260,7 @@
           console.log(typeof(json_object.quizdata))
           document.getElementById("ques_ans_data").innerHTML = JSON.stringify(json_object.quizdata);
           console.log(typeof(json_object.quizdata))
+          //Create();
         }
 
         if(json_object.mode == "edit"){
@@ -263,20 +279,21 @@
 
         if (json_object.mode == "create"){
           var final_quiz = {
-            qa_data : []
+            qa_data : [],
         };
 
         }
 
         // "quizdata":[{"qa_id":1,"question":"q1","answer":"a1"},{"qa_id":2,"question":"q2","answer":"a2"}],"mode":"edit"}
         else{
+          
           var final_quiz = {
             qa_data : json_object.quizdata
           }
+          console.log("my final quiz in case of edit/duplicate", final_quiz)
+          Create(); // load the crossword while page loads, this is handled now in crossword page
         }
 
-        console.log("My starting final quiz data", final_quiz)
-        
         function onFormSubmit() { // takes one question and answer
         if (validate()) {
 
@@ -284,6 +301,7 @@
             // selected row is populated when clicked on Edit button
             if (selectedRow == null) {
                insertNewRecord(formData);
+               Create();  // this is handled now in crossword page
             // ques_content.push(formData.question);
             // ans_content.push(formData.answer);
             }
@@ -291,7 +309,10 @@
             // insert new record
             else {
                updateRecord(formData); // edit selectedRow
+               Create();  //this is handled now in crossword page
             }
+
+            // not needed
             // console.log(typeof formData.question);
             console.log('Current question',formData.question);
             console.log('Current ans',formData.answer);
@@ -312,6 +333,7 @@
           var formData = {};
           formData["question"] = document.getElementById("question").value;
           formData["answer"] = document.getElementById("answer").value;
+          formData["orig_qascore"] = document.getElementById("orig_qascore").value;
           console.log('Formdata', formData);
           return formData;
         }
@@ -355,28 +377,32 @@
         var cell0 = newRow.insertCell(0); // serial number added by css
         console.log("cell0",cell0.innerHTML);
 
-        
         var cell1 = newRow.insertCell(1);
         cell1.innerHTML = data.question //+ "</pre>";
+        cell1.id = "question_col";
         console.log("cell1",cell1);
         // cell1.innerHTML = "<pre>" + data.question + "</pre>";
-        
 
         var cell2 = newRow.insertCell(2);
         cell2.innerHTML = data.answer;
+        cell2.id = "answer_col";
         console.log("cell2",cell2);
+
+        var cell3 = newRow.insertCell(3);
+        cell3.innerHTML = data.orig_qascore;
+        console.log("cell3",cell3);
 
         //var ques = this.parentElement.parentElement; // current row
         //var ques_id = ques.rowIndex;
         // console.log("New row", ques_id);
 
         var ques_id = final_quiz.qa_data.length;
-
         // QA object pushed everytime to qa_data array
         var QA = {
             qa_id : ques_id + 1,
             question : cell1.innerHTML,
-            answer : cell2.innerHTML
+            answer : cell2.innerHTML,
+            orig_qascore : parseFloat(cell3.innerHTML) //.toFixed(1)
         };
         console.log("QA",QA);
 
@@ -394,8 +420,8 @@
 
         // console.log(document.td);
 
-        var cell3 = newRow.insertCell(3);
-        cell3.innerHTML = `<a onClick="onEdit(this)">Edit</a>
+        var cell4 = newRow.insertCell(4);
+        cell4.innerHTML = `<a onClick="onEdit(this)">Edit</a>
                             <a onClick="onDelete(this)">Delete</a>`;
 
         }
@@ -403,6 +429,7 @@
         function resetForm() {
           document.getElementById("question").value = "";
           document.getElementById("answer").value = "";
+          document.getElementById("orig_qascore").value = "";
 
           selectedRow = null;
         }
@@ -418,6 +445,7 @@
           selectedRow = td.parentElement.parentElement; // <tr></tr>
           document.getElementById("question").value = selectedRow.cells[1].innerHTML; // text box updated with selected row content
           document.getElementById("answer").value = selectedRow.cells[2].innerHTML; // text box updated with selected row content
+          document.getElementById("orig_qascore").value = selectedRow.cells[3].innerHTML; // text box updated with selected row content
           // Update Row
           document.getElementById("qa-submit").value = "Update Row"
           console.log("to be edited row",selectedRow.rowIndex);
@@ -431,23 +459,23 @@
           // update in table
           selectedRow.cells[1].innerHTML = formData.question;
           selectedRow.cells[2].innerHTML = formData.answer;
+          selectedRow.cells[3].innerHTML = formData.orig_qascore;
 
           // edit the final_quiz object
           final_quiz.qa_data[selectedRow.rowIndex-1].question = formData.question;
           final_quiz.qa_data[selectedRow.rowIndex-1].answer = formData.answer;
+          final_quiz.qa_data[selectedRow.rowIndex-1].orig_qascore = parseFloat(formData.orig_qascore) //.toFixed(1);
 
           // update content in text area with updated final_quiz object
           var textarea_data = document.getElementById("ques_ans_data");
           textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
           console.log("updated textarea_data",textarea_data.innerHTML);
 
-          // update in array
+          // update in array - not used anywhere
           ques_content.splice(selectedRow.rowIndex-1,1,formData.question);
           ans_content.splice(selectedRow.rowIndex-1,1,formData.question);
 
           document.getElementById("qa-submit").value = "Add Row"
-
-
           }
 
         function onDelete(td) {
@@ -485,10 +513,11 @@
 
             // delete from table
             document.getElementById("quizList").deleteRow(row.rowIndex);
-        
+            
             resetForm();
         }
             // Update Row
+            Create();
             document.getElementById("qa-submit").value = "Add Row"
         }
 
@@ -548,34 +577,34 @@
 
 
         function saveQuiz(){
-        alert("Do you want to submit the form?");
-        console.log("I am in the function SaveQuiz");
-        console.log(final_quiz);
+            alert("Do you want to submit the form?");
+            console.log("I am in the function SaveQuiz");
+            console.log(final_quiz);
 
-        // create text area element
-        var x = document.createElement("textarea");
-        x.innerHTML = JSON.stringify(final_quiz);
-        x.form = "saveForm";
-        console.log("x obj", x);
-        console.log("x.innerHTML", x.innerHTML);
-        var d = document.getElementById("saveForm");
-        console.log('Now printing data in textarea');
-        console.log("X",x);
-        d.appendChild(x);
+            // create text area element
+            var x = document.createElement("textarea");
+            x.innerHTML = JSON.stringify(final_quiz);
+            x.form = "saveForm";
+            console.log("x obj", x);
+            console.log("x.innerHTML", x.innerHTML);
+            var d = document.getElementById("saveForm");
+            console.log('Now printing data in textarea');
+            console.log("X",x);
+            d.appendChild(x);
 
-        alert("The form was submitted");
-        //x.type = "hidden";
-        //x.name = "quiz_question";
-        // x.value = final_quiz;
+            alert("The form was submitted");
+            //x.type = "hidden";
+            //x.name = "quiz_question";
+            // x.value = final_quiz;
 
 
-        // x.innerHTML = final_quiz;
-        // // x.form = "saveForm";
-        // console.log("I am in the function SaveQuiz")
-        // console.log("X",x);
+            // x.innerHTML = final_quiz;
+            // // x.form = "saveForm";
+            // console.log("I am in the function SaveQuiz")
+            // console.log("X",x);
 
-        // var d = document.getElementById("saveForm");
-        // d.appendChild(x);
+            // var d = document.getElementById("saveForm");
+            // d.appendChild(x);
 
         }
 
@@ -597,7 +626,10 @@
         // }
 </script>
 
-<script src="/crossword.js"></script>
+<script src="/crossword.js">
+    //Create();
+  </script>
+  
 <!-- type="text/javascript"  -->
 
 </body>
