@@ -10,10 +10,10 @@ var ejs = require('ejs');
 var ObjectID = require('mongodb').ObjectID;
 const MongoStore = require('connect-mongo')(session);
 const { v4: uuidv4 } = require('uuid');
-const { resolve } = require('path');
-const { func } = require('prop-types');
-// const { title } = require('process');
+// const { resolve } = require('path');
 // const { func } = require('prop-types');
+var bcrypt = require('bcrypt');
+var BCRYPT_SALT_ROUNDS = 12;
 
 const TWO_HOURS = 1000 * 60 * 60 * 2 // in milliseconds
 
@@ -396,81 +396,66 @@ app.post('/login',redirectHome,(req,res) =>{ // passed url in query string
   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
   // check is username password exist in DB
       var db = client.db('test');
-      db.collection('users').find({$and : [{ "username":  username},{"password": password}]}).count()
+      db.collection('users').find({ "username":  username}).count() //,{"password": password}]}).count()
         .then(function(count){
 
-          if(count == 1){
+          if(count == 1){ // registered username found correctly, but verify password
 
-            db.collection('users').find({$and : [{ "username":  username},{"password": password}]}).toArray()
+            db.collection('users').find({ "username":  username}).toArray()
             .then(function(existing_user){
+                console.log("This is existing user from DB, now check if password matches", existing_user); // username and password
+                //console.log("comparing passwords here", bcrypt.compare(password, existing_user.password));
+                //var x =  bcrypt.compare(req.body.password, existing_user.password)
+                console.log("password in DB",existing_user[0].password) // hashed one from DB
 
-              console.log(existing_user);
-           
-                // assign userId to session object, userid  is present in users array
-                req.session.userId = existing_user[0]._id
-                req.session.username = existing_user[0].username
+                // bcrypt.hash(password, BCRYPT_SALT_ROUNDS, function(err, hash) { // entered by user
+                // if (err) { throw (err); }
+              
+                  // hashed password entered by user
+                  console.log("password entered by user", password)
+                  //console.log("hashed password entered by user", hash)
 
-                // if url is present go to that route else go to home route
+                  // compare password ( normal string ) with hashed value in DB
+                  bcrypt.compare(password,existing_user[0].password, function(err, samePassword) { // compare with password in DB
+                    if (err) { throw (err); }
+                      console.log(samePassword); // prints boolean value 
+                      if(samePassword) {
 
-                if(next_url == "blank" || next_url == "/logout" || next_url == '/home')
-                  return res.redirect('/home'); // redirect to home if authenticated
-                // else{
-                //   console.log("I do not know where to go")
-                //   next()
-                // }
-                else {
-
-                  //redirectGradeBook(req,res)
-                  // goes to /play/A-2/601498efa69caa5bc48e3896 and then into redirectGradeBook
-                  return res.redirect(next_url); // /play/A-2/601498efa69caa5bc48e3896
-
-                //   var str_array = next_url.split("/");
-                //   str_array_len = str_array.length;
-                //   var quiz_id = str_array[str_array_len-1]
-                //   var course = str_array[str_array_len-2]
-                //   console.log("split array",str_array);
-                //   console.log("quiz_id",quiz_id)
-                //   console.log("course",course)
-                //   console.log("type of quiz id", typeof(quiz_id))
-                //   db.collection('studentdata').aggregate([{$unwind:"$grades"},{$match: {"grades.quiz_id":ObjectID(quiz_id),"username":username}}]).toArray()
-                //   .then(function(studentdata_doc){
-                //     console.log(studentdata_doc)
-                //     console.log(typeof(studentdata_doc))
-                //     studentdata_doc = JSON.stringify(studentdata_doc)
-                //     console.log("type of studentdata_doc",typeof(studentdata_doc))
-                //     if(studentdata_doc == '[]'){
-                //       return res.redirect(next_url);
-                //     }
-                //     else{
-                //       return res.redirect("/grades/"+ course +"/" + "?quiz_id="+ quiz_id)
-                //     }
-                //   })
-                //   .catch((e) => { // catch for inner db query
-                //     console.log("problem in getting count for student");
-                //     console.log(e);
-                //   });
-                }
-          })
-          .catch((e) => { // catch for inner db query
-            console.log("problem in getting count");
-            console.log(e);
-          });
-        } // end of if
-
-          else{ // no user found
-            // if login fails - AJAX call here
-            data.message = 'Worng username or password';
-            res.render('login',{data:data})
-            // res.redirect('/login'); // redirects to get method of login by default????
-          } // end of else
-
-        })
+                        console.log("password matched")
+                        // assign userId to session object, userid is present in users array
+                        req.session.userId = existing_user[0]._id
+                        req.session.username = existing_user[0].username
+        
+                        // if url is present go to that route else go to home route
+        
+                        if(next_url == "blank" || next_url == "/logout")
+                          return res.redirect('/home'); // redirect to home if authenticated
+                        else {
+                          return res.redirect(next_url); 
+                        } // end of else
+                      } // if samepassword
+                    else { // passwords did not match
+                        // if login fails - AJAX call here
+                        data.message = 'Worng username or password';
+                        res.render('login',{data:data})
+                    }
+                  }); // end of compare
+                // }); // end of hash bcrypt
+            }); // end of query in count = 1
+          } // end of if count = 1
+        else { // count = 0, no user found
+          // if login fails - AJAX call here
+          data.message = 'Worng username or password';
+          res.render('login',{data:data})
+          // res.redirect('/login'); // redirects to get method of login by default????
+        } // end of else
+      }) // end of count check query
     .catch((e) => {
       console.log("problem in post /login route");
       console.log(e);
      });
 
-  }); // end of outer if
+  }); // end of Mongo client
 });
 
 
@@ -541,33 +526,56 @@ app.post('/register', redirectHome,(req,res) =>{ //?url passed as query string
 
       if(count == 0){ // new user : add user to DB and assign userID as ObjectID in DB  // commented
 
-        db.collection('users').insertOne(req.body, function (findErr, result) {
-          if (findErr) throw findErr;
+        // encrypt password before inserting
+        console.log("orig password", password)
+        
+        bcrypt.genSalt(BCRYPT_SALT_ROUNDS, function(err, salt){
+          if(err) return next(err);
 
-          console.log("new user : request body in register",req.body); // this contains _id
-          console.log('my new userid', req.body._id);
-          req.session.userId = req.body._id; // for now userid is username
-          req.session.username = req.body.username;
-          console.log("my updated session data after registration",req.session)
+          bcrypt.hash(password, salt )//, function(err, hashedPassword){
+            //if(err) return next(err);
 
-           // if url is present go to that route else go to home route
-
-          
-          if(next_url == "blank" || next_url == "/logout")
-            return res.redirect('/home'); // redirect to home if authenticated
-          else
-            return res.redirect(next_url);  // quiz page
-          
-          // if(next_url =='')
-          //   return res.redirect('/home'); // redirect to home if authenticated
-          // else
-          //   return res.redirect(next_url);  
-
-          //res.redirect('/home');
-
-        });
-       
-      } 
+            .then(function(hashedPassword) {
+              console.log("hashed pass",hashedPassword)
+              user_data = {
+                username : username,
+                password : hashedPassword
+              }
+            //return usersDB.saveUser(username, hashedPassword);
+            return user_data;
+          })
+          .then(function(user_data) {
+            
+            db.collection('users').insertOne(user_data, function (findErr, result) {
+              if (findErr) throw findErr;
+    
+              console.log("new user : request body in register",user_data); // this contains _id
+              console.log('my new userid', user_data._id);
+              req.session.userId = user_data._id; // for now userid is username
+              req.session.username = user_data.username;
+              console.log("my updated session data after registration",req.session)
+    
+               // if url is present go to that route else go to home route
+              if(next_url == "blank" || next_url == "/logout")
+                return res.redirect('/home'); // redirect to home if authenticated
+              else
+                return res.redirect(next_url);  // quiz page
+              
+              // if(next_url =='')
+              //   return res.redirect('/home'); // redirect to home if authenticated
+              // else
+              //   return res.redirect(next_url);  
+              //res.redirect('/home');
+    
+            });
+            })
+            .catch(function(error){
+                console.log("Error saving user: ");
+                console.log(error);
+                next();
+            });
+          });
+      }
       else {   // some user already exists ( double registration )
       
         // AJAX call here
