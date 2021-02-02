@@ -29,8 +29,8 @@
     <textarea name = "student_data_json" id = "student_data_json" form = "viewScore"></textarea><br>
     <a href="/logout" action = "/logout">Logout</a>
     <p id = "welcomemessage"></p>
-    <label>Enter your correct username here </label>
-    <input type = "text" name = "player_username" form = "viewScore" required>
+    <!-- <label>Enter your correct username here </label>
+    <input type = "text" name = "player_username" form = "viewScore" required> -->
 
     <div id = "quiz_details">
         <!-- <label>Course Name : </label> -->
@@ -109,7 +109,8 @@
     <div>
        
         <!-- routes to scoreboard.ejs -->
-        <button class="btn" type="submit" onclick= Submit() form = "viewScore">Submit the quiz</button>
+        <button class="btn" type="submit" form = "viewScore" onclick= Submit()> Submit the quiz</button>
+        <!-- form = "viewScore" -->
 
         <!-- just displays same page with correct and wrong ans -->
         <!-- <button class="btn" type="submit" onclick= Submit() >Submit the quiz</button> -->
@@ -138,8 +139,34 @@
     <!-- C:\Users\palla\Desktop\MS_Project\FINAL_FEATURES\version5_render_crossword_student_dev\node_modules\dom-to-image\src -->
     <!-- <script src="/dist/dom-to-image.min.js">  -->
     <script>
-        //  ../dom-to-image/dist/dom-to-image.min.js
-        //var domtoimage = require('dom-to-image');
+        
+
+        var json_object = <%- JSON.stringify(data)%>
+        console.log("This is the JSON object to work with", json_object);
+
+        //console.log("This is the JSON object to work with", json_object);
+        //document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
+
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + ", let us play! Good luck ! ";
+        document.getElementById('course').innerHTML = "Course Name : " + json_object.course
+        document.getElementById('title').innerHTML = "Title : " + json_object.title
+        document.getElementById('points').innerHTML = "Total points : " + json_object.points
+        document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions
+        //document.getElementById('instructions').innerHTML = json_object.instructions
+
+        console.log("this is my type", typeof(JSON.stringify(json_object["role"])) , JSON.stringify(json_object["role"]))
+        var role = JSON.stringify(json_object["role"])
+        console.log(typeof(role), role)
+        if( json_object["role"] === "owner" ){
+            console.log("I am the owner attempting the quiz")
+            document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + ", since you are the owner of the crossword you can have multiple attempts. You can check your grades in 'See grades option in future'";
+            document.getElementById("viewScore").action = '/grades/owner-try/' + json_object.course + '/' + '?course_id='+ json_object.course_id + '&quiz_id=' + json_object.quizid;
+        }
+        else{ // role = "player"
+            document.getElementById("viewScore").action = '/grades/' + json_object.course + '/' + '?course_id='+ json_object.course_id + '&quiz_id=' + json_object.quizid;
+        }
+    
+ 
         var board, wordArr, wordBank, wordsActive, mode; // default mode = 0
     
         var Bounds = {
@@ -164,21 +191,6 @@
                 this.left = 999;
             },
         };
-
-        var json_object = <%- JSON.stringify(data)%>
-        console.log("This is the JSON object to work with", json_object);
-        document.getElementById("viewScore").action = '/grades/?course_id='+ json_object.course_id + '&quiz_id=' + json_object.quizid;
-
-        //console.log("This is the JSON object to work with", json_object);
-        //document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
-
-        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + ", please fill out the details before starting the quiz";
-        document.getElementById('course').innerHTML = "Course Name : " + json_object.course
-        document.getElementById('title').innerHTML = "Title : " + json_object.title
-        document.getElementById('points').innerHTML = "Maximum points : " + json_object.points
-        document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions
-        //document.getElementById('instructions').innerHTML = json_object.instructions
-        
     
         var letterArr = document.getElementsByClassName("letter");
         wordArr = [];
@@ -337,8 +349,8 @@
 
                        // currently value is form_key "1" : "12,13"
                         across[keys_dict[form_key]] = form_key; // can use qa_id here to populate value as question
-
-                        across[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                        //across[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                        across[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].orig_qa_score + " " + wordsActive[w].ques_ans_id; 
                         // value is the dict is now question
                         // recognize question by qa_id
 
@@ -349,7 +361,8 @@
                 }
                 else {
                     down[keys_dict[form_key]] = form_key;
-                    down[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                    //down[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                    down[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].orig_qa_score + " " + wordsActive[w].ques_ans_id; 
                     // console.log("down",json_object.ques_ans_data[wordsActive[w].qa_id - 1].question);
                     //down[keys_dict[form_key]] = json_object.ques_ans_data[wordsActive[w].qa_id - 1].question;
                 }
@@ -419,13 +432,20 @@
                     let row = table.insertRow(); // a row inserted <tr>
                     
                     // splitting id and ques in dictionary values
-                    var str = data[key]
-                    var x = str.split(" ") // grab last word to get id
-                    var ques = x.slice(0, -1).join(" "); // join words to grab question
+                    var str = data[key] // str is value in dictionary
+                    var x = str.split(" ") 
+                    var ques = x.slice(0, -2).join(" "); // join words to grab question
+                    console.log("question is",ques)
 
+                    // last value in str - ques_ans_id
                     console.log(x.length)
-                    row.id = x[x.length - 1];
+                    row.id = x[x.length - 1]; // grab last word to get id
                     console.log(data[key]);
+
+                    // second last value in str - point
+                    console.log(x.length)
+                    point = x[x.length - 2]; // grab last word to get id
+                    console.log("point",point);
 
                     let cell1 = row.insertCell();
                     let text1 = document.createTextNode(key);
@@ -434,6 +454,18 @@
                     let cell2 = row.insertCell();
                     let text2 = document.createTextNode(ques);
                     cell2.appendChild(text2);
+
+                    let cell3 = row.insertCell();
+                    let text3;
+                    console.log("type of point", typeof(point))
+                    if (point == '1'){
+                        text3 = document.createTextNode("["+ point + "pt]");
+                    }
+                    else{
+                        text3 = document.createTextNode("["+ point + "pts]");
+                    }
+                   
+                    cell3.appendChild(text3);
 
                     //let cell3 = row.insertCell();
                     //let text3 = document.createTextNode(style="font-size:150%;font-weight:bold;color:green;">&#10004)
@@ -494,10 +526,10 @@
                 
                 // put a space for blank entries by student
                 if (letterArr[i].getElementsByTagName('input')[0].value == ""){
-                dict [letterArr[i].attributes["xind"].value + " " + letterArr[i].attributes["yind"].value] = " "
+                    dict [letterArr[i].attributes["xind"].value + " " + letterArr[i].attributes["yind"].value] = " "
                 }
                 else {
-                dict [letterArr[i].attributes["xind"].value + " " + letterArr[i].attributes["yind"].value] = letterArr[i].getElementsByTagName('input')[0].value;
+                    dict [letterArr[i].attributes["xind"].value + " " + letterArr[i].attributes["yind"].value] = letterArr[i].getElementsByTagName('input')[0].value;
                 }
                 console.log(dict);
                 //console.log(check.value);
@@ -547,7 +579,7 @@
 
                 console.log(letter_array[l], dict[make_key]);
                 if ( letter_array[l] == dict[make_key].toUpperCase() ){
-                    console.log("matched letter",dict[make_key]); 
+                    console.log("matched letter",dict[make_key]); // value = 1 here?
                 }
                 else {
                     console.log("no matched letter",dict[make_key]); 
@@ -564,7 +596,7 @@
                 }
                 else x++;  
                 
-                }
+                } // done checking if ans is correct / wrong
 
             // word is formed : update score and student answer in wordsActive
             console.log(ans);
@@ -572,24 +604,30 @@
             wordsActive[w].student_ans = ans.toUpperCase();
             // if (flag == true){
             if (value == 1){
-                wordsActive[w].score = 1;
-                quiz_score+=1 // quiz score to be show to student and stored in Database
+                console.log("correct ans", " score field", wordsActive[w].score , "orig_score", wordsActive[w].orig_qa_score)
+                wordsActive[w].score = wordsActive[w].orig_qa_score;
+                quiz_score += parseFloat(wordsActive[w].orig_qa_score); // quiz score to be show to student and stored in Database
             }
-            else wordsActive[w].score = 0
+                else wordsActive[w].score = 0
 
             }
 
-            console.log("final quiz score", quiz_score);
-            console.log(wordsActive); // contains score and student ans attribute
-
-
+            console.log("FINAL QUIZ SCORE", quiz_score);
+            console.log("FINAL WORDS IN WORDSACTIVE",wordsActive); // contains score and student ans attribute
 
             // Step 3 : Direct to other ejs file , push data in DB to show scoreboard
-
             var student_data = {
                 qa_data:[],
-                final_score : quiz_score
+                final_score : parseFloat(quiz_score),
+                orig_final_score : parseFloat(json_object.points),
+                title : json_object.title,
+                instructions : json_object.instructions
             }
+
+            // document.getElementById('course').innerHTML = "Course Name : " + json_object.course
+            // document.getElementById('title').innerHTML = "Title : " + json_object.title
+            // document.getElementById('points').innerHTML = "Total points : " + json_object.points
+            // document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions
             var QA = {}
             for( w = 0; w < wordsActive.length; w++){
 
@@ -598,13 +636,14 @@
                     ques : wordsActive[w].question,
                     correct_ans : wordsActive[w].string,
                     student_ans : wordsActive[w].student_ans,
-                    qa_score : wordsActive[w].score
+                    qa_score : parseFloat(wordsActive[w].score), // student score
+                    orig_qa_score : parseFloat(wordsActive[w].orig_qa_score)
                 }
 
             student_data.qa_data.push(QA);
             }
 
-            console.log(student_data);
+            console.log("This should be my correct student data",student_data);
             student_data_json = document.getElementById("student_data_json");
             student_data_json.innerHTML = JSON.stringify(student_data);
             console.log("second text area data",  student_data_json.innerHTML);
@@ -784,7 +823,7 @@
                 wordBank.push(new WordObj(wordArr[i])); // WordObj creates key value pairs
                 wordBank[i].ques_ans_id = i+1
                 wordBank[i].question = json_object.quizdata[i].question;
-                console.log()
+                wordBank[i].orig_qa_score = json_object.quizdata[i].orig_qascore;    
                 //newWordBank.push(new newWordObj(wordArr[i]));
                 //console.log(wordBank);
             }
@@ -1126,6 +1165,7 @@
             this.successfulMatches = [];
             this.ques_ans_id = 0;
             this.question = "";
+            this.orig_qa_score = 0
         }
     
     
