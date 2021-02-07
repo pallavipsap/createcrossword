@@ -43,7 +43,7 @@ JSON.stringify(data)  =
     <p id = "guidelines"></p>
     <p id = "welcomemessage"></p>
     <div id="new_grp">
-        <input id="new" type="submit" value=" + New group" onclick="showCreateGroup()"/>
+        <input id="new" type="submit" value=" + New course" onclick="showCreateGroup()"/>
         <!-- <input type="submit" value="Play Crossword" form = "postPlayGroups"/> -->
     </div>
 <!-- style="display: none;" -->
@@ -69,7 +69,7 @@ JSON.stringify(data)  =
         <span id = "course_exists_dialog" style = "display: none;">Sorry, this course already exists. Please change course number or course name</span>
         <span id = "course_blank_dialog" style = "display: none;">Please enter both group number and group name</span>
         <span id = "course_create_dialog" style = "display: none;">Group created successfully</span>
-        <p id="exist">Existing Groups</p>
+        <p id="exist">Existing Courses</p>
         <span id = "no_display_groups_dialog" style = "display: none;"></span>
         <div class = "allgroups" id = "allgroups"></div>
 
@@ -150,7 +150,6 @@ JSON.stringify(data)  =
 
         function appendForm(value){
             console.log(value)
-
             var course_id = "course_id";
             json_object[course_id] = value;
             console.log("updated json object", json_object);
@@ -231,6 +230,7 @@ JSON.stringify(data)  =
                         document.getElementById("creategroup_dialog").style.display = "none";
                         document.getElementById("course_blank_dialog").style.display = "none";
                         document.getElementById("course_exists_dialog").style.display = "none";
+                        document.getElementById("no_display_groups_dialog").style.display = "none"
 
                         document.getElementById("course_create_dialog").style.display = "block";
 
