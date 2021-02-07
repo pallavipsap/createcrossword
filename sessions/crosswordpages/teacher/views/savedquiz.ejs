@@ -19,10 +19,7 @@
 
 
 <!-- To handle just one attempt, check if correct user -->
-
-
 <!-- <form id = "viewScore" method="POST" action="/grades/"></form> -->
-
 <!-- back button -->
 
 
@@ -41,7 +38,7 @@
         <!-- <label>Maximum points : </label><br> -->
         <span type="text" name="points" id="points" form = "saveForm" ></span></br>
         <!-- <label>Crossword Instructions ( optional ) </label><br> -->
-        <span name="instructions" id="instructions" form = "saveForm"></span>
+        <span name="instructions" id="instructions" form = "saveForm"></span></br>
 
         <span name = "disclaimer" id = " disclaimer" style = "color:blue">Disclaimer : The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</span>
     </div>
@@ -178,7 +175,7 @@
         document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " this is the quiz that you have created";
         document.getElementById('course').innerHTML = "Course Name : " + json_object.course
         document.getElementById('title').innerHTML = "Title : " + json_object.title
-        document.getElementById('points').innerHTML = "Maximum points : " + json_object.points
+        document.getElementById('points').innerHTML = "Total points : " + json_object.points
         document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions;
         //document.getElementById('instructions').innerHTML = json_object.instructions
         
@@ -354,8 +351,7 @@
 
                        // currently value is form_key "1" : "12,13"
                         across[keys_dict[form_key]] = form_key; // can use qa_id here to populate value as question
-
-                        across[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                        across[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].orig_qa_score + " " + wordsActive[w].ques_ans_id; 
                         // value is the dict is now question
                         // recognize question by qa_id
 
@@ -366,7 +362,7 @@
                 }
                 else {
                     down[keys_dict[form_key]] = form_key;
-                    down[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].ques_ans_id;
+                    down[keys_dict[form_key]] = wordsActive[w].question + " " + wordsActive[w].orig_qa_score + " " + wordsActive[w].ques_ans_id ;
                     // console.log("down",json_object.ques_ans_data[wordsActive[w].qa_id - 1].question);
                     //down[keys_dict[form_key]] = json_object.ques_ans_data[wordsActive[w].qa_id - 1].question;
                 }
@@ -411,6 +407,54 @@
             generateTable(table,down);
             //console.log(table);
 
+
+            function generateTable(table, data) {
+                for (let key in data) {
+                    console.log("in generate table");
+                    let row = table.insertRow(); // a row inserted <tr>
+                    
+                    // splitting id and ques in dictionary values
+                    var str = data[key] // str is value in dictionary
+                    var x = str.split(" ") 
+                    var ques = x.slice(0, -2).join(" "); // join words to grab question
+                    console.log("question is",ques)
+
+                    // last value in str - ques_ans_id
+                    console.log(x.length)
+                    row.id = x[x.length - 1]; // grab last word to get id
+                    console.log(data[key]);
+
+                    // second last value in str - point
+                    console.log(x.length)
+                    point = x[x.length - 2]; // grab last word to get id
+                    console.log("point",point);
+
+                    let cell1 = row.insertCell();
+                    let text1 = document.createTextNode(key);
+                    cell1.appendChild(text1);
+
+                    let cell2 = row.insertCell();
+                    let text2 = document.createTextNode(ques);
+                    cell2.appendChild(text2);
+
+                    let cell3 = row.insertCell();
+                    let text3;
+                    console.log("type of point", typeof(point))
+                    if (point == '1'){
+                        text3 = document.createTextNode("["+ point + "pt]");
+                    }
+                    else{
+                        text3 = document.createTextNode("["+ point + "pts]");
+                    }
+                   
+                    cell3.appendChild(text3);
+
+                    //let cell3 = row.insertCell();
+                    //let text3 = document.createTextNode(style="font-size:150%;font-weight:bold;color:green;">&#10004)
+                }
+                }   
+
+
             // not used yet
             function generateTableHead(table, data) {
                 let thead = table.createTHead();
@@ -428,34 +472,7 @@
                 }
             }
 
-           
-    
-            function generateTable(table, data) {
-                for (let key in data) {
-                    console.log("in generate table");
-                    let row = table.insertRow(); // a row inserted <tr>
-                    
-                    // splitting id and ques in dictionary values
-                    var str = data[key]
-                    var x = str.split(" ") // grab last word to get id
-                    var ques = x.slice(0, -1).join(" "); // join words to grab question
-
-                    console.log(x.length)
-                    row.id = x[x.length - 1];
-                    console.log(data[key]);
-
-                    let cell1 = row.insertCell();
-                    let text1 = document.createTextNode(key);
-                    cell1.appendChild(text1);
-
-                    let cell2 = row.insertCell();
-                    let text2 = document.createTextNode(ques);
-                    cell2.appendChild(text2);
-
-                    //let cell3 = row.insertCell();
-                    //let text3 = document.createTextNode(style="font-size:150%;font-weight:bold;color:green;">&#10004)
-                }
-                }        
+                 
 }
 
 
@@ -780,7 +797,7 @@
                 wordBank.push(new WordObj(wordArr[i])); // WordObj creates key value pairs
                 wordBank[i].ques_ans_id = i+1
                 wordBank[i].question = json_object.quizdata[i].question;
-                console.log()
+                wordBank[i].orig_qa_score = json_object.quizdata[i].orig_qascore;
                 //newWordBank.push(new newWordObj(wordArr[i]));
                 //console.log(wordBank);
             }
