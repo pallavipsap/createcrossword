@@ -1,10 +1,9 @@
 <html>
 <head>
+
 <title> Registration Details </title>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-	<link rel = "stylesheet" type = "text/css" href = "/css/register.css">
-
-<!-- <form id = "postUserData" method="POST" action="/post-user-data"></form> -->
+<link rel = "stylesheet" type = "text/css" href = "/css/register.css">
 <form id = "postUserData" method="POST" action="/register"></form>
 
 <body>
@@ -13,11 +12,11 @@
 	<div class = "register">
         <h1>Create your account</h1>
         <form>
-            <input type="text" name = "username" placeholder="Create Username" form = "postUserData"><br>
-            <input type = "text" name = "password" placeholder="Create Password" form = "postUserData"><br>
-
-            <!-- <span id = "user_exists_dialog" style = "display: block;"><%- JSON.stringify(data) %></span> -->
+            <input type="text" name = "username" placeholder="Create Username" form = "postUserData" required><br>
+            <input type = "text" name = "password" placeholder="Create Password" form = "postUserData" required><br>
             <span id = "user_exists_dialog" style = "display: none;"></span>
+            <!-- <span id = "user_exists_dialog" style = "display: block;"><%- JSON.stringify(data) %></span> -->
+            
             <input id="signup" type="submit" id = "action-register" value="Sign up" form = "postUserData"> 
     
         </form> 
@@ -32,21 +31,7 @@
         var next_url = json_object.next_url;
 	    document.getElementById("postUserData").action = "/register/?url=" + next_url;
         console.log(typeof(json_object)) // string
-        // if (json_object != ''){
-        //     // post register response
-        //     // user already exists, display span with message
-        //     console.log("existing user")
-        //     document.getElementById("user_exists_dialog").innerHTML = json_object
-        //     document.getElementById("user_exists_dialog").style.display = "block"
-            
-        // }
-        // else{
-        //     // get register response
-        //     // blank
-        //     console.log("blank string passed")
-        //     document.getElementById("user_exists_dialog").innerHTML = json_object
-            
-        // }
+
         if (json_object.message != ''){
             // post register response
             // user already exists, display span with message
@@ -62,6 +47,23 @@
             document.getElementById("user_exists_dialog").innerHTML = json_object.message
             
         }
+
+        // if (json_object != ''){
+        //     // post register response
+        //     // user already exists, display span with message
+        //     console.log("existing user")
+        //     document.getElementById("user_exists_dialog").innerHTML = json_object
+        //     document.getElementById("user_exists_dialog").style.display = "block"
+            
+        // }
+        // else{
+        //     // get register response
+        //     // blank
+        //     console.log("blank string passed")
+        //     document.getElementById("user_exists_dialog").innerHTML = json_object
+            
+        // }
+       
 </script>
 
 
