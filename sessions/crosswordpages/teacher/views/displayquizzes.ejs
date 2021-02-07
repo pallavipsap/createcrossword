@@ -33,7 +33,10 @@ username":"sapalep1",
 <!-- <form id = "postCreateQuiz" method="POST" action="/post-create-quizzes"></form>  -->
 
 <body>
-  
+    <!-- <input id = "testme" type="text" onfocus="this.select();" onmouseup="return false;" value="test me " />
+    <input id = "test" onClick="this.select();" value="test me" />
+    <input id = "testmeagain" type="text" onfocus="this.select();" onmouseup="return false;" value="test me again " /> -->
+
     <textarea name = "group_cw_data" id = "group_cw_data_json"><%= JSON.stringify(data)%></textarea>
     <a href="/logout" action = "/logout">Logout</a>
     <p id = "welcomemessage"></p>
@@ -43,7 +46,7 @@ username":"sapalep1",
     <!-- <input type="submit" value="+ create new crossword" form = "postCreateQuiz"/> -->
 </div>
 
-    <p id="past_quiz_details">Past crosswords will be displayed below</p>
+    <p id="past_quiz_details">Existing crosswords</p>
     <span id = "no_display_quizzes_dialog" style = "display: none;"></span>
     <div class = "allquizzes" id = "allquizzes"></div>
 
@@ -78,6 +81,9 @@ username":"sapalep1",
         // document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " these are the crosswords you created for this group";
 
 
+        // console.log(document.getElementById("testme"))
+        // console.log(document.getElementById("testmeagain"))
+
         var anchor = document.createElement("a");
         var link = document.createTextNode("Create New Crossword")
         anchor.appendChild(link);
@@ -88,8 +94,9 @@ username":"sapalep1",
         document.getElementById("create_crossword").appendChild(anchor);
         
 
+
          // TODO ** : create these quizzes using ejs syntax
-         // quiz ids is an array of quiz_id and quiz_name
+         
          function DisplayPrevCrosswords(quizzes) { 
             console.log(quizzes)
 
@@ -108,46 +115,57 @@ username":"sapalep1",
                     // console.log(document.getElementById("allquizzes"));
 
 
+                    var quiz_div = document.createElement("div");
+                    quiz_div.id = "quiz_div"+i;
+                    quiz_div.className = "quiz_list"
+                    document.getElementById("allquizzes").appendChild(quiz_div);
+                    console.log("I am here", quiz_div)
+                    
+
                     // link 1
                     var span = document.createElement("span");
                     span.innerHTML = quizzes[i]["quiz_title"];
-                    document.getElementById("allquizzes").appendChild(span);
+                    //document.getElementById("allquizzes").appendChild(span);
+                    document.getElementById("quiz_div"+i).appendChild(span);
 
+                    if (quizzes[i]["quiz_edit_disable"] == 'yes'){
+                        span.innerHTML+= " " + "(quiz uneditable as a student has taken it already)"   
+                    }
                     var line_break = document.createElement("br")
                     span.append(line_break);
 
-
-                    // var anchor_view = document.createElement("a");
-                    // var link = document.createTextNode(quizzes[i]["quiz_title"])
-                    // anchor_view.appendChild(link);
-                    // anchor_view.title = quizzes[i]["quiz_title"];
-                    // // passing course_name as parameter and quiz_id as query
-                    // anchor_view.href = "/create/save/" +  json_object["course"]  + "?quiz_id="+ quizzes[i]["quiz_id"];
-                    // anchor_view.action = "/create/save/" +  json_object["course"]  + "?quiz_id="+quizzes[i]["quiz_id"];
-                    // document.getElementById("allquizzes").appendChild(anchor_view);
+                    // var line_break = document.createElement("br")
+                    // span.append(line_break);
 
                     // link 1
                     var anchor_view = document.createElement("a");
                     var link = document.createTextNode("View")
+                    anchor_view.id = "view"
                     anchor_view.appendChild(link);
                     anchor_view.title = "View"
                     // passing course_name as parameter and quiz_id as query
                     anchor_view.href = "/create/save/" +  json_object["course"]  + "?quiz_id="+ quizzes[i]["quiz_id"];
                     anchor_view.action = "/create/save/" +  json_object["course"]  + "?quiz_id="+quizzes[i]["quiz_id"];
-                    document.getElementById("allquizzes").appendChild(anchor_view);
+                    //document.getElementById("allquizzes").appendChild(anchor_view);
+                    document.getElementById("quiz_div"+i).appendChild(anchor_view);
+
 
                      // link 2
+                     ///quiz/grades/:course
                     var anchor_grades = document.createElement("a");
+                    anchor_grades.id = "grades"
                     var link = document.createTextNode("See grades")
                     anchor_grades.appendChild(link);
                     anchor_grades.title = "See grades";
                     // passing course_name as parameter and quiz_id as query
-                    anchor_grades.href = "/create/groups/" + anchor.title + "?quiz_id="+ quizzes[i]["quiz_id"];
+                    anchor_grades.href = "/quiz/grades/" + quizzes[i].course_id + "?quiz_id="+ quizzes[i]["quiz_id"];
                     // anchor.action = "/create/groups/" + anchor.title + "?quiz_id="+quizzes[i]["quiz_id"];
-                    document.getElementById("allquizzes").appendChild(anchor_grades);
+                    // document.getElementById("allquizzes").appendChild(anchor_grades);
+                    document.getElementById("quiz_div"+i).appendChild(anchor_grades);
 
                      // link 3
                     var anchor_try = document.createElement("a");
+                    anchor_try.id = "try"
                     var link = document.createTextNode("Try crossword")
                     anchor_try.appendChild(link);
                     anchor_try.title = "Try crossword";
@@ -155,31 +173,77 @@ username":"sapalep1",
                     //anchor_try.href = "http://localhost:2000/" +  quizzes[i]["quiz_id"];
                     anchor_try.href = "/play/" +  json_object["course"]  + "/" + quizzes[i]["quiz_id"];
                     // anchor.action = "/create/groups/" + anchor.title + "?quiz_id="+quizzes[i]["quiz_id"];
-                    document.getElementById("allquizzes").appendChild(anchor_try);
+                    // document.getElementById("allquizzes").appendChild(anchor_try);
+                    document.getElementById("quiz_div"+i).appendChild(anchor_try);
 
                      // link 4
                     var anchor_edit = document.createElement("a");
+                    anchor_edit.id = "edit"
                     var link = document.createTextNode("Edit")
                     anchor_edit.appendChild(link);
                     anchor_edit.title = "Edit";
                     // passing course_name as parameter and quiz_id as query
                     anchor_edit.href = "/create/edit/" +  json_object["course"]  + "?quiz_id="+ quizzes[i]["quiz_id"];
                     anchor_edit.action = "/create/edit/" +  json_object["course"]  + "?quiz_id="+quizzes[i]["quiz_id"];
-                    document.getElementById("allquizzes").appendChild(anchor_edit);
+                    // document.getElementById("allquizzes").appendChild(anchor_edit);
+                    if (quizzes[i]["quiz_edit_disable"] == 'yes'){
+                        anchor_edit.href = ''     
+                    }
+
+                    document.getElementById("quiz_div"+i).appendChild(anchor_edit);
 
                     // link 5
                     var anchor_duplicate = document.createElement("a");
                     var link = document.createTextNode("Duplicate")
+                    anchor_duplicate.id = "duplicate"
                     anchor_duplicate.appendChild(link);
                     anchor_duplicate.title = "Duplicate";
                     // passing course_name as parameter and quiz_id as query
                     anchor_duplicate.href = "/create/duplicate/" +  json_object["course"]  + "?quiz_id="+ quizzes[i]["quiz_id"];
                     anchor_duplicate.action = "/create/duplicate/" +  json_object["course"]  + "?quiz_id="+quizzes[i]["quiz_id"];
-                    document.getElementById("allquizzes").appendChild(anchor_duplicate);
+                    // document.getElementById("allquizzes").appendChild(anchor_duplicate);
+                    document.getElementById("quiz_div"+i).appendChild(anchor_duplicate);
 
                     var line_break = document.createElement("br")
-                    anchor_duplicate.append(line_break);
+                    quiz_div.append(line_break);
+
+
+                    // link 6
+
+                    // combined
+                    // quiz link : localhost:2000/play/A-1/60164d1d4e5a0418909d6918
+                    //this works but it has same id
+                    // var quiz_span = document.createElement("span")
+                    // quiz_span.innerHTML = "quiz link : "
+                    // document.getElementById("quiz_div"+i).appendChild(quiz_span);
+                    // quiz_span.id = "autoselect"+i
+                    // quiz_span.innerHTML = "quiz link: localhost:2000/play/" +  json_object["course"]  + "/" + quizzes[i]["quiz_id"];
+                    // document.getElementById("quiz_div"+i).appendChild(quiz_span);
+
+                    // individual
+                    var quiz_span = document.createElement("span")
+                    quiz_span.innerHTML = "quiz link (click to copy) : "
+                    quiz_span.className = "quizspan"
+                    document.getElementById("quiz_div"+i).appendChild(quiz_span);
+                    //document.getElementById("allquizzes").appendChild(quiz_span);
+                    
+                    var span = document.createElement("span")
+                    span.id = "autoselect"+i
+                    span.className = "autoselect"
+                    span.innerHTML = "localhost:2000/play/" +  json_object["course"]  + "/" + quizzes[i]["quiz_id"];
+                    document.getElementById("quiz_div"+i).appendChild(span);
+                    //document.getElementById("allquizzes").appendChild(span);
+
+                    
+                    var line_break = document.createElement("br")
+                    quiz_div.append(line_break);
                     console.log(document.getElementById("allquizzes"));
+
+                    // line break code
+
+                    // var line_break = document.createElement("br")
+                    // anchor_duplicate.append(line_break);
+                    // console.log(document.getElementById("allquizzes"));
 
                 }
                 console.log(document.getElementById("allquizzes"));
@@ -188,18 +252,58 @@ username":"sapalep1",
             // "courses" in json_object ? DisplayPrevGroups(json_object["courses"]) : console.log("no past courses") ; // pass array
             
             // TODO : modify this code to handle quizzes in better way, to not call the function at all
-            console.log(typeof(json_object["quizzes"]), "quiz type")
-            if (JSON.stringify(json_object["quizzes"]) != '[]'){ // finding key in json object 
+            if (json_object["quizzes"] != '[]'){ // finding key in json object 
                 console.log("in if", json_object["quizzes"])
                 DisplayPrevCrosswords(json_object["quizzes"])
             }
             else {
                 console.log("no past crosswords");
                 console.log("blank string passed");
-                document.getElementById("no_display_quizzes_dialog").innerHTML = "No past quizzes"
+                document.getElementById("no_display_quizzes_dialog").innerHTML = "No past crosswords created"
                 document.getElementById("no_display_quizzes_dialog").style.display = "block"
             }
 
+            // this works
+            $(function() {
+                // pass span id instead of 'autoselect'
+                $('span').click(function () {
+                    SelectText(this);
+                });
+                //console.log($('divinput'))
+            });
+
+            function SelectText(element) {
+
+                console.log("I am here")
+                console.log("this is elem", element)
+                //var quiz_link = element.innerHTML.split(" ")
+                // console.log("split",quiz_link)
+                // element.innerHTML = quiz_link[2]
+            
+                childNode = element.childNodes[0]
+                var doc = document,
+                //text = doc.getElementById(element),range,selection;
+                text = element; // <span> .... </span>
+
+                console.log("doc", document)
+                console.log("text", text)
+                console.log("child nodes",element.childNodes[0])
+                if (doc.body.createTextRange) {
+                    console.log("range",range)
+                    range = document.body.createTextRange();
+                    range.moveToElementText(text);
+                    range.select();
+                } else if (window.getSelection) {
+                    selection = window.getSelection();        
+                    range = document.createRange();
+                    //console.log("range else",range)
+                    //range.setStart(childNode,1)
+                    //range.setStart(doc,startOffset)
+                    range.selectNodeContents(text);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }
   
         
 </script>
