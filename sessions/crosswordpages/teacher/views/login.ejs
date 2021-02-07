@@ -1,11 +1,13 @@
 <html>
 <head>
-<title> Login Page </title>
+	<title> Login Page </title>
 	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
 	<link rel="stylesheet" href="/css/login.css">
-<!-- homepage route -->
-<!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
-<form id = "homePage" method="POST" action = "/login" ></form>
+
+	<!-- homepage route -->
+	<!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
+	<form id = "homePage" method="POST" action = "/login" ></form>
+
 
 <!-- registration route -->
 <!-- <form id = "registerPage" method="POST" action = "/post-register-data"></form> -->
@@ -18,31 +20,18 @@
 		<h1>Cross-Build-Play</h1>
 		<form>
 			<span id = "wrong_credentials_dialog" style = "display: none;"></span>
-			<!-- <p>Username</p> -->
             <input type="text" id = "username" name = "username" placeholder=" Username" form = "homePage" required><br>
-    
-			<!-- <p>Password</p> -->
             <input type = "text" id = "password" name = "password" placeholder=" Password" form = "homePage" required><br>
-			<!-- <span id = "wrong_credentials_dialog" style = "display: none;"></span> -->
-
 			<input id="login" type="submit" value = "Log in" form = "homePage">
-		</form>
-
-			
-		   
-				   
-			<!-- by default get method -->
+		</form>	   
+			<!-- by default anchor is get method -->
 			<p>Don't have an account? <a id = "newregister" href="register" action = "/register">Sign up</a></p>
 
 			<!-- method = "POST"  -->
-
 			<!-- <input type="submit" name="register" value = "Register now" form = "registerpage"> -->
-			<!-- Dont have an account ? Create yours now -->
-		
-		<!-- <script type="text/javascript" src="js.js"></script> -->
-		
-		
+			<!-- Dont have an account ? Create yours now -->	
 	</div>
+
 </body>
 	
 
@@ -51,30 +40,24 @@
 	var json_object = <%- JSON.stringify(data)%>;
 	var next_url = json_object.next_url;
 	document.getElementById("homePage").action = "/login/?url=" + next_url;
-	
 	document.getElementById("newregister").action = "/register/?url=" + next_url;
 	document.getElementById("newregister").href = "/register/?url=" + next_url;
-
 
 	console.log(typeof(json_object)) // string
 	console.log("updated with url",document.getElementById("homePage"));
 	console.log("updated with url",document.getElementById("newregister"));
-
 
 	if (json_object.message != ''){
 		// post login response
 		// wrong credentials
 		console.log("user not found")
 		document.getElementById("wrong_credentials_dialog").innerHTML = json_object.message // passes wrong username password
-		document.getElementById("wrong_credentials_dialog").style.display = "block"
-		
+		document.getElementById("wrong_credentials_dialog").style.display = "block"	
 	}
 	else{
-		
 		// get login response
 		console.log("blank message passed")
 		//document.getElementById("wrong_credentials_dialog").innerHTML = json_object.message
-		
 	}
 
 </script>
