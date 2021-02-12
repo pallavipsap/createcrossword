@@ -157,7 +157,7 @@
             <th style="width: 20%">Answer</th>
             <th style="width: 10%">Points</th>
             <th style="width: 20%">Options</th> -->
-            <th style="width: 10%" scope="col">Sr.No.</th>
+            <th style="width: 10%" scope="col">#</th>
             <th style="width: 40%" scope="col">Question</th>
             <th style="width: 20%" scope="col">Answer</th>
             <th style="width: 10%" scope="col">Points</th>
@@ -245,7 +245,7 @@
                       <th colspan="3" style="text-align:center">ACROSS</th>
                       </tr>
                       <tr>
-                      <th style="width: 20%">Number</th>
+                      <th style="width: 20%">#</th>
                       <th style="width: 60%">Question</th>
                       <th style="width: 20%">Points</th>
                       </tr>
@@ -278,7 +278,7 @@
                           <th colspan="3" style="text-align:center">DOWN</th>
                           </tr>
                           <tr>
-                          <th style="width: 20%">Number</th>
+                          <th style="width: 20%">#</th>
                           <th style="width: 60%">Question</th>
                           <th style="width: 20%">Points</th>
                           </tr>
@@ -372,15 +372,15 @@
           // selected row is populated when clicked on Edit button
           if (selectedRow == null) {
              insertNewRecord(formData);
-             Create();  // this is handled now in crossword page
-          // ques_content.push(formData.question);
-          // ans_content.push(formData.answer);
+             Create();  //calculates total points when record is updated, adds row to across down
+            // ques_content.push(formData.question);
+            // ans_content.push(formData.answer);
           }
           
           // insert new record
           else {
              updateRecord(formData); // edit selectedRow
-             Create();  //this is handled now in crossword page
+             Create();  //calculates total points when record is updated, adds row to across down
           }
           // not needed
           // console.log(typeof formData.question);
