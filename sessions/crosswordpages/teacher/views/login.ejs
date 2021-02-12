@@ -1,22 +1,27 @@
 <html>
 <head>
 	<title> Login Page </title>
-	<!-- <link rel = "stylesheet" type = "text/css" href = "student.css"> -->
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/css/login.css">
 
 	<!-- homepage route -->
 	<!-- <form id = "homePage" method="POST" action = "/post-home-data"></form> -->
 	<form id = "homePage" method="POST" action = "/login" ></form>
-
+</head>
 
 <!-- registration route -->
 <!-- <form id = "registerPage" method="POST" action = "/post-register-data"></form> -->
 
 <body>
-
+	
 	<textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
 	<div class = "userdetails">
-	<!-- <img src = "login.png" class = "login"> -->
+
 		<h1>Cross-Build-Play</h1>
 		<form>
 			<span id = "wrong_credentials_dialog" style = "display: none;"></span>
@@ -24,13 +29,10 @@
             <input type = "text" id = "password" name = "password" placeholder=" Password" form = "homePage" required><br>
 			<input id="login" type="submit" value = "Log in" form = "homePage">
 		</form>	   
-			<!-- by default anchor is get method -->
-			<p>Don't have an account? <a id = "newregister" href="register" action = "/register">Sign up</a></p>
-
-			<!-- method = "POST"  -->
-			<!-- <input type="submit" name="register" value = "Register now" form = "registerpage"> -->
-			<!-- Dont have an account ? Create yours now -->	
+		<!-- by default anchor is get method -->
+		<p>Don't have an account? <a id = "newregister" href="register" action = "/register">Sign up</a></p>	
 	</div>
+	
 
 </body>
 	
@@ -62,5 +64,5 @@
 
 </script>
 	
-</head>
+
 </html>
