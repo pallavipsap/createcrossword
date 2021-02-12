@@ -1,7 +1,13 @@
 <html>
 <head>
 <title> Display played Group Page </title>
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/playedgroups.css">
 </head>
 
 
@@ -33,14 +39,40 @@ passed json object :
 } -->
 
 <body>
-    
+  <div class="main-container">
     <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
-    <a href="/logout" action = "/logout">Logout</a>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+         <div class="navbar-header">
+           <a class="navbar-brand" href="#">CrossBuildPlay</a>
+         </div>
+         <ul class="nav navbar-nav">
+           <li class="active"><a href="#">Home</a></li>
+           <li class="active"><a href="#">Groups</a></li>
+           <li class="active"><a href="#">Tutorial</a></li>
+         </ul>
+         <ul class="nav navbar-nav navbar-right">
+           <!-- <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li> -->
+           <!-- <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li> -->
+           <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
+               <!-- <span class="caret"></span></a> -->
+             <ul class="dropdown-menu">
+               <a class="dropdown-item" href="/logout">Logout</a>
+               <!-- <li><a href="#">Page 1-2</a></li>
+               <li><a href="#">Page 1-3</a></li> -->
+             </ul>
+           </li>
+         </ul>
+      </div>
+  </nav>
+    
+    <!-- <a href="/logout" action = "/logout">Logout</a> -->
     <p id = "welcomemessage"></p>
 
+    <p id="exist">Existing Played Groups</p>
     <span id = "no_past_quizzes_dialog" style = "display: none;"></span>
     <div class = "allgroups" id = "allgroups"></div>
-
+</div>
 <!-- style="display: none;" -->
 <!-- works for current code -->
    <!-- <div id="creategroup_dialog" style="display: none;">
@@ -99,34 +131,40 @@ passed json object :
                    
                     // document.getElementById("allgroups").appendChild(anchor);
                     // console.log(document.getElementById("allgroups"));
-                    // commented until here**************
+
+                    var quiz_div = document.createElement("div");
+                    quiz_div.id = "quiz_div"+i;
+                    quiz_div.className = "quiz_list"
+                    document.getElementById("allgroups").appendChild(quiz_div);
+                    console.log("I am here", quiz_div)
 
                     var anchor = document.createElement("a");
                     var link = document.createTextNode(courses[i].course_no + "-" + courses[i].course_name)
                     anchor.appendChild(link);
                     anchor.title = courses[i].course_no + "-" + courses[i].course_name
-
                     anchor.href = "/play/groups/" + anchor.title +"?course_id="+courses[i]["course_id"];
                     anchor.action = "/play/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
-                    document.getElementById("allgroups").appendChild(anchor);
+                    //document.getElementById("allgroups").appendChild(anchor);
+                    document.getElementById("quiz_div"+i).appendChild(anchor);
 
                     var span = document.createElement("span");
                     if (courses[i]["role"] == "group_owner"){
-                      span.innerHTML = "  [Group owner]"
+                      span.innerHTML = "(Group owner)"
                     }
                     else{
-                      span.innerHTML = "  [Group player]"
+                      span.innerHTML = "(Group player)"
                     }
                     //document.getElementById("allgroups").appendChild(span);
+                    document.getElementById("quiz_div"+i).appendChild(span);
                     
                    
                     var line_break = document.createElement("br")
-                    span.append(line_break);
-                    document.getElementById("allgroups").appendChild(span);
+                    quiz_div.append(line_break);
+
+                    //document.getElementById("allgroups").appendChild(span);
                     console.log(document.getElementById("allgroups"));
                 }
             }
-
             // "courses" in json_object ? DisplayPrevGroups(json_object["courses"]) : console.log("no past courses") ; // pass array
             
             if ("courses" in json_object) // finding key in json object
