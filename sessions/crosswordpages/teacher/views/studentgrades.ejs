@@ -2,52 +2,127 @@
 <html lang="en">
 
 
-<head>
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
-    <link rel="stylesheet" href="/css/studentgrades.css"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <script src = "https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-    <title>Welcome to crossword</title>
-    <!-- <link rel="stylesheet"  href="/css/style.css" type="text/css"/> -->
-    <!-- <link rel="stylesheet" href="/css/savedquiz.css"/> -->
-    <!-- accesses the css file in public in render_button.html folder because in render.js app.use(express.static(path.resolve(__dirname, 'public')));-->
-
-<body>
-
-    <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
+        <link rel="stylesheet" href="/css/studentgrades.css"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src = "https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+        
+        <title>Welcome to crossword</title>
+        <!-- <link rel="stylesheet"  href="/css/style.css" type="text/css"/> -->
+        <!-- <link rel="stylesheet" href="/css/savedquiz.css"/> -->
+        <!-- accesses the css file in public in render_button.html folder because in render.js app.use(express.static(path.resolve(__dirname, 'public')));-->
     
-        <table id="table_id" class="display" width="80%" cellspacing="0">
-          <thead>
-            <tr>
-              <th>Sr.Number</th>
-              <th>Student Username</th>
-              <th>Student Score</th>
-              <!-- <th>Student Answer Details</th> -->
-            </tr>
-          </thead>
-            <tbody>
-              <!-- <%= JSON.stringify(data.student_grades) %> -->
-              <% for(var i=0; i< data.student_grades.length; i++) { %>
-                <tr>
-                  <td id = "question_col"><%-data.student_grades[i].serial_number %></td>
-                  <td id = "answer_col"><%-data.student_grades[i].student_username %></td>
-                  <td><%-data.student_grades[i].student_score%></td>
-                  <!-- <td><a onClick="onEdit(this)">See details</a></td> -->
-                </tr>
-              <%}%>                        
-            </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
-        </table>
+
+    <body>
+
+    <!-- <textarea name = "groupdata" id = "groupdata_json" ><%- JSON.stringify(data)%></textarea> -->
+    <div class="main-container">
+        <nav class="navbar navbar-inverse">
+                    <div class="container-fluid">
+                       <div class="navbar-header">
+                         <a class="navbar-brand" href="#">CrossBuildPlay</a>
+                       </div>
+                       <ul class="nav navbar-nav">
+                         <li class="active"><a href="#">Home</a></li>
+                         <li class="active"><a href="#">Groups</a></li>
+                         <li class="active"><a href="#">Tutorial</a></li>
+                       </ul>
+                       <ul class="nav navbar-nav navbar-right">
+                         <!-- <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li> -->
+                         <!-- <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li> -->
+                         <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
+                             <!-- <span class="caret"></span></a> -->
+                           <ul class="dropdown-menu">
+                             <a class="dropdown-item" href="/logout">Logout</a>
+                             <!-- <li><a href="#">Page 1-2</a></li>
+                             <li><a href="#">Page 1-3</a></li> -->
+                           </ul>
+                         </li>
+                       </ul>
+                    </div>
+        </nav>
+        <p id = "welcomemessage"></p>
+    
+    <div id = "quiz_details">
+        <!-- <label>Course Name : </label> -->
+        <span type="text" name="course" id="course" form = "saveForm"></span></br><!-- in future pass course name to display -->
+        <!-- <label>Title of the crossword : </label><br> -->
+        <span type="text" name="title" id="title" form = "saveForm" ></span></br>
+        <!-- <label>Maximum points : </label><br> -->
+        <span type="text" name="points" id="points" form = "saveForm" ></span></br>
+        <!-- <label>Crossword Instructions ( optional ) </label><br> -->
+        <!-- <span name="instructions" id="instructions" form = "saveForm"></span></br> -->
+    </div>
+
+    <table id="table_id" class="display" width="80%" cellspacing="0">
+        <thead>
+          <tr>
+            <th>Sr.Number</th>
+            <th>Student Username</th>
+            <th>Student Score</th>
+           
+          </tr>
+        </thead>
+        <tbody>
+            <!-- <%= JSON.stringify(data.student_grades) %> -->
+            <% for(var i=0; i< data.student_grades.length; i++) { %>
+              <tr>
+                <!-- to distinuish owner and teacher -->
+                
+                <% if (data.student_grades[i].student_username == data.username){ %>
+                  <td  style = "color:red"><%-data.student_grades[i].serial_number %></td>
+                  <td  style = "color:red" ><%-data.student_grades[i].student_username %>(owner)</td>
+                  <td  style = "color:red"><%-data.student_grades[i].student_score %></td>
+                <% } else{ %>
+                  <td><%-data.student_grades[i].serial_number %></td>
+                  <td><%-data.student_grades[i].student_username %></td>
+                  <td><%-data.student_grades[i].student_score %></td>
+                <% } %>
+             
+                <!-- <td><a onClick="onEdit(this)">See details</a></td> -->
+              </tr>
+            <%}%>                        
+        </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
+    </table>
+    </div>
 
     <script>
+
+        // var json_object = 
+        //     {"userId":"60164b3a4e5a0418909d6913",
+        //     "username":"sapalep1",
+        //     "quiz_data":{"course":"sapalep1","title":"algo","points":"2"},
+        //     "student_grades":[{"serial_number":1,"student_username":"sapalep1","student_score":1},
+        //                     {"serial_number":2,"student_username":"student1","student_score":1}]
+        //     }
+
+        var json_object = <%- JSON.stringify(data)%>
+        console.log("This is the JSON object to work with", json_object);
+        // delete document.getElementById("viewScore").action = '/grades/?course_id='+ json_object.course_id + '&quiz_id=' + json_object.quizid;
+
+        //console.log("This is the JSON object to work with", json_object);
+        //document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and create a crossword for course name " + json_object.course;
+
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " check the scores for your students";
+        document.getElementById('course').innerHTML = "Course Name : " + json_object.quiz_data.course
+        document.getElementById('title').innerHTML = "Title : " + json_object.quiz_data.title
+        document.getElementById('points').innerHTML = "Total points : " + json_object.quiz_data.points
+        // document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions;
+
+
         $(document).ready(function () {
             $('#table_id').DataTable({
-               dom: '<"top"lf>rti<"left"p><"clear">'
-               // dom : 'frtlip' // good
-            //    dom : '<lfr>tip' // length left, search center
-               //"sDom": '<plf>t'
-                //"sDom": '<lf>pt'
+                dom: '<"top"lf>rti<"left"p><"clear">'
+                // dom : 'frtlip' // good
+                // dom : '<lfr>tip' // length left, search center
             }
             );
             
