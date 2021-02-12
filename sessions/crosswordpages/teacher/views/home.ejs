@@ -2,52 +2,68 @@
 <head>
 <title> Home Page </title>
 <!-- this -->
-<link rel="stylesheet" type="text/css" href="/css/home.css">
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/css/home.css">
+	<form id = "postPlayGroups" method="GET" action="/post-play-groups"></form>
 </head>
 
 <body>
 
-	<nav>
+	<div class="main-container">
+	
+		<nav class="navbar navbar-inverse">
+			<div class="container-fluid">
+			   <div class="navbar-header">
+				 <a class="navbar-brand" href="#">CrossBuildPlay</a>
+			   </div>
+			   <ul class="nav navbar-nav">
+				 <li class="active"><a href="#">Home</a></li>
+				 <li class="active"><a href="#">Groups</a></li>
+				 <li class="active"><a href="#">Tutorial</a></li>
+			   </ul>
+			   <ul class="nav navbar-nav navbar-right">
+				 <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
+				   <ul class="dropdown-menu">
+					 <a class="dropdown-item" href="/logout">Logout</a>
+				   </ul>
+				 </li>
+			   </ul>
+			</div>
+		</nav>
+
+	<!-- old nav bar -->
+	<!-- <nav>
 		<span id = "username"></span>
 		<a id="home" href="/home">Home</a>
 		<a id="tutorial" href="">Tutorial</a>
 		<a id="logout" href="/logout" action = "/logout">Logout</a>
-	</nav>
-
-    <!-- teacher route : query string-->
-    <!-- <form id = "postCreateGroups" method="GET" action="/get-home-data/post-create-groups/:todo"></form>  -->
-    <!-- student route : query string-->
-	<form id = "postPlayGroups" method="GET" action="/post-play-groups"></form>
-	<!-- <form id = "logout" method = 'GET' action = '/logout'> -->
-	
-	<!-- logout route : query string-->
-	<!-- <form id = "postPlayGroups" method="POST" action="/post-play-groups"></form> -->
+	</nav> -->
+	<!-- <a id="logout" href="/logout" action = "/logout">Logout</a> -->
 
     <textarea name = "userdata" id = "userdata_json"><%- JSON.stringify(data) %></textarea>
 	<p id = "welcomemessage"></p>
 	<!-- <% var ejs_variable = JSON.stringify(data); %> -->
 
-    <div>
+	<div class="home_div">
         <!-- <input type="submit" value="Create Crossword" onClick = "window.location.href = './get-home-data/post-create-groups/create'"> -->
-		<!-- <input type="submit" value="Play Crossword" onClick ="window.location= 'http://localhost:2000/home/get-home-data/post-create-groups/create'"> -->
-
-
 		<a href="/home/create" action = "/home/create">Create New Crosswords</a>
 		<br>
 		<a href="/home/create" action = "/home/create">Go to my Created Crosswords</a>
 		<br>
 		<a href="/home/play" action = "/home/play">Go to my Played Crosswords</a>
-		<!-- <a href="/play" action = "/play">Create Crossword</a> -->
-		
-		<!-- go to logout route -->
-		<!-- <button type="submit" form = "logout">Logout</button> -->
-		<!-- <a href="/logout" action = "/logout">Logout</a> -->
-    </div>
+	</div>
+	
+</div>
 
     <script>
 		var json_object = <%- JSON.stringify(data) %>;
 		console.log(json_object)
-		document.getElementById("username").innerHTML = "Cross-Build-Play"
+		//document.getElementById("username").innerHTML = "Cross-Build-Play"
 		document.getElementById("welcomemessage").innerHTML = "Welcome, " + json_object.username + "! what do you want to choose today?";
     </script>
 
