@@ -44,11 +44,10 @@ JSON.stringify(data)  =
     <p id = "welcomemessage"></p>
     <div id="new_grp">
         <input id="new" type="submit" value=" + New course" onclick="showCreateGroup()"/>
-        <!-- <input type="submit" value="Play Crossword" form = "postPlayGroups"/> -->
     </div>
-<!-- style="display: none;" -->
-<!-- works for current code -->
-   <!-- <div id="creategroup_dialog" style="display: none;">
+    <!-- style="display: none;" -->
+    <!-- works for current code -->
+    <!-- <div id="creategroup_dialog" style="display: none;">
     <input type="text" name = "course_no" id="course_no" placeholder="Enter group number here" form = "test"></input>
     <input type="text" name = "course_name" id="course_name" placeholder="Enter group name here" form = "test"></input>
     <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea>
@@ -57,11 +56,6 @@ JSON.stringify(data)  =
     <div id="creategroup_dialog" style="display: none;">
         <input class="enter" type="text" name = "course_no" id="course_no" placeholder="Group number eg. 1" form = "test" required></input>
         <input class="enter" type="text" name = "course_name" id="course_name" placeholder="Group name eg. Algorithms" form = "test" required></input>
-        <!-- <textarea name = "userdata" id = "userdata_json" form = "test"><%= JSON.stringify(data)%></textarea> -->
-        <!-- with create() function -->
-        <!-- <button id = "action-button" onclick="Create()"> Click to create group</button> -->
-    
-        <!-- without create() function -->
         <br>
         <button id = "action-button">Create</button><br>
     </div>
@@ -104,17 +98,6 @@ JSON.stringify(data)  =
 
                 for(var i = 0 ; i<=courses.length - 1; i++) {
 
-                    // var input = document.createElement("input");
-                    // input.type = "submit";
-                    // input.name = "course_id";
-                    // input.id = courses[i]["course_no"] + "-" + courses[i]["course_name"];
-            
-                    // input.value = courses[i]["course_no"] + "-" + courses[i]["course_name"];
-                    // // input.form = "postDisplayQuizzes";
-                    // // input.setAttribute("onclick", "appendForm(x)");
-                    // input.setAttribute("form", "postDisplayQuizzes");
-                    // document.getElementById("allgroups").appendChild(input);
-
                     var anchor = document.createElement("a");
                     var link = document.createTextNode(courses[i]["course_no"] + "-" + courses[i]["course_name"])
 
@@ -124,11 +107,9 @@ JSON.stringify(data)  =
                     anchor.href = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
                     anchor.action = "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];
                    
-
                     document.getElementById("allgroups").appendChild(anchor);
                     var line_break = document.createElement("br")
                     anchor.append(line_break);
-
                    
                     console.log(document.getElementById("allgroups"));
 
