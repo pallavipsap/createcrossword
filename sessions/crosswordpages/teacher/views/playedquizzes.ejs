@@ -1,7 +1,14 @@
 <html>
 <head>
 <title> Display Played Quiz for specific group Page </title>
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/playedgroups.css">
 </head>
 
 <!-- send info to create quiz -->
@@ -25,12 +32,41 @@ passed json object : userid, username, password, quiz id and title for that cour
 <!-- <form id = "postCreateQuiz" method="POST" action="/post-create-quizzes"></form>  -->
 
 <body>
+    <div class="main-container">
     <textarea name = "group_cw_data" id = "group_cw_data_json"><%= JSON.stringify(data)%></textarea>
-    <a href="/logout" action = "/logout">Logout</a>
-    <p id = "welcomemessage"></p>
+    <!-- <a href="/logout" action = "/logout">Logout</a> -->
+    
 
-    <p id="past_quiz_details">Past crosswords will be displayed below</p>
+    <!-- <textarea name = "group_cw_data" id = "group_cw_data_json"><%= JSON.stringify(data)%></textarea> -->
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">CrossBuildPlay</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li class="active"><a href="#">Groups</a></li>
+                <li class="active"><a href="#">Tutorial</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <!-- <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li> -->
+                <!-- <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li> -->
+                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
+                    <!-- <span class="caret"></span></a> -->
+                <ul class="dropdown-menu">
+                    <a class="dropdown-item" href="/logout">Logout</a>
+                    <!-- <li><a href="#">Page 1-2</a></li>
+                    <li><a href="#">Page 1-3</a></li> -->
+                </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <p id = "welcomemessage"></p>
+    <p id="exist">Existing Played Crosswords</p>
     <div class = "allquizzes" id = "allquizzes"></div>
+    </div>
 
 
 <!-- style="display: none;" -->
@@ -84,32 +120,18 @@ passed json object : userid, username, password, quiz id and title for that cour
 
                     // keep this for buttons
 
-                    // var input = document.createElement("input");
-                    // input.type = "submit";
-                    // input.name = "quiz_name";
-                    // input.id = quizzes[i]["quiz_id"]
-            
-                    // input.value = quizzes[i]["quiz_name"];
-                    // input.form = "postDisplayQuizzes";
-                    // // input.setAttribute("onclick", "appendForm(x)"s);
-                    // input.setAttribute("form", "postDisplayQuizzes");
-                    // document.getElementById("allquizzes").appendChild(input);
-                    // console.log(document.getElementById("allquizzes"));
-
-                    //************************************************//
-                    // var anchor_view = document.createElement("a");
-                    // var link = document.createTextNode(quizzes[i]["quiz_title"] + "grades")
-                    // anchor_view.appendChild(link);
-                    // anchor_view.title = quizzes[i]["quiz_title"];
-                    // // passing course_name as parameter and quiz_id as query
-                    // anchor_view.href = "/create/groups/" + anchor_view.title + "?quiz_id="+ quizzes[i]["quiz_id"];
-                    // anchor_view.action = "/create/groups/" + anchor_view.title + "?quiz_id="+quizzes[i]["quiz_id"];
-                    // document.getElementById("allquizzes").appendChild(anchor_view);
+                    
+                    var quiz_div = document.createElement("div");
+                    quiz_div.id = "quiz_div"+i;
+                    quiz_div.className = "quiz_list"
+                    document.getElementById("allquizzes").appendChild(quiz_div);
+                    console.log("I am here", quiz_div)
 
                     // quiz title
                     var span = document.createElement("span");
-                    span.innerHTML = quizzes[i]["quiz_title"] + " [Final Score - "+ quizzes[i]["quiz_student_final_score"] + "/" + quizzes[i]["quiz_orig_final_score"] + "]";
-                    document.getElementById("allquizzes").appendChild(span);
+                    span.innerHTML = quizzes[i]["quiz_title"] + " (Final Score - "+ quizzes[i]["quiz_student_final_score"] + "/" + quizzes[i]["quiz_orig_final_score"] + ")";
+                    //document.getElementById("allquizzes").appendChild(span);
+                    document.getElementById("quiz_div"+i).appendChild(span);
 
                    
                     // var score_span = document.createElement("span");
@@ -125,7 +147,8 @@ passed json object : userid, username, password, quiz id and title for that cour
                     anchor_grades.appendChild(link);
                     anchor_grades.title = "Check your answers for "+quizzes[i]["quiz_title"]
                     anchor_grades.href = "/grades/"+ json_object.course + "?quiz_id=" +  quizzes[i]["quiz_id"] ;
-                    document.getElementById("allquizzes").appendChild(anchor_grades);
+                    //document.getElementById("allquizzes").appendChild(anchor_grades);
+                    document.getElementById("quiz_div"+i).appendChild(anchor_grades);
 
                     // link 1 - works - previous links 
                     // var anchor_grades = document.createElement("a");
@@ -136,7 +159,7 @@ passed json object : userid, username, password, quiz id and title for that cour
                     // document.getElementById("allquizzes").appendChild(anchor_grades);
                     
                     var line_break = document.createElement("br")
-                    anchor_grades.append(line_break);
+                    quiz_div.append(line_break);
                     console.log(document.getElementById("allquizzes"));
 
                 }
