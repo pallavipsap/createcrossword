@@ -2,13 +2,18 @@
 <html lang="en">
     
     <!-- type="text/css" -->
-<head>
-
-    <title>Welcome to crossword</title>
-    <link rel="stylesheet"  href="/css/scoreboard.css"/>
-    <!-- accesses the css file in public in render_button.html folder -->
-    <!-- <h1>The quiz is below <%= JSON.stringify(data) %></h1> -->
-</head>
+    <head>
+        <meta charset="utf-8">
+        <title>Welcome to crossword</title>
+        <link rel="stylesheet" type="text/css" href="/css/scoreboard.css">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    </head>
+    
 
 
 <!-- <form id = "viewScore" method="POST" action="/sudent-score-page" ></form> -->
@@ -16,8 +21,34 @@
 <body>
     
     <textarea name = "student_score_table" id = "score_data"><%= JSON.stringify(data) %> </textarea>
-    <a href="/logout" action = "/logout">Logout</a>
+    <div class="main-container">
+        <nav class="navbar navbar-inverse">
+                    <div class="container-fluid">
+                       <div class="navbar-header">
+                         <a class="navbar-brand" href="#">CrossBuildPlay</a>
+                       </div>
+                       <ul class="nav navbar-nav">
+                         <li class="active"><a href="#">Home</a></li>
+                         <li class="active"><a href="#">Groups</a></li>
+                         <li class="active"><a href="#">Tutorial</a></li>
+                       </ul>
+                       <ul class="nav navbar-nav navbar-right">
+                         <!-- <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li> -->
+                         <!-- <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li> -->
+                         <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
+                             <!-- <span class="caret"></span></a> -->
+                           <ul class="dropdown-menu">
+                             <a class="dropdown-item" href="/logout">Logout</a>
+                             <!-- <li><a href="#">Page 1-2</a></li>
+                             <li><a href="#">Page 1-3</a></li> -->
+                           </ul>
+                         </li>
+                       </ul>
+                    </div>
+                </nav>
+    <!-- <a href="/logout" action = "/logout">Logout</a> -->
 
+    <p id = "welcomemessage"></p>
     <div id = "quiz_details">
         <!-- <label>Course Name : </label> -->
         <span type="text" name="course" id="course"></span></br><!-- in future pass course name to display -->
@@ -26,13 +57,14 @@
         <!-- <label>Maximum points : </label><br> -->
         <!-- <span type="text" name="points" id="points" form = "saveForm" ></span></br> -->
         <!-- <label>Crossword Instructions ( optional ) </label><br> -->
-        <span name="instructions" id="instructions"></span>
+        <span name="instructions" id="instructions"></span><br>
     </div>
+	<br>
 
     <div class = "question-answer" id = "question-answer"></div>
     <!-- <p> I will display &#10004;</p> -->
     <!-- Hello <%= JSON.stringify(data.username) %> here are your answers with scores  -->
-
+	</div>
 </body>
 
 <script>
@@ -43,7 +75,7 @@
         // var textarea_json_object = document.getElementById("score_data");
         // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
         // console.log("This is the JSON object to work with", json_object);
-        document.getElementById("question-answer").innerHTML = "Hello " + json_object.username + " here are your answers with scores";
+        document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " here are your answers with scores";
         document.getElementById('course').innerHTML = "Course Name : " + json_object.course
         document.getElementById('title').innerHTML = "Title : " + json_object.title
         document.getElementById('instructions').innerHTML = "Instructions : " + json_object.instructions
@@ -90,38 +122,44 @@
             var br = document.createElement('br');
             var tag = document.createElement("p");
             var span = document.createElement("span");
-            
+
 
             for( i = 0; i <= div_length-1; i++) {
                 var outerdiv = document.createElement("div");
                 outerdiv.classList.add("outerdiv"); // adding class to div
                 document.getElementById("question-answer").appendChild(outerdiv);
                 
-          
-                // var div = document.createElement('div');
-                var div = document.createElement("span");
+                
+                var question_no_div = document.createElement('div');
+                question_no_div.className="question_no_div";
+                
+                var span = document.createElement("span");
                 console.log(qa_data[i].qa_score)
-                div.innerHTML = "QUESTION " + qa_data[i].qa_id;
-                div.id = "qa_id_div";
-                outerdiv.appendChild(div)
+                span.innerHTML = "QUESTION " + qa_data[i].qa_id;
+                span.id = "qa_id_div";
+                
+                outerdiv.appendChild(question_no_div);
 
                 if (qa_data[i].qa_score != 0) { //ticks 9745, &#10004 ,&#x2713
-                    var span = document.createElement("span");
+                    //var span = document.createElement("span");
                     // span.style = "color:green";
                     // span.class = "glyphicon glyphicon-remove";
                     // span.innerHTML = " " + "&#10004;"
-                    span.innerHTML = " " + "&#9989";
+                    span.innerHTML += " " + "&#9989";
                     
                 }
                 else {
-                    var span = document.createElement("span");
+                    //var span = document.createElement("span");
                     // span.style="color:red"
                     //span.class = "glyphicon glyphicon-remove";
                     // span.innerHTML = " " + "&#128502;"
-                    span.innerHTML = " " + "&#10060";
+                    span.innerHTML += " " + "&#10060";
                     
                 }
-                outerdiv.appendChild(span)
+                question_no_div.appendChild(span)
+                
+                var line_break = document.createElement("br");
+                question_no_div.append(line_break);
 
                     
             //         // div.innerHTML = "I will display &#10004;";
@@ -134,9 +172,9 @@
 
 
                 // var div = document.createElement('div');
-                var div = document.createElement("p");
+                var div = document.createElement("div");
                 div.innerText = qa_data[i].ques;
-                div.id = "ques_div";
+                div.className = "ques_div";
                 outerdiv.appendChild(div)
 
                 var div = document.createElement('div');
@@ -149,6 +187,7 @@
                 outerdiv.appendChild(div)
 
                 var  div = document.createElement('div');
+                div.className="score";
                 //var div = document.createElement("p");
                 div.innerText = "Score : " + qa_data[i].qa_score + "/" + qa_data[i].orig_qa_score;
                 outerdiv.appendChild(div)
@@ -161,7 +200,7 @@
             outerdiv.classList.add("outerdiv");
             document.getElementById("question-answer").appendChild(outerdiv);
 
-        }
+            }
 
         DisplayScoreDiv(json_object)
 
