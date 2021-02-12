@@ -206,31 +206,31 @@ const redirectGradeBook = (req,res,next) =>{
 }
 
 
-function checkRepeatAttempt(username) {
+// function checkRepeatAttempt(username) {
 
-  MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
-    if (err) throw err;
-    var db = client.db('test');
+//   MongoClient.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true }, function (err, client) {
+//     if (err) throw err;
+//     var db = client.db('test');
 
-    db.collection('studentdata').find({"username": username}).count()
-        .then(function(playercount) {
-          console.log("count of data found", playercount);
-          if(playercount == 1){ // this is second attempt
-            console.log("This is my repeated attempt")
-            return true
-          }
-          else{
-            console.log("This is my first attempt")
-            return false
-          }
-        })
-        .catch((e) => {
-          console.log("some error in checking RepeatAttempt");
-          console.log(e);
-      }); 
-      })
+//     db.collection('studentdata').find({"username": username}).count()
+//         .then(function(playercount) {
+//           console.log("count of data found", playercount);
+//           if(playercount == 1){ // this is second attempt
+//             console.log("This is my repeated attempt")
+//             return true
+//           }
+//           else{
+//             console.log("This is my first attempt")
+//             return false
+//           }
+//         })
+//         .catch((e) => {
+//           console.log("some error in checking RepeatAttempt");
+//           console.log(e);
+//       }); 
+//       })
   
-}
+// }
 
 const redirectHome = (req,res, next) =>{
 
@@ -1278,7 +1278,7 @@ app.get('/quiz/grades/:course', function(req,res){  // quiz_id as query string
   var quiz_id = req.query.quiz_id
   console.log("type of quiz id", quiz_id)
   console.log("course passed by parameter", course)
-  console.log("course_id passed by parameter", typeof(quiz_id))
+  //console.log("course_id passed by parameter", typeof(course_id))
 
   const{userId} = req.session;
   const{username} = req.session;
@@ -1300,7 +1300,7 @@ app.get('/quiz/grades/:course', function(req,res){  // quiz_id as query string
 
         quizdata_obj = quizdata[0]
         var quiz_data = {
-          course : course,
+          course : req.params.course,
           title : quizdata_obj.title,
           points : quizdata_obj.points,
         }
@@ -1331,6 +1331,7 @@ app.get('/quiz/grades/:course', function(req,res){  // quiz_id as query string
       }
 
       user_data["student_grades"] = student_grades
+      console.log("this is my student data to be passed", user_data)
       res.render('studentgrades',{data:user_data});
     })
     .catch((e) => {
