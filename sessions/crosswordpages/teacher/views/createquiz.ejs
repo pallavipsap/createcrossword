@@ -436,7 +436,7 @@
       var cell0 = newRow.insertCell(0); // serial number added by css
       console.log("cell0",cell0.innerHTML);
       var cell1 = newRow.insertCell(1);
-      cell1.innerHTML = data.question //+ "</pre>";
+      cell1.innerText = data.question //+ "</pre>"; // changed to text
       cell1.id = "question_col";
       console.log("cell1",cell1);
       // cell1.innerHTML = "<pre>" + data.question + "</pre>";
@@ -454,7 +454,7 @@
       // QA object pushed everytime to qa_data array
       var QA = {
           qa_id : ques_id + 1,
-          question : cell1.innerHTML,
+          question : cell1.innerText,
           answer : cell2.innerHTML,
           orig_qascore : parseFloat(cell3.innerHTML) //.toFixed(1)
       };
@@ -467,8 +467,8 @@
       //final_quiz.push(QA);
       console.log("serial number", cell0.getElementsByTagName("td").content);
       var textarea_data = document.getElementById("ques_ans_data"); // get the textarea component
-      textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // setting value in textarea
-      console.log("textarea_data",textarea_data.innerHTML);
+      textarea_data.innerText = JSON.stringify(final_quiz.qa_data); // setting value in textarea // changed to Text
+      console.log("textarea_data",textarea_data.innerText);
       // console.log(document.td);
       var cell4 = newRow.insertCell(4);
       cell4.innerHTML = `<a onClick="onEdit(this)">Edit</a>
@@ -487,7 +487,9 @@
       function onEdit(td) { // change button name to update Row
         console.log(td);  // console.log(td.parentElement); <td></td>
         selectedRow = td.parentElement.parentElement; // <tr></tr>
-        document.getElementById("question").value = selectedRow.cells[1].innerHTML; // text box updated with selected row content
+        // document.getElementById("question").value = selectedRow.cells[1].innerHTML; // text box updated with selected row content
+        // document.getElementById("answer").value = selectedRow.cells[2].innerHTML; // text box updated with selected row content
+        document.getElementById("question").value = selectedRow.cells[1].innerText // text box updated with selected row content
         document.getElementById("answer").value = selectedRow.cells[2].innerHTML; // text box updated with selected row content
         document.getElementById("orig_qascore").value = selectedRow.cells[3].innerHTML; // text box updated with selected row content
         // Update Row
@@ -498,7 +500,7 @@
       // Selected row is populated by onEdit function
       function updateRecord(formData) { // click on "Update Row" button to insert in table
         // update in table
-        selectedRow.cells[1].innerHTML = formData.question;
+        selectedRow.cells[1].innerText = formData.question;
         selectedRow.cells[2].innerHTML = formData.answer;
         selectedRow.cells[3].innerHTML = formData.orig_qascore;
         // edit the final_quiz object
@@ -507,8 +509,8 @@
         final_quiz.qa_data[selectedRow.rowIndex-1].orig_qascore = parseFloat(formData.orig_qascore) //.toFixed(1);
         // update content in text area with updated final_quiz object
         var textarea_data = document.getElementById("ques_ans_data");
-        textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
-        console.log("updated textarea_data",textarea_data.innerHTML);
+        textarea_data.innerText = JSON.stringify(final_quiz.qa_data); // set value // check this
+        console.log("updated textarea_data",textarea_data.innerText);
         // update in array - not used anywhere
         ques_content.splice(selectedRow.rowIndex-1,1,formData.question);
         ans_content.splice(selectedRow.rowIndex-1,1,formData.question);
