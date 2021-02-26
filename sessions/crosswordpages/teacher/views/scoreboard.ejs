@@ -12,6 +12,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="/he.js"></script>
     </head>
     
 
@@ -22,30 +23,53 @@
     
     <textarea name = "student_score_table" id = "score_data"><%= JSON.stringify(data) %> </textarea>
     <div class="main-container">
-        <nav class="navbar navbar-inverse">
-                    <div class="container-fluid">
-                       <div class="navbar-header">
-                         <a class="navbar-brand" href="#">CrossBuildPlay</a>
-                       </div>
-                       <ul class="nav navbar-nav">
-                         <li class="active"><a href="#">Home</a></li>
-                         <li class="active"><a href="#">Groups</a></li>
-                         <li class="active"><a href="#">Tutorial</a></li>
-                       </ul>
-                       <ul class="nav navbar-nav navbar-right">
-                         <!-- <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li> -->
-                         <!-- <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li> -->
-                         <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
-                             <!-- <span class="caret"></span></a> -->
-                           <ul class="dropdown-menu">
-                             <a class="dropdown-item" href="/logout">Logout</a>
-                             <!-- <li><a href="#">Page 1-2</a></li>
-                             <li><a href="#">Page 1-3</a></li> -->
-                           </ul>
-                         </li>
-                       </ul>
-                    </div>
-                </nav>
+    <!-- <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">CrossBuildPlay</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li class="active"><a href="#">Groups</a></li>
+                <li class="active"><a href="#">Tutorial</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <a class="dropdown-item" href="/logout">Logout</a>
+                </ul>
+                </li>
+            </ul>
+        </div>
+    </nav> -->
+
+    <!-- show played groups? instead of groups -->
+    <!--Home> PlayedGroups> PlayedCrosswords> Scores-->
+
+    <nav aria-label="breadcrumb">
+        <div class="navbar-header">
+            <a class="navbar-brand" style = "color: #337ab7;" href="#">CrossBuildPlay</a> <!--home.ejs page link-->
+        </div>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a style = "color: #337ab7;" href="#">Home</a></li> <!--home.ejs page link-->
+            <li class="breadcrumb-item"><a style = "color: #337ab7;" href="#">Courses</a></li> <!--displaygroups.ejs page link-->
+            <li class="breadcrumb-item active" aria-current="page">Scores</li> <!-- <%= data.title%> -->
+        </ol>
+    </nav>
+
+    <!-- OR -->
+    <nav aria-label="breadcrumb">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">CrossBuildPlay</a> <!--home.ejs page link-->
+        </div>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a style = "color: #337ab7;"href="#">Home</a></li> <!--home.ejs page link-->
+            <li class="breadcrumb-item"><a style = "color: #337ab7;"href="#">PlayedGroups</a></li> <!--playedgroups.ejs page link-->
+            <li class="breadcrumb-item"><a style = "color: #337ab7;" href="#">PlayedCrosswords <%= data.course%></a></li><!--playedquizzes.ejs page link-->
+            <li class="breadcrumb-item active" aria-current="page">Scores</li> <!-- <%= data.title%> -->
+        </ol>
+    </nav>
+
     <!-- <a href="/logout" action = "/logout">Logout</a> -->
 
     <p id = "welcomemessage"></p>
@@ -70,7 +94,9 @@
 <script>
 
         // Need this
-        var json_object = <%- JSON.stringify(data)%>
+        // var json_object = <%- JSON.stringify(data)%>
+        var json_object = JSON.parse(document.getElementById("score_data").innerHTML);
+        console.log("This is the JSON object to work with", json_object);
         console.log("This is the JSON object to work with", json_object);
         // var textarea_json_object = document.getElementById("score_data");
         // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object
@@ -135,7 +161,8 @@
                 
                 var span = document.createElement("span");
                 console.log(qa_data[i].qa_score)
-                span.innerHTML = "QUESTION " + qa_data[i].qa_id;
+                // span.innerHTML = "QUESTION " + qa_data[i].qa_id;
+                span.innerHTML = "QUESTION " + parseInt(i+1) //to force serial order of questions
                 span.id = "qa_id_div";
                 
                 outerdiv.appendChild(question_no_div);
@@ -160,22 +187,16 @@
                 
                 var line_break = document.createElement("br");
                 question_no_div.append(line_break);
-
-                    
-            //         // div.innerHTML = "I will display &#10004;";
-            //         div.innerHTML = "QUESTION " + qa_data[i].qa_id + " " + "&#10004;";
-            //         
-            // }
-            // else {
-            //     div.innerHTML = "QUESTION " + qa_data[i].qa_id + " " + "&#128502;";
-            // }
-
-
-                // var div = document.createElement('div');
+            
                 var div = document.createElement("div");
-                div.innerText = qa_data[i].ques;
+                //div.innerText = qa_data[i].ques;
                 div.className = "ques_div";
-                outerdiv.appendChild(div)
+                addPreTag(div,qa_data[i].ques)
+                outerdiv.appendChild(div) // append in pretag function
+
+                // let cell2 = row.insertCell();
+                // addPreTag(cell2,ques) // string is passed
+                // console.log("cell2",cell2)
 
                 var div = document.createElement('div');
                 div.innerText = "My answer: " + qa_data[i].student_ans;
@@ -203,6 +224,323 @@
             }
 
         DisplayScoreDiv(json_object)
+
+        function addPreTag(cell2,text2){
+
+            console.log("this is my encoded question",text2);
+            console.log(typeof(text2))
+            console.log("this is cell",cell2)
+
+            question = text2
+            check_span = document.createElement("span");
+            check_span.innerHTML = he.decode(question)
+            console.log(check_span)
+
+            question = check_span.innerText
+            console.log("decoded question", question)
+            //modified_ques = he.decode(text2);
+            //console.log("this is my decoded question",modified_ques);
+            let find = "```"
+            //let find = "&amp;#x60;&amp;#x60;&amp;#x60;
+            var markdown_list = [];
+            let i = 0, j=0;
+            //var k = ques.indexOf(find,i + find.length)
+            //console.log("check k",k)
+
+            question_len = question.length;
+            while(i<question_len){
+            val = question.indexOf(find,i) // val returns index at which find is found
+            if(val == -1){ //  indexOf returns -1 if find is not present``` not present
+                break // comes out of while loop
+            }
+            else{
+                console.log("found at",val) 
+                markdown_list.push(val); // stores immediate index i, where find is found
+                // string found, so move index by 3
+                i=val+find.length // update i, from immediate index found, find.length = 3 here for ```
+                console.log("added val in list",markdown_list)
+                console.log("updated value of i",i)
+            }
+            }
+            console.log("original text2",text2)
+            console.log("modified question", question)
+            console.log("type of question",typeof(question))
+            console.log("DONE", markdown_list) // [0], [0,6]
+
+            // text2 = document.createTextNode(text2)
+            // //text3 = document.createTextNode(question)
+            // cell2.appendChild(text2)
+
+            // var pre_tag = document.createElement('pre');
+            // pre_tag.innerHTML = question;
+            // cell2.appendChild(pre_tag)
+            // console.log("updated cell2 in func",cell2)
+
+
+            // no ``` found, only plain text
+            // if(markdown_list.length == 0){
+            //   console.log("this is my question without ```")
+            //   question = question.replaceAll("&lt;","<");
+            //   question = question.replaceAll("&gt;",">");
+            //   question = question.replaceAll("&amp;","&");
+            //   text2 = document.createTextNode(question)
+            //   //cell2.appendChild(text2)
+            //   cell2.innerText = question // this allows the question to have lines
+            
+            // }
+
+
+            // deal with indexes in markdown list
+            if(markdown_list.length == 0){
+            console.log("below is my question without ```")
+
+
+            // question = question.replaceAll("&lt;","<");
+            // question = question.replaceAll("&gt;",">");
+            // question = question.replaceAll("&amp;","&");
+            // text2 = document.createTextNode(question)
+            // div_tag.appendChild(text2)
+            var span_tag = document.createElement('span'); // created a row so that the tag can occupy entire div width
+            span_tag.style.width = "100%"
+            span_tag.style.whiteSpace = "pre"
+            //var check = he.decode(question)
+            //console.log("this is decoded without ```",check)
+            span_tag.innerHTML = he.decode(text2) // .innerHTML is important as we are decoding back in html format
+            //((question.replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&"); //in slice(start,end) - end is not included //in slice(start,end) - end is not included //.replaceAll("&lt;","<")).replaceAll("&gt;",">") //in slice(start,end) - end is not included
+            cell2.appendChild(span_tag)
+            }
+
+            if(markdown_list.length != 0){
+
+            var span_tag = document.createElement('span');
+            span_tag.style.width = "100%"
+            span_tag.style.whiteSpace = "pre"
+
+            //commented here
+            // if(markdown_list[0]!= 0) { // if there is some question before ``` eg. Find output.
+            //     //pretag_question+=[question.slice(0,markdown_list[0]-1)].join("")
+            //     text2 = document.createTextNode(question.slice(0,markdown_list[0])) //in slice(start,end) - end is not included
+            //     //text2 = document.createTextNode((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">")) //in slice(start,end) - end is not included
+            //     cell2.appendChild(text2)
+            //     //cell2.innerText = question.slice(0,markdown_list[0]).replaceAll()
+            // }
+            // end comment
+
+            if(markdown_list[0]!= 0) { // if there is some question before ``` eg. Find output.
+                span_tag.innerHTML = question.slice(0,markdown_list[0])
+                //((question.slice(0,markdown_list[0]).replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&"); //in slice(start,end) - end is not included //in slice(start,end) - end is not included //.replaceAll("&lt;","<")).replaceAll("&gt;",">") //in slice(start,end) - end is not included
+                cell2.appendChild(span_tag)
+            }
+            console.log(" start question before pretags",text2)
+
+            console.log("add pre tags now")
+            for(i=0; i<markdown_list.length;i++){
+
+            var pre_tag = document.createElement('pre');
+            var span_tag = document.createElement('span');
+            span_tag.style.width = "100%"
+            span_tag.style.whiteSpace = "pre"
+            // indexes start at 0
+            if(i%2 == 0) { // even index : pre node
+                if(i!=markdown_list.length-1){ // odd index add pre tag
+                console.log("if: I am adding pretag")
+                pre_tag.innerText = question.slice(markdown_list[i]+3,markdown_list[i+1])
+                cell2.appendChild(pre_tag)
+                }
+                else { // go until end if the list, incase we reach end of markdown list
+                //pretag_question+="<pre>" + question.slice(markdown_list[i]+3,question_len-1)+"</pre>";
+                console.log("else : I am adding pretag")
+                pre_tag.innerText = question.slice(markdown_list[i]+3,question_len)
+                cell2.appendChild(pre_tag)
+                }
+            }
+            else if(i%2 == 1){ // odd index : text node
+
+                // without span tag the line breaks are not preserved
+                // if(i!=markdown_list.length-1){ // if index is not last index in 
+                //   console.log("if : I am adding text")
+                //   text2 = document.createTextNode((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">"))
+                //   cell2.appendChild(text2)
+                // }
+                // else { // for last index in markdown list, go until the end of question
+                //   console.log("else : I am adding text")
+                //   text2 = document.createTextNode((question.slice(markdown_list[i]+3,question_len).replaceAll("&lt;","<")).replaceAll("&gt;",">"))
+                //   cell2.appendChild(text2)
+                // }
+
+                // by using span tag, line breaks are preserved because of whitespace style
+                // innertext helps to allow plain text with <>, and then convert &lt to <, and &gt to >
+                // just using innerHTML with replace function, does not work as question is not read as html and shows blank ( Try c++ code wih libraries here)
+                if(i!=markdown_list.length-1){ // if index is not last index in 
+                    console.log("if : I am adding text")
+                    //text2 = document.createTextNode((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">"))
+                    span_tag.innerHTML = question.slice(markdown_list[i]+3,markdown_list[i+1])
+                    //span_tag.innerText = ((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&");
+                    cell2.appendChild(span_tag)
+                }
+                else { // for last index in markdown list, go until the end of question
+                    console.log("else : I am adding text")
+                    //text2 = document.createTextNode((question.slice(markdown_list[i]+3,question_len).replaceAll("&lt;","<")).replaceAll("&gt;",">"))
+                    span_tag.innerHTML = question.slice(markdown_list[i]+3,question_len)
+                    //span_tag.innerText = ((question.slice(markdown_list[i]+3,question_len).replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&");
+                    cell2.appendChild(span_tag)
+                }
+            }
+
+            console.log("part of question",cell2);
+            }
+            console.log("this is my updated cell2",cell2)
+
+            
+            } // end of if
+
+
+
+
+
+            // while (~(i = ques.indexOf (find,i + find.length))) {
+            // // while (~(i = ques.indexOf (find,i+3))) {
+            //   markdown_list.push(i);
+            //   console.log("list is", markdown_list)
+            // }
+            } // end of pre tag function
+
+
+
+        // function addPreTag(div_tag,text2){
+
+        //     console.log("this is my question",text2);
+        //     console.log(typeof(text2)) // string
+        //     console.log("this is div tag",div_tag)
+
+        //     question = text2;
+        //     let find = "```"
+        //     var markdown_list = [];
+        //     let i = 0, j=0;
+        //     //var k = ques.indexOf(find,i + find.length)
+        //     //console.log("check k",k)
+
+        //     question_len = question.length;
+        //     while(i<question_len){
+        //     val = question.indexOf(find,i) // val returns index at which find is found
+        //     if(val == -1){ //  indexOf returns -1 if find is not present``` not present
+        //         break // comes out of while loop
+        //     }
+        //     else{
+        //         console.log("found at",val) 
+        //         markdown_list.push(val); // stores immediate index i, where find is found
+        //         // string found, so move index by 3
+        //         i=val+find.length // update i, from immediate index found, find.length = 3 here for ```
+        //         console.log("added val in list",markdown_list)
+        //         console.log("updated value of i",i)
+        //     }
+        //     }
+        //     console.log("original text2",text2)
+        //     console.log("modified question", question)
+        //     console.log("type of question",typeof(question))
+        //     console.log("DONE", markdown_list) // [0], [0,6]
+
+        //     // text2 = document.createTextNode(text2)
+        //     // //text3 = document.createTextNode(question)
+        //     // cell2.appendChild(text2)
+
+        //     // var pre_tag = document.createElement('pre');
+        //     // pre_tag.innerHTML = question;
+        //     // cell2.appendChild(pre_tag)
+        //     // console.log("updated cell2 in func",cell2)
+
+        //     // no ``` found, only plain text
+        //     if(markdown_list.length == 0){
+        //         console.log("this is my question without ```")
+
+
+        //         // question = question.replaceAll("&lt;","<");
+        //         // question = question.replaceAll("&gt;",">");
+        //         // question = question.replaceAll("&amp;","&");
+        //         // text2 = document.createTextNode(question)
+        //         // div_tag.appendChild(text2)
+
+
+        //         var span_tag = document.createElement('span'); // created a row so that the tag can occupy entire div width
+        //         span_tag.style.width = "100%"
+        //         span_tag.style.whiteSpace = "pre"
+        //         span_tag.innerText = ((question.replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&"); //in slice(start,end) - end is not included //in slice(start,end) - end is not included //.replaceAll("&lt;","<")).replaceAll("&gt;",">") //in slice(start,end) - end is not included
+        //         div_tag.appendChild(span_tag)
+        //     }
+
+        //     // ``` found
+        //     if(markdown_list.length != 0){
+
+        //         var span_tag = document.createElement('span'); // created a row so that the tag can occupy entire div width
+        //         span_tag.style.width = "100%"
+        //         span_tag.style.whiteSpace = "pre"
+
+        //         //commented here
+        //         // if(markdown_list[0]!= 0) { // if there is some question before ``` eg. Find output.
+        //         //     //pretag_question+=[question.slice(0,markdown_list[0]-1)].join("")
+        //         //     text2 = document.createTextNode(question.slice(0,markdown_list[0])) //in slice(start,end) - end is not included
+        //         //     //text2 = document.createTextNode((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">")) //in slice(start,end) - end is not included
+        //         //     cell2.appendChild(text2)
+        //         //     //cell2.innerText = question.slice(0,markdown_list[0]).replaceAll()
+        //         // }
+        //         // end comment
+
+
+        //         if(markdown_list[0]!= 0) { // if there is some question before ``` eg. Find output.
+        //           span_tag.innerText = ((question.slice(0,markdown_list[0]).replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&"); //in slice(start,end) - end is not included //in slice(start,end) - end is not included //.replaceAll("&lt;","<")).replaceAll("&gt;",">") //in slice(start,end) - end is not included
+        //           div_tag.appendChild(span_tag)
+        //         }
+        //         console.log(" start question before pretags",text2)
+        //         console.log("add pre tags now")
+
+        //         for(i=0; i<markdown_list.length;i++){
+
+        //             var pre_tag = document.createElement('pre');
+        //             var span_tag = document.createElement('span'); // created a row so that the tag can occupy entire div width
+        //             span_tag.style.width = "100%"
+        //             span_tag.style.whiteSpace = "pre" // to allow line breaks
+        //             // indexes start at 0
+        //             if(i%2 == 0) { // even index : pre node
+        //                 if(i!=markdown_list.length-1){ // odd index add pre tag
+        //                     console.log("if: I am adding pretag")
+        //                     pre_tag.innerHTML = question.slice(markdown_list[i]+3,markdown_list[i+1])
+        //                     div_tag.appendChild(pre_tag)
+        //                 }
+        //                 else { // go until end if the list, incase we reach end of markdown list
+        //                     //pretag_question+="<pre>" + question.slice(markdown_list[i]+3,question_len-1)+"</pre>";
+        //                     console.log("else : I am adding pretag")
+        //                     pre_tag.innerHTML = question.slice(markdown_list[i]+3,question_len)
+        //                     div_tag.appendChild(pre_tag)
+        //                 }
+        //             }
+        //             else if(i%2 == 1){ // odd index : text node
+        //                 if(i!=markdown_list.length-1){ // if index is not last index in 
+        //                     console.log("if : I am adding text")
+        //                     //text2 = document.createTextNode((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">"))
+        //                     span_tag.innerText = ((question.slice(markdown_list[i]+3,markdown_list[i+1]).replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&");
+        //                     div_tag.appendChild(span_tag)
+        //                 }
+        //                 else { // for last index in markdown list, go until the end of question
+        //                     console.log("else : I am adding text")
+        //                     //text2 = document.createTextNode((question.slice(markdown_list[i]+3,question_len).replaceAll("&lt;","<")).replaceAll("&gt;",">"))
+        //                     span_tag.innerText = ((question.slice(markdown_list[i]+3,question_len).replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&");
+        //                     div_tag.appendChild(span_tag)
+        //                 }
+        //             }
+
+        //         console.log("part of question",div_tag);
+        //     }
+        //     console.log("this is my updated div tag",div_tag)
+
+
+        //     } // end of if
+        //     // while (~(i = ques.indexOf (find,i + find.length))) {
+        //     // // while (~(i = ques.indexOf (find,i+3))) {
+        //     //   markdown_list.push(i);
+        //     //   console.log("list is", markdown_list)
+        //     // }
+        // } // end of pre tag function
+
 
 </script>
 
