@@ -46,7 +46,7 @@ function Display(){
   // ****find mapped value for words
   // *** split into across and down
 
-  // STEP 1 :  Take all indexes and sort the indexes
+  // STEP 1 : Take all indexes and sort the indexes
   // keys stores all the indexes ( x and y)
 
   var keys = []
@@ -388,20 +388,41 @@ function Display(){
               // cell2.appendChild(pre_tag)
               // console.log("updated cell2 in func",cell2)
 
+              
+             // no ``` found, only plain text
+              // if(markdown_list.length == 0){
+              //   console.log("this is my question without ```")
+              //   question = question.replaceAll("&lt;","<");
+              //   question = question.replaceAll("&gt;",">");
+              //   question = question.replaceAll("&amp;","&");
+              //   text2 = document.createTextNode(question)
+              //   //cell2.appendChild(text2)
+              //   cell2.innerText = question // this allows the question to have lines
+                
+              // }
+
+
+              // deal with indexes in markdown list
               if(markdown_list.length == 0){
                 console.log("this is my question without ```")
-                question = question.replaceAll("&lt;","<");
-                question = question.replaceAll("&gt;",">");
-                question = question.replaceAll("&amp;","&");
-                text2 = document.createTextNode(question)
-                //cell2.appendChild(text2)
-                cell2.innerText = question // this allows the question to have lines
-                
-              }
+
+
+                // question = question.replaceAll("&lt;","<");
+                // question = question.replaceAll("&gt;",">");
+                // question = question.replaceAll("&amp;","&");
+                // text2 = document.createTextNode(question)
+                // div_tag.appendChild(text2)
+                var span_tag = document.createElement('span'); // created a row so that the tag can occupy entire div width
+                span_tag.style.width = "100%"
+                span_tag.style.whiteSpace = "pre"
+                span_tag.innerText = ((question.replaceAll("&lt;","<")).replaceAll("&gt;",">")).replaceAll("&amp;","&"); //in slice(start,end) - end is not included //in slice(start,end) - end is not included //.replaceAll("&lt;","<")).replaceAll("&gt;",">") //in slice(start,end) - end is not included
+                cell2.appendChild(span_tag)
+            }
 
               if(markdown_list.length != 0){
 
                 var span_tag = document.createElement('span');
+                span_tag.style.width = "100%"
                 span_tag.style.whiteSpace = "pre"
 
                 //commented here
@@ -425,6 +446,7 @@ function Display(){
 
                 var pre_tag = document.createElement('pre');
                 var span_tag = document.createElement('span');
+                span_tag.style.width = "100%"
                 span_tag.style.whiteSpace = "pre"
                 // indexes start at 0
                 if(i%2 == 0) { // even index : pre node
@@ -538,6 +560,7 @@ function Display(){
               } */
 
             document.getElementById("float-container").style.display = "block" // remove hide
+            document.getElementById("studentinfo").style.display = "block"
 
             // not used yet
             function generateTableHead(table, data) {
@@ -1078,7 +1101,8 @@ function ErrorToHtml(n) {
   console.log("here in ErrorToHtml");
 
   
-  document.getElementById("float-container").style.display = "none" // remove hide
+  document.getElementById("float-container").style.display = "none" // hide
+  document.getElementById("studentinfo").style.display = "none" // hide
   str = "<span class='row' style='color:white;'>Crossword cannot be generated</span>"
   document.getElementById("save_crossword").disabled = true;  
   //document.getElementById("save_crossword").style.color = "black"
