@@ -12,6 +12,8 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <!-- he.js is in public folder -->
+        <script src="/he.js"></script>
     </head>
 
 
@@ -255,7 +257,8 @@
         <div class="row">
             <!-- ACROSS start -->
             <div class="col-md-6">
-                <table class="table table-bordered" id="across_list" >
+            
+                <table style="width: 100%;" class="table table-bordered" id="across_list" >
                     <!-- form = "saveForm" -->
         
                     <thead style="background-color:#343a40;"> 
@@ -263,6 +266,9 @@
                       <th colspan="3" style="text-align:center;">ACROSS</th> 
                       </tr>
                       <tr>
+                      <!-- <th colspan = "1" style= "color: white">#</th>
+                      <th colspan = "1" style= "color: white">Question</th>
+                      <th colspan = "1" style= "color: white">Points</th> -->
                       <th style="width: 20%; color: white">#</th>
                       <th style="width: 60%; color: white">Question</th>
                       <th style="width: 20%; color: white">Points</th>
@@ -279,6 +285,7 @@
                     </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
                     <!-- </div> -->
                 </table>
+          
               </div> <!-- end of across class="col-md-6" -->
                         
               <!--</div>  
@@ -288,8 +295,10 @@
               <!-- DOWN start -->
               <!-- <div class="float-child">
               <div class="down">DOWN</div> -->
+              <!-- <div class="container horizontal-scrollable"> -->
               <div class="col-md-6">
-                  <table class="table table-bordered" id="down_list" >
+                 
+                  <table style="width: 100%;" class="table table-bordered" id="down_list" >
                       <!-- form = "saveForm" -->
                       <thead style="background-color:#343a40;"> 
                         <tr style="background-color:#5CACEE">
@@ -312,6 +321,7 @@
                               
                         </tbody> <!-- body will be populated with ques and ans with mutliple rows-->
                     </table>
+
               </div> <!-- end of down class="col-md-6" -->
               <!-- DOWN ended -->
             </div> <!-- end of class="row" -->
@@ -337,7 +347,7 @@
     
 
     <script>
-      // var textarea_json_object = document.getElementById("course_data_json");
+      var textarea_json_object = document.getElementById("course_data_json");
       // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object // converts all objects from /"/" -- to notmal JSON form , but keys are strings here
       // console.log("This is the JSON object to work with", json_object);
       var json_object = <%- JSON.stringify(data)%>
@@ -438,36 +448,18 @@
         console.log("Length of table",table.rows.length); //this is the entire tbody element
         var newRow = table.insertRow(table.length); // create <tr> </tr> here ( new row)
         console.log('Newrow',newRow); 
-        // var x = document.createElement("input");
-        // //x.type = "hidden";
-        // x.name = "quiz_question";
-        // x.value = data.question;
-        // x.form = "saveForm";
-        // console.log(x);
-        // var y = document.createElement("input");
-        // //x.type = "hidden";
-        // y.name = "quiz_answer";
-        // y.value = data.answer;
-        // y.form = "saveForm";
-        // console.log(y);
-        // //x.type = "hidden";
-        // x.name = serialNumber; // key
-        // x.value = ques_content;
-        // x.form = "saveForm";
-        // var d = document.getElementById("saveForm");
-        // d.appendChild(x);
-        // d.appendChild(y);
-        //alert(getStyle('.table_list')); // not needed
+
         var cell0 = newRow.insertCell(0); // serial number added by css
         console.log("cell0",cell0.innerHTML);
 
-        //pre_tag = document.createElement("pre");
+        // pre_tag = document.createElement("pre");
         // cell1.innerHTML = "<pre>" + data.question + "</pre>";
         // var cell1 = newRow.insertCell(1);
         // cell1.innerText = data.question //+ "</pre>"; // changed to text
         // cell1.id = "question_col";
         // console.log("cell1",cell1);
 
+        // *****Inserts question in table
         // cell1.innerHTML = "<pre>" + data.question + "</pre>";
         pre_tag = document.createElement("pre");
         var cell1 = newRow.insertCell(1);
@@ -492,7 +484,7 @@
         // QA object pushed everytime to qa_data array
         var QA = {
             qa_id : ques_id + 1,
-            question : cell1.innerText,
+            question : he.encode(cell1.innerText),
             answer : cell2.innerText,
             orig_qascore : parseFloat(cell3.innerHTML) //.toFixed(1)
         };
@@ -546,14 +538,15 @@
         console.log("1st question row",selectedRow.cells[1])
         //pre_tag = document.createElement("pre");
         //pre_tag.innerText = formData.question;
-        selectedRow.cells[1].childNodes[0].innerText = formData.question;
-        //appendChild(pre_tag)
+
+        // update data in table
+        selectedRow.cells[1].childNodes[0].innerText = formData.question; 
  
         //selectedRow.cells[1].innerText = formData.question;
         selectedRow.cells[2].innerHTML = formData.answer;
         selectedRow.cells[3].innerHTML = formData.orig_qascore;
         // edit the final_quiz object
-        final_quiz.qa_data[selectedRow.rowIndex-1].question = formData.question;
+        final_quiz.qa_data[selectedRow.rowIndex-1].question = he.encode(formData.question); // encode in text area( DB)
         final_quiz.qa_data[selectedRow.rowIndex-1].answer = formData.answer;
         final_quiz.qa_data[selectedRow.rowIndex-1].orig_qascore = parseFloat(formData.orig_qascore) //.toFixed(1);
         // update content in text area with updated final_quiz object
@@ -591,7 +584,7 @@
             }
             // update content in text area
             var textarea_data = document.getElementById("ques_ans_data");
-            textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
+            textarea_data.innerText = JSON.stringify(final_quiz.qa_data); // set value // this has to be innerText because textarea is then updated with encoded values eg.&#x26
             console.log("updated textarea_data",textarea_data.innerHTML);
             // delete from table
             document.getElementById("quizList").deleteRow(row.rowIndex);
