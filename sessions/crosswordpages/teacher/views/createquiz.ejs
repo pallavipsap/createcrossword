@@ -29,7 +29,7 @@
 		</div>
      </nav>  -->
 
-     <nav class="navbar navbar-inverse">
+     <!-- <nav class="navbar navbar-inverse">
      <div class="container-fluid">
         <div class="navbar-header">
           <a class="navbar-brand" href="#">CrossBuildPlay</a>
@@ -40,18 +40,27 @@
           <li class="active"><a href="#">Tutorial</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <!-- <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li> -->
-          <!-- <li><a href="#"><span class="glyphicon glyphicon-log-in"></span>Logout</a></li> -->
           <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Pallavi <span class="caret"></span></a>
-              <!-- <span class="caret"></span></a> -->
             <ul class="dropdown-menu">
               <a class="dropdown-item" href="/logout">Logout</a>
-              <!-- <li><a href="#">Page 1-2</a></li>
-              <li><a href="#">Page 1-3</a></li> -->
             </ul>
           </li>
         </ul>
       </div>
+      </nav> -->
+
+      <nav aria-label="breadcrumb">
+        <div class="navbar-header">
+            <a class="navbar-brand" style = "color: white" href="/home">CrossBuildPlay</a> <!--home.ejs page link-->
+        </div>
+        <ol class="breadcrumb" style="background-color: black;">
+            <li class="breadcrumb-item"><a style = "color: white;" href="/home">Home</a></li> <!--home.ejs page link-->
+            <li class="breadcrumb-item"><a style = "color: white;" href="/home/create">Groups</a></li> <!--displaygroups.ejs page link-->
+            <li class="breadcrumb-item"><a id = "nav_groups" style = "color: white;" href=""><%= data.course%></a></li> <!--displayquizzes.ejs page link-->
+            <!-- "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"];  -->
+            
+            <li class="breadcrumb-item active" aria-current="page">create</li>
+        </ol>
       </nav>
 
     
@@ -102,18 +111,19 @@
               <form onsubmit="event.preventDefault();onFormSubmit();" autocomplete="off">
               
               <div>
-                <label>Question*</label>
+                <label>Question* </label>
+                <label>(You can create code blocks by placing triple backticks ``` before and after the code block. Eg. ```var x=10```)</label></label>
                 <label class="validation-error hide" id="questionValidationError">This field is
                 required.</label>
-                <textarea class="textbox_align" name="question" id="question" placeholder = "No line limitations for question. Formatting with spaces, identations or line breaks is recommended before adding the question. Code snippets are also allowed"  required></textarea> <!--<textarea placeholder="type text here"></textarea>-->
+                <textarea class="textbox_align" name="question" id="question" placeholder = "No line limitations for question. Formatting with spaces, identations or line breaks is recommended before adding the question." required></textarea> <!--<textarea placeholder="type text here"></textarea>-->
               </div>
                           
               <br>	
               
               <div>
-                <label>Answer* ( no spaces allowed )</label>
+                <label>Answer* (no spaces allowed)</label>
                 <label class="validation-error hide" id="answerValidationError">This field is required.</label>
-                <input class="textbox_align" type="text" name="answer" id="answer" placeholder = "No spaces allowed. Any word or expression with special characters eg. while, do-while, a+b" required/>
+                <input class="textbox_align" type="text" name="answer" id="answer" placeholder = "eg. while, inheritance" required/>
               </div>
 
               <br>
@@ -147,7 +157,9 @@
         <!--second row -->
         <!-- question - answer table   -->
 		<div class="col-md-6">
-		<label>Questions added will be listed here</label><br>
+		<label>Questions added will be listed here <label>
+    <!-- triple backticks ``` before and after the code block  -->
+    <label>(Text between triple backticks ``` will appear as code blocks to students. For student view of questions check the bottom of this page)</label><br>
     <div class="table-wrapper-scroll-y my-custom-scrollbar">
       <table class="table table-bordered" id="quizList" >
         <thead style="background-color:#5CACEE;">
@@ -170,10 +182,10 @@
         <!-- for edit / duplicate options , this code is used to create question answer table on page load-->
         <% if (JSON.stringify(data.quizdata)) {  %>
             <!-- <%= JSON.stringify(data.quizdata) %> -->
-            <% for(var i=0; i< data.quizdata.length; i++) { %>
+            <% for(var i=0; i<data.quizdata.length; i++) { %>
             <tr> 
                 <td></td>
-                <td id = "question_col"><%-data.quizdata[i].question %></td>
+                <td id = "question_col"><pre><%-data.quizdata[i].question%></pre></td>
                 <td id = "answer_col"><%-data.quizdata[i].answer %></td>
                 <td><%-data.quizdata[i].orig_qascore%></td>
                 <td><a onClick="onEdit(this)">Edit</a>
@@ -223,12 +235,18 @@
         <!--<span name = "disclaimer" id = "disclaimer" style = "color:blue">Disclaimer : The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</span>-->
         
     <div class="info">
-			<p><strong>Note:</strong> The crossword which student will attempt will contain same questions, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</p>
+			<p><strong>Note:</strong> The crossword which student will attempt will contain same questions in same text format as given below, however the orientation of Across and Down may not be the same as you view below. This will not cause any problems when they attempt it or see the grades</p>
 		</div>
             
     <div class="center crossword" id="crossword">
         <span style="color: white;" > Crossword will be diplayed here. You atleast need two matched words to create crossword.</span>
     </div><br><br>  
+
+    <div class="info" id = "studentinfo" style="display: none;">
+      <p><strong>Note:</strong> Student view of questions is shown below</p>
+    </div>
+
+    
     
     <!-- this is changed -->
     <!-- <div class="float-child" id="child-across">   -->
@@ -307,7 +325,7 @@
     
 
         <div class="info">
-            <p><strong>Warning!</strong> Your crossword will be saved only if the crossword can be generated</p>
+            <p><strong>Note:</strong> Your crossword will be saved only if the crossword can be generated</p>
         </div>
 
         <div id="savecross" style="text-align:center">
@@ -323,7 +341,13 @@
       // var json_object = JSON.parse(textarea_json_object.innerHTML); // type is object // converts all objects from /"/" -- to notmal JSON form , but keys are strings here
       // console.log("This is the JSON object to work with", json_object);
       var json_object = <%- JSON.stringify(data)%>
+
+      // nav bar
+      // "/create/groups/" + anchor.title + "?course_id="+courses[i]["course_id"]; 
+      // anchor_tag = 
+
       console.log("This is the JSON object to work with", json_object);
+      document.getElementById("nav_groups").href = "/create/groups/" + json_object.course + "?course_id=" + json_object.course_id;
       document.getElementById("welcomemessage").innerHTML = "Let's " +  json_object.mode + " crossword for course " + json_object.course;
       // document.getElementById("welcomemessage").innerHTML = "Hello " + json_object.username + " go ahead and " +  json_object.mode +" crossword for course name " + json_object.course;
       document.getElementById("course").innerHTML = json_object.course // in future pass course name to display
@@ -338,10 +362,11 @@
         // textarea
         document.getElementById("instructions").value = json_object.instructions;
         console.log(typeof(json_object.quizdata))
-        document.getElementById("ques_ans_data").innerHTML = JSON.stringify(json_object.quizdata);
+        document.getElementById("ques_ans_data").innerText = JSON.stringify(json_object.quizdata);
         console.log(typeof(json_object.quizdata))
         //Create();
       }
+      // change link for edit, but for duplicate by default a new document will be created
       if(json_object.mode == "edit"){
         link+="&quizid="+json_object.quizid; // send quizid to backend so that this particular quiz is updated in quizdata
       }
@@ -358,7 +383,7 @@
       };
       }
       // "quizdata":[{"qa_id":1,"question":"q1","answer":"a1"},{"qa_id":2,"question":"q2","answer":"a2"}],"mode":"edit"}
-      else{
+      else{ // for edit or duplicate
         
         var final_quiz = {
           qa_data : json_object.quizdata
@@ -413,73 +438,89 @@
         console.log("Length of table",table.rows.length); //this is the entire tbody element
         var newRow = table.insertRow(table.length); // create <tr> </tr> here ( new row)
         console.log('Newrow',newRow); 
-      // var x = document.createElement("input");
-      // //x.type = "hidden";
-      // x.name = "quiz_question";
-      // x.value = data.question;
-      // x.form = "saveForm";
-      // console.log(x);
-      // var y = document.createElement("input");
-      // //x.type = "hidden";
-      // y.name = "quiz_answer";
-      // y.value = data.answer;
-      // y.form = "saveForm";
-      // console.log(y);
-      // //x.type = "hidden";
-      // x.name = serialNumber; // key
-      // x.value = ques_content;
-      // x.form = "saveForm";
-      // var d = document.getElementById("saveForm");
-      // d.appendChild(x);
-      // d.appendChild(y);
-      //alert(getStyle('.table_list')); // not needed
-      var cell0 = newRow.insertCell(0); // serial number added by css
-      console.log("cell0",cell0.innerHTML);
-      var cell1 = newRow.insertCell(1);
-      cell1.innerText = data.question //+ "</pre>"; // changed to text
-      cell1.id = "question_col";
-      console.log("cell1",cell1);
-      // cell1.innerHTML = "<pre>" + data.question + "</pre>";
-      var cell2 = newRow.insertCell(2);
-      cell2.innerHTML = data.answer;
-      cell2.id = "answer_col";
-      console.log("cell2",cell2);
-      var cell3 = newRow.insertCell(3);
-      cell3.innerHTML = data.orig_qascore;
-      console.log("cell3",cell3);
-      //var ques = this.parentElement.parentElement; // current row
-      //var ques_id = ques.rowIndex;
-      // console.log("New row", ques_id);
-      var ques_id = final_quiz.qa_data.length;
-      // QA object pushed everytime to qa_data array
-      var QA = {
-          qa_id : ques_id + 1,
-          question : cell1.innerText,
-          answer : cell2.innerHTML,
-          orig_qascore : parseFloat(cell3.innerHTML) //.toFixed(1)
-      };
-      console.log("QA",QA);
-      final_quiz.qa_data.push(QA); //final_quiz : { ques_ans_data [ qa_id : ,question : , answer ] }
-      // var j_object = JSON.stringify(final_quiz);
-      // console.log("String json object",j_object);
-      // var textarea_data = document.getElementById("ques_ans_data");
-      // textarea_data.innerHTML = final_quiz; // set value
-      //final_quiz.push(QA);
-      console.log("serial number", cell0.getElementsByTagName("td").content);
-      var textarea_data = document.getElementById("ques_ans_data"); // get the textarea component
-      textarea_data.innerText = JSON.stringify(final_quiz.qa_data); // setting value in textarea // changed to Text
-      console.log("textarea_data",textarea_data.innerText);
-      // console.log(document.td);
-      var cell4 = newRow.insertCell(4);
-      cell4.innerHTML = `<a onClick="onEdit(this)">Edit</a>
-                          <a onClick="onDelete(this)">Delete</a>`;
+        // var x = document.createElement("input");
+        // //x.type = "hidden";
+        // x.name = "quiz_question";
+        // x.value = data.question;
+        // x.form = "saveForm";
+        // console.log(x);
+        // var y = document.createElement("input");
+        // //x.type = "hidden";
+        // y.name = "quiz_answer";
+        // y.value = data.answer;
+        // y.form = "saveForm";
+        // console.log(y);
+        // //x.type = "hidden";
+        // x.name = serialNumber; // key
+        // x.value = ques_content;
+        // x.form = "saveForm";
+        // var d = document.getElementById("saveForm");
+        // d.appendChild(x);
+        // d.appendChild(y);
+        //alert(getStyle('.table_list')); // not needed
+        var cell0 = newRow.insertCell(0); // serial number added by css
+        console.log("cell0",cell0.innerHTML);
+
+        //pre_tag = document.createElement("pre");
+        // cell1.innerHTML = "<pre>" + data.question + "</pre>";
+        // var cell1 = newRow.insertCell(1);
+        // cell1.innerText = data.question //+ "</pre>"; // changed to text
+        // cell1.id = "question_col";
+        // console.log("cell1",cell1);
+
+        // cell1.innerHTML = "<pre>" + data.question + "</pre>";
+        pre_tag = document.createElement("pre");
+        var cell1 = newRow.insertCell(1);
+        pre_tag.innerText = data.question 
+        //cell1.innerText = data.question //+ "</pre>"; // changed to text
+        cell1.appendChild(pre_tag)
+        cell1.id = "question_col";
+        console.log("cell1",cell1);
+        
+        var cell2 = newRow.insertCell(2);
+        cell2.innerHTML = data.answer;
+        cell2.id = "answer_col";
+        console.log("cell2",cell2);
+
+        var cell3 = newRow.insertCell(3);
+        cell3.innerHTML = data.orig_qascore;
+        console.log("cell3",cell3);
+        //var ques = this.parentElement.parentElement; // current row
+        //var ques_id = ques.rowIndex;
+        // console.log("New row", ques_id);
+        var ques_id = final_quiz.qa_data.length;
+        // QA object pushed everytime to qa_data array
+        var QA = {
+            qa_id : ques_id + 1,
+            question : cell1.innerText,
+            answer : cell2.innerText,
+            orig_qascore : parseFloat(cell3.innerHTML) //.toFixed(1)
+        };
+        console.log("QA",QA);
+        final_quiz.qa_data.push(QA); //final_quiz : { ques_ans_data [qa_id : ,question : , answer ] }
+        // var j_object = JSON.stringify(final_quiz);
+        // console.log("String json object",j_object);
+        // var textarea_data = document.getElementById("ques_ans_data");
+        // textarea_data.innerHTML = final_quiz; // set value
+        //final_quiz.push(QA);
+        console.log("serial number", cell0.getElementsByTagName("td").content);
+        var textarea_data = document.getElementById("ques_ans_data"); // get the textarea component
+        textarea_data.innerText = JSON.stringify(final_quiz.qa_data); // setting value in textarea // changed to Text
+        console.log("textarea_data",textarea_data.innerText);
+        // console.log(document.td);
+        var cell4 = newRow.insertCell(4);
+        cell4.innerHTML = `<a onClick="onEdit(this)">Edit</a>
+                            <a onClick="onDelete(this)">Delete</a>`;
       }
+
       function resetForm() {
         document.getElementById("question").value = "";
         document.getElementById("answer").value = "";
         document.getElementById("orig_qascore").value = "";
         selectedRow = null;
       }
+
+
       // Edit  function : just populates text boxes and selectedRow variable
       // Update function : populates selectedRow with content in text boxes
       // Delete function : Just deletes the selected Row
@@ -500,7 +541,15 @@
       // Selected row is populated by onEdit function
       function updateRecord(formData) { // click on "Update Row" button to insert in table
         // update in table
-        selectedRow.cells[1].innerText = formData.question;
+       
+        console.log("updating the row")
+        console.log("1st question row",selectedRow.cells[1])
+        //pre_tag = document.createElement("pre");
+        //pre_tag.innerText = formData.question;
+        selectedRow.cells[1].childNodes[0].innerText = formData.question;
+        //appendChild(pre_tag)
+ 
+        //selectedRow.cells[1].innerText = formData.question;
         selectedRow.cells[2].innerHTML = formData.answer;
         selectedRow.cells[3].innerHTML = formData.orig_qascore;
         // edit the final_quiz object
@@ -515,92 +564,97 @@
         ques_content.splice(selectedRow.rowIndex-1,1,formData.question);
         ans_content.splice(selectedRow.rowIndex-1,1,formData.question);
         document.getElementById("qa-submit").value = "Add Row"
-        }
+      }
+
       function onDelete(td) {
-      row = td.parentElement.parentElement;
-      if (confirm("Are you sure to delete this record?")) {
-          
-          console.log(row.rowIndex);
-          // delete data from the content array
-          ques_content.splice(row.rowIndex-1,1);
-          console.log("Row index to be deleted",row.rowIndex);
-          ans_content.splice(row.rowIndex-1,1);
-          console.log('here',ques_content,ans_content);
-          // delete from final_quiz object
-          console.log("Row to be deleted", final_quiz.qa_data[row.rowIndex-1] );
-          final_quiz.qa_data.splice(row.rowIndex-1,1)
-          console.log("final_quiz after deletion",final_quiz.qa_data);
-          //delete final_quiz.qa_data[row.rowIndex-1]; // does not work adds null values
-          // rename the id before inserting in text area, can write in a function
-          var len = final_quiz.qa_data.length;
-          var i;
-          for( i = 0; i < len; i++) {
-          final_quiz.qa_data[i].qa_id = i+1;
-          console.log("Quiz id",final_quiz.qa_data[i].qa_id);
-          console.log(final_quiz.qa_data);
-          }
-          // update content in text area
-          var textarea_data = document.getElementById("ques_ans_data");
-          textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
-          console.log("updated textarea_data",textarea_data.innerHTML);
-          // delete from table
-          document.getElementById("quizList").deleteRow(row.rowIndex);
-          
-          resetForm();
+        row = td.parentElement.parentElement;
+        if (confirm("Are you sure to delete this record?")) {
+            
+            console.log(row.rowIndex);
+            // delete data from the content array
+            ques_content.splice(row.rowIndex-1,1);
+            console.log("Row index to be deleted",row.rowIndex);
+            ans_content.splice(row.rowIndex-1,1);
+            console.log('here',ques_content,ans_content);
+            // delete from final_quiz object
+            console.log("Row to be deleted", final_quiz.qa_data[row.rowIndex-1] );
+            final_quiz.qa_data.splice(row.rowIndex-1,1)
+            console.log("final_quiz after deletion",final_quiz.qa_data);
+            //delete final_quiz.qa_data[row.rowIndex-1]; // does not work adds null values
+            // rename the id before inserting in text area, can write in a function
+            var len = final_quiz.qa_data.length;
+            var i;
+            for( i = 0; i < len; i++) {
+              final_quiz.qa_data[i].qa_id = i+1;
+              console.log("Quiz id",final_quiz.qa_data[i].qa_id);
+              console.log(final_quiz.qa_data);
+            }
+            // update content in text area
+            var textarea_data = document.getElementById("ques_ans_data");
+            textarea_data.innerHTML = JSON.stringify(final_quiz.qa_data); // set value
+            console.log("updated textarea_data",textarea_data.innerHTML);
+            // delete from table
+            document.getElementById("quizList").deleteRow(row.rowIndex);
+            
+            resetForm();
+        }
+            // Update Row
+            Create();
+            document.getElementById("qa-submit").value = "Add Row"
       }
-          // Update Row
-          Create();
-          document.getElementById("qa-submit").value = "Add Row"
-      }
+
+
       function validate() {
-      isValid = true; // consider value is valid
-      /*
-      if (
-          document.getElementById("question").value == "" &&
-          document.getElementById("answer").value == ""
-      ) {
-          isValid = false; // false if value is null
-          document.getElementById("questionValidationError").classList.remove("hide"); //removes a class ( hide) , makes the "required field statement visible"
-          document.getElementById("answerValidationError").classList.remove("hide");
-      } else {*/
-      if (
-          document.getElementById("answer").value == "" ||
-          document.getElementById("question").value == ""
-      ) {
-          if (document.getElementById("answer").value == "") {
-          //only check for answer
-          isValid = false; // false if value is null
-          console.log("answer", isValid);
-          document.getElementById("answerValidationError").classList.remove("hide"); //removes a class ( hide) , makes the "required field statement visible"
-          }
-          if (document.getElementById("question").value == "") {
-          //only check for answer
-          isValid = false; // false if value is null
-          document
-              .getElementById("questionValidationError")
-              .classList.remove("hide");
-          console.log("question", isValid);
-          }
-      } else {
-          isValid = true;
+          isValid = true; // consider value is valid
+          /*
           if (
-          !document
-              .getElementById("questionValidationError")
-              .classList.contains("hide")
-          )
-          // contains = returns boolean showing if "hide" class in present
-          document.getElementById("questionValidationError").classList.add("hide"); // adds a hide class if it does not have hide, becasue "isvalid is true"
+              document.getElementById("question").value == "" &&
+              document.getElementById("answer").value == ""
+          ) {
+              isValid = false; // false if value is null
+              document.getElementById("questionValidationError").classList.remove("hide"); //removes a class ( hide) , makes the "required field statement visible"
+              document.getElementById("answerValidationError").classList.remove("hide");
+          } else {*/
           if (
-          !document
-              .getElementById("answerValidationError")
-              .classList.contains("hide")
-          )
-          // contains = returns boolean showing if "hide" class in present
-          document.getElementById("answerValidationError").classList.add("hide");
+              document.getElementById("answer").value == "" ||
+              document.getElementById("question").value == ""
+          ) {
+              if (document.getElementById("answer").value == "") {
+              //only check for answer
+              isValid = false; // false if value is null
+              console.log("answer", isValid);
+              document.getElementById("answerValidationError").classList.remove("hide"); //removes a class ( hide) , makes the "required field statement visible"
+              }
+              if (document.getElementById("question").value == "") {
+              //only check for answer
+              isValid = false; // false if value is null
+              document
+                  .getElementById("questionValidationError")
+                  .classList.remove("hide");
+              console.log("question", isValid);
+              }
+          } else {
+              isValid = true;
+              if (
+              !document
+                  .getElementById("questionValidationError")
+                  .classList.contains("hide")
+              )
+              // contains = returns boolean showing if "hide" class in present
+              document.getElementById("questionValidationError").classList.add("hide"); // adds a hide class if it does not have hide, becasue "isvalid is true"
+              if (
+              !document
+                  .getElementById("answerValidationError")
+                  .classList.contains("hide")
+              )
+              // contains = returns boolean showing if "hide" class in present
+              document.getElementById("answerValidationError").classList.add("hide");
+          }
+          console.log(isValid);
+          return isValid;
       }
-      console.log(isValid);
-      return isValid;
-      }
+
+
       function saveQuiz(){
           alert("Do you want to submit the form?");
           console.log("I am in the function SaveQuiz");
@@ -616,16 +670,10 @@
           console.log("X",x);
           d.appendChild(x);
           alert("The form was submitted");
-          //x.type = "hidden";
-          //x.name = "quiz_question";
-          // x.value = final_quiz;
-          // x.innerHTML = final_quiz;
-          // // x.form = "saveForm";
-          // console.log("I am in the function SaveQuiz")
-          // console.log("X",x);
-          // var d = document.getElementById("saveForm");
-          // d.appendChild(x);
       }
+
+
+
       // *************** UNUSED FUNCTIONS ******************************
       // function rename(final_quiz) { // function to rename on button click 
       //   // capitals = capitals.map(function(obj) { 
