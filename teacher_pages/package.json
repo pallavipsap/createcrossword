@@ -14,7 +14,7 @@
     "express": "^4.17.1",
     "express-csp-header": "^4.0.0",
     "mongodb": "^3.6.2",
-    "mongoose": "^5.10.9",
+    "mongoose": "^8.9.5",
     "react-scripts": "^3.4.4"
   }
 }
